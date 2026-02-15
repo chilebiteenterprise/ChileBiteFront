@@ -1,28 +1,20 @@
-# Etapa 1: build de la app
-FROM node:20-alpine AS build
+# Frontend - desarrollo con Node
+FROM node:20-alpine
 
 # Directorio de trabajo
 WORKDIR /app
 
-# Copiar solo los archivos de dependencias para cachear npm install
-COPY package*.json ./
+# Copiar archivos de dependencias desde Recetas
+COPY Recetas/package*.json ./
+
+# Instalar dependencias
 RUN npm install
 
-# Copiar el resto del código y construir
-COPY . .
-RUN npm run build
+# Copiar el resto del código desde Recetas
+COPY Recetas/ ./
 
-# Etapa 2: servir con Nginx
-FROM nginx:alpine
+# Exponer el puerto que Astro usa por defecto
+EXPOSE 3000
 
-# Copiar build al directorio de Nginx
-COPY --from=build /app/dist /usr/share/nginx/html
-
-# Copiar configuración de Nginx personalizada (opcional)
-# COPY nginx.conf /etc/nginx/nginx.conf
-
-# Exponer puerto 80
-EXPOSE 80
-
-# Comando para iniciar Nginx en primer plano
-CMD ["nginx", "-g", "daemon off;"]
+# Comando para desarrollo (hot-reload)
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
