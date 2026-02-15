@@ -1,0 +1,43 @@
+.porciones-container {
+  display: grid;
+  /* Crea las 3 columnas de ancho igual (1fr), que es donde se centrarán los botones */
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  width: 100%; /* Asegura que la grilla ocupe todo el ancho */
+
+  /* ---------------------------------------------------------------- */
+  /* ¡CLAVES PARA EL CENTRADO DE LOS BOTONES DENTRO DE SUS CELDAS! */
+  /* ---------------------------------------------------------------- */
+
+  /* 1. Centra los ítems HORIZONTALMENTE dentro de sus celdas (eje X) */
+  justify-items: center;
+
+  /* 2. Centra los ítems VERTICALMENTE dentro de sus celdas (eje Y) */
+  align-items: center;
+
+  /* Puedes eliminar el antiguo justify-content: center; si solo quieres que se centren */
+  /* los ítems y no la grilla completa (que ya tiene width: 100%) */
+}
+
+/* Este estilo se MANTIENE EXACTAMENTE como lo quieres */
+.porcion-btn {
+  width: 50px; /* Ancho fijo de 50px */
+  height: 50px; /* Altura fija de 50px */
+  background-color: #f5deb3;
+  border-radius: 50%;
+  font-weight: 600;
+
+  /* Estas propiedades centran el contenido (el número) dentro del botón */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.porcion-btn.selected {
+  background-color: #e0b97c;
+  transform: scale(1.1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}

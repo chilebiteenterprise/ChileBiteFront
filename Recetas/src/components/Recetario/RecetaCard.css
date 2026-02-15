@@ -1,0 +1,140 @@
+/* =============================== */
+/* Texto del país */
+.pais-text {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #1d4ed8;
+  font-style: italic;
+  letter-spacing: 0.5px;
+}
+
+/* =============================== */
+/* Carta principal */
+.receta-card {
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  position: relative; /* importante para posicionar el botón */
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.receta-card:hover {
+  transform: scale(1.08);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* =============================== */
+/* Imagen */
+.receta-img-container {
+  position: relative;
+}
+
+.receta-img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+/* =============================== */
+/* Contenido principal */
+.receta-content {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.receta-title {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.receta-desc {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 6px;
+}
+
+.receta-porciones {
+  font-size: 0.85rem;
+  color: #444;
+  margin-bottom: 12px;
+}
+
+/* =============================== */
+/* Footer */
+.receta-footer {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Filas internas del footer */
+.receta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Contenedor combinado de dificultad y popularidad */
+.footer-row-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Contenedor combinado de país y categoría */
+.footer-row-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+/* =============================== */
+/* Popularidad (corazón + número) */
+.popularity-container {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* separación entre número y corazón */
+}
+
+.like-counter {
+  font-weight: bold;
+  color: #ff4757;
+  display: flex;
+  align-items: center;
+}
+
+/* =============================== */
+/* Categoría badge */
+.categoria-badge {
+  display: inline-block;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 6px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* =============================== */
+/* Fuegos de dificultad */
+.dificultad-dots {
+  display: flex;
+  gap: 4px;
+}
+
+.dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+}

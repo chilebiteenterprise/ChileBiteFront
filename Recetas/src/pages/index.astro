@@ -1,0 +1,280 @@
+---
+import "../styles/global.css";
+import Footer from "../layouts/Footer";
+import Navbar from "../layouts/Navbar"
+---
+
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ChileBite</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+
+  <script>
+    const sections = document.querySelectorAll('.scroll-section');
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          } else {
+            entry.target.classList.remove('visible');
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+
+    sections.forEach(section => observer.observe(section));
+
+    const fades = document.querySelectorAll('.scroll-fade-left, .scroll-fade-right');
+
+    const fadeObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.3 });
+
+    fades.forEach(el => fadeObserver.observe(el));
+
+    const comunidadObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => entry.target.classList.add("visible"), i * 150);
+        } else {
+          entry.target.classList.remove("visible");
+        }
+      });
+    }, { threshold: 0.3 });
+
+    document.querySelectorAll(".scroll-fade-up").forEach(el => comunidadObserver.observe(el));
+
+    const restoObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => entry.target.classList.add("visible"), i * 150);
+        } else {
+          entry.target.classList.remove("visible");
+        }
+      });
+    }, { threshold: 0.3 });
+
+    document.querySelectorAll(".scroll-fade-down, .scroll-fade-left, .scroll-fade-right")
+      .forEach(el => restoObserver.observe(el));
+
+    const cierreObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => entry.target.classList.add("visible"), i * 200);
+        } else {
+          entry.target.classList.remove("visible");
+        }
+      });
+    }, { threshold: 0.3 });
+
+    document.querySelectorAll(".scroll-fade-up, .scroll-scale")
+      .forEach(el => cierreObserver.observe(el));
+  </script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin-top: 100px;
+      line-height: 1.6;
+      margin: 0;
+      padding: 0;
+      background-color: #fafafa;
+    }
+    img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 5px;
+    }
+    h1, h2, h3 {
+      color: #333;
+    }
+    p {
+      margin-bottom: 1rem;
+    }
+
+    .bg-scroll-section {
+      background-color: #DDB892; 
+    }
+
+    .scroll-section {
+      min-height: 100vh; 
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      opacity: 0;
+      transform: translateY(50px);
+      transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    }
+    .scroll-section.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .scroll-fade-left, .scroll-fade-right {
+      opacity: 0;
+      transform: translateX(50px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+    .scroll-fade-left { transform: translateX(-50px); }
+    .scroll-fade-left.visible, .scroll-fade-right.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .scroll-fade-up {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+    }
+    .scroll-fade-up.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .scroll-fade-down,
+    .scroll-fade-left,
+    .scroll-fade-right {
+      opacity: 0;
+      transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+    }
+    .scroll-fade-down { transform: translateY(-40px); }
+    .scroll-fade-left { transform: translateX(-40px); }
+    .scroll-fade-right { transform: translateX(40px); }
+    .scroll-fade-down.visible,
+    .scroll-fade-left.visible,
+    .scroll-fade-right.visible {
+      opacity: 1;
+      transform: translate(0, 0);
+    }
+
+    .scroll-fade-up, .scroll-scale {
+      opacity: 0;
+      transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+    }
+    .scroll-fade-up {
+      transform: translateY(40px);
+    }
+    .scroll-fade-up.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .scroll-scale {
+      transform: scale(0.95);
+    }
+    .scroll-scale.visible {
+      opacity: 1;
+      transform: scale(1);
+    }
+  </style>
+
+  <body class="bg-gray-50">
+    <Navbar client:only="react" />
+    <main>
+
+      <!-- Hero -->
+      <div class="relative my-20 h-[600px] bg-[url('../../public/images/Titulo.webp')] bg-cover bg-center bg-no-repeat flex items-center justify-center">
+        <div class="absolute inset-0 bg-black opacity-30"></div>
+        <div class="relative bg-white bg-opacity-75 rounded-lg shadow-lg w-full max-w-4xl p-10 mx-4">
+          <h1 class="text-4xl md:text-5xl font-bold text-center text-gray-800 mb-8">
+            Bienvenido usuario
+          </h1> 
+          <p class="text-center text-lg text-gray-700 leading-relaxed">
+            Te damos la bienvenida a nuestra página web, este apartado es solo para informarte sobre qué trata este proyecto. Déjanos presentarnos: nuestros nombres son <b>Chrystopher Silva</b> y <b>Miguel Escobar</b>, somos un grupo de dos personas trabajando juntos para brindarte nuestro servicio. En este caso te haré una pregunta...
+          </p>
+        </div>
+      </div>
+
+      <!-- Info -->
+      <section class="scroll-section bg-scroll-section text-white p-10 rounded-lg shadow-lg mx-4 min-h-screen flex flex-col justify-center">
+        <h2 class="text-4xl md:text-5xl font-bold mb-4 text-white">
+          ¿Quieres aprender a cocinar? ¿Deseas conocer restaurantes cercanos a ti?
+        </h2>
+        <p class="text-lg max-w-6xl">
+          bueno en este caso mi compañero y yo te ofrecemos este sitio web para que puedas satisfacer todas 
+          esas necesidades y más, con esta página en el catálogo de locales podrás buscar los mejores lugares para poder comer la comida 
+          que más prefieras serca de tu zona, y también en el catálogo de resetas podrás buscar las mejores de resetas para que puedas 
+          hacer en tu casa para ti o para sorprender a tus familiares, el cual cuenta con videos tutoriales de nuestro canal en Youtube,
+        </p>
+      </section>
+
+      <!-- Galería -->
+      <section class="bg-gradient-to-r from-[#f8f8f8] to-[#eaeaea] py-16 px-6 min-h-screen flex flex-col justify-center">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
+          <div class="scroll-fade-left">
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
+              Una galería hecha para ti
+            </h2>
+            <p class="text-gray-700 leading-relaxed text-lg">
+              Disfruta de una interfaz agradable y fácil de usar, diseñada para que encuentres lo que buscas sin complicaciones. 
+              Dentro de nuestra galería de recetas encontrarás desde platos tradicionales hasta opciones innovadoras, todas explicadas 
+              paso a paso, con videos tutoriales y filtros por país, dificultad, porciones o nombre.
+            </p>
+          </div>
+          <div class="scroll-fade-right flex justify-center">
+            <img src="../../public/images/Sitio.png" alt="Interfaz Galería" 
+                class="rounded-2xl shadow-2xl max-w-md transition-transform duration-500 hover:scale-105">
+          </div>
+        </div>
+      </section>
+
+      <!-- Comunidad -->
+      <section class="scroll-comunidad text-center bg-white py-16 min-h-screen flex flex-col justify-center">
+        <h2 class="scroll-fade-up text-2xl md:text-3xl font-semibold text-gray-800 mb-4">
+          Forma parte de la comunidad
+        </h2>
+        <p class="scroll-fade-up text-gray-700 mb-6 leading-relaxed max-w-2xl mx-auto">
+          Únete a otros usuarios, comparte opiniones y recetas favoritas, descubre nuevas ideas culinarias. 
+          Guarda tus recetas favoritas y da “me gusta” a las que más te gusten para que se posicionen en el top.
+        </p>
+        <img src="/images/Carta.png" alt="Carta de recetas" 
+            class="scroll-fade-up rounded-lg shadow-lg mx-auto max-w-md">
+      </section>
+
+      <!-- Restaurantes -->
+      <section class="scroll-restaurantes bg-white py-16 text-center min-h-screen flex flex-col justify-center">
+        <h2 class="scroll-fade-down text-2xl md:text-3xl font-semibold text-gray-800 mb-6">
+          ¿Deseas trabajar con nosotros?
+        </h2>
+        <p class="scroll-fade-left text-gray-700 mb-4 leading-relaxed max-w-2xl mx-auto">
+          Si eres un pequeño negocio o restaurante y deseas colaborar, crea tu cuenta de <b>Restaurante</b> 
+          y gestiona tu perfil, ofreciendo tus servicios a nuestra comunidad y llegando a más usuarios.
+        </p>
+        <p class="scroll-fade-right text-gray-700 leading-relaxed max-w-2xl mx-auto">
+          Podrás mostrar tus platillos y servicios a una audiencia más amplia, 
+          sin necesidad de crear tu propia página web.
+        </p>
+      </section>
+
+      <!-- Cierre -->
+      <section class="scroll-cierre bg-gray-50 py-20 text-center min-h-screen flex flex-col justify-center">
+        <h3 class="scroll-fade-up text-xl md:text-2xl font-semibold text-gray-800 mb-4">
+          ¡Gracias por visitarnos!
+        </h3>
+        <p class="scroll-scale text-gray-700 mb-8 leading-relaxed max-w-2xl mx-auto">
+          Esperamos que disfrutes tu experiencia y encuentres todo lo que necesitas para satisfacer 
+          tus antojos culinarios. Si tienes preguntas o sugerencias, contáctanos. 
+          ¡Estamos aquí para ayudarte!
+        </p>
+        <h3 class="scroll-fade-up text-xl md:text-2xl font-semibold text-gray-800">
+          Suerte, querido usuario
+        </h3>
+      </section>
+      <Footer/>
+    </main>
+  </body>
+</html>
