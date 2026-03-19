@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useAuth, AuthProvider } from "../../context/AuthContext";
 import RecetaCard from './RecetaCard';
 import RecetaDetalle from './DetalleReceta'; 
+import IngredientesSelector from './IngredientesSelector';
 
 const DIFICULTADES = ['Muy Fácil', 'Fácil', 'Media', 'Difícil', 'Muy Difícil'];
 const CATEGORIAS_NOMBRES = [
@@ -11,13 +13,15 @@ const PAISES_NOMBRES = ["Global", "Argentina", "Chile", "Mexico", "España"];
 
 const initialRecipeState = {
   nombre: '', descripcion_corta: '', descripcion_larga: '',
-  preparacion: '', ingredientes: '', dificultad: 'Media',
-  pais: 'Global', categoria: 'Postre', numero_porcion: 4,
-  imagen_url: 'https://via.placeholder.com/400x300?text=Imagen+de+Receta',
+  preparacion: '', dificultad: 'Media',
+  pais: 'Global', categoria: 'Postre', numero_porcion: 1,
+  imagen_url: 'https://placehold.co/400x300?text=Imagen+de+Receta',
   video_url: '',
+  ingredientes_detalle: []
 };
 
-const RecetaForm = () => {
+const RecetaFormContent = () => {
+  const { session, profile, loading: authLoading } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [id, setId] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -26,22 +30,17 @@ const RecetaForm = () => {
   const [vista, setVista] = useState('card');
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || authLoading) return;
 
-    const checkAuth = () => {
-      const userString = localStorage.getItem('user');
-      if (userString) {
-        try {
-          const user = JSON.parse(userString);
-          if (user.rol === 'admin') setAuthStatus('authorized');
-          else window.location.href = '/';
-        } catch {
-          window.location.href = '/login';
-        }
-      } else window.location.href = '/login';
-    };
-
-    checkAuth();
+    if (profile) {
+      if (profile.role === 'admin' || profile.rol === 'admin') {
+        setAuthStatus('authorized');
+      } else {
+        window.location.href = '/';
+      }
+    } else {
+      window.location.href = '/login';
+    }
 
     const params = new URLSearchParams(window.location.search);
     const currentId = params.get('id');
@@ -52,12 +51,10 @@ const RecetaForm = () => {
     } else {
       setLoading(false);
     }
-  }, []);
+  }, [profile, authLoading]);
 
   const getAuthToken = () => {
-    const userJson = localStorage.getItem('user');
-    const user = userJson ? JSON.parse(userJson) : null;
-    return user?.tokens?.access_token || localStorage.getItem('access_token');
+    return session?.access_token || localStorage.getItem('access_token');
   };
 
   const fetchRecipeDetails = async (currentId) => {
@@ -79,6 +76,30 @@ const RecetaForm = () => {
     const { name, value, type } = e.target;
     setRecetaData(prev => ({ ...prev, [name]: type === 'number' ? Number(value) : value }));
   };
+
+  const handleIngredientesChange = (nuevosIngredientes) => {
+    setRecetaData(prev => ({ ...prev, ingredientes_detalle: nuevosIngredientes }));
+  };
+
+  // Cálculo en vivo de macros
+  const macrosLive = useMemo(() => {
+    let cal = 0, prot = 0, carb = 0, gras = 0;
+    (recetaData.ingredientes_detalle || []).forEach(item => {
+      const { ingrediente, cantidad, unidad } = item;
+      let multi = 0;
+      if (unidad === 'g' || unidad === 'ml') {
+        multi = parseFloat(cantidad) / 100.0;
+      } else {
+        const peso = ingrediente.peso_por_unidad_gramos || 100.0;
+        multi = (parseFloat(cantidad) * parseFloat(peso)) / 100.0;
+      }
+      cal += parseFloat(ingrediente.calorias_por_100g) * multi;
+      prot += parseFloat(ingrediente.proteinas_por_100g) * multi;
+      carb += parseFloat(ingrediente.carbohidratos_por_100g) * multi;
+      gras += parseFloat(ingrediente.grasas_por_100g) * multi;
+    });
+    return { cal: cal.toFixed(1), prot: prot.toFixed(1), carb: carb.toFixed(1), gras: gras.toFixed(1) };
+  }, [recetaData.ingredientes_detalle]);
 
 const handleSubmit = async (e) => {
   e.preventDefault();
@@ -148,7 +169,6 @@ const handleSubmit = async (e) => {
           {[ 
             { label: 'Nombre', name: 'nombre', type: 'text', required: true },
             { label: 'Descripción Corta (Max 255 chars)', name: 'descripcion_corta', type: 'textarea', maxLength: 255 },
-            { label: 'Ingredientes', name: 'ingredientes', type: 'textarea', rows: 3, required: true },
             { label: 'Preparación', name: 'preparacion', type: 'textarea', rows: 5, required: true },
             { label: 'Descripción Larga', name: 'descripcion_larga', type: 'textarea', rows: 3 },
           ].map(f => (
@@ -164,9 +184,37 @@ const handleSubmit = async (e) => {
                   value={recetaData[f.name]} onChange={handleChange}
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-400 transition-all"
                 />
-              )}
+                )}
             </div>
           ))}
+
+          <IngredientesSelector 
+            ingredientes_detalle={recetaData.ingredientes_detalle} 
+            onChange={handleIngredientesChange} 
+          />
+
+          {/* Badge de Macros en Vivo */}
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 p-4 rounded-xl shadow-inner mt-4">
+            <h4 className="text-sm font-bold text-green-800 mb-2">Nutrición Estimada (1 Porción)</h4>
+            <div className="grid grid-cols-4 gap-2 text-center">
+              <div className="bg-white p-2 rounded-lg shadow-sm border border-green-100">
+                <p className="text-xs text-gray-500 uppercase font-semibold">Calorías</p>
+                <p className="text-lg font-bold text-green-700">{macrosLive.cal} <span className="text-xs">kcal</span></p>
+              </div>
+              <div className="bg-white p-2 rounded-lg shadow-sm border border-green-100">
+                <p className="text-xs text-gray-500 uppercase font-semibold">Proteínas</p>
+                <p className="text-lg font-bold text-blue-600">{macrosLive.prot} <span className="text-xs">g</span></p>
+              </div>
+              <div className="bg-white p-2 rounded-lg shadow-sm border border-green-100">
+                <p className="text-xs text-gray-500 uppercase font-semibold">Carbs</p>
+                <p className="text-lg font-bold text-orange-500">{macrosLive.carb} <span className="text-xs">g</span></p>
+              </div>
+              <div className="bg-white p-2 rounded-lg shadow-sm border border-green-100">
+                <p className="text-xs text-gray-500 uppercase font-semibold">Grasas</p>
+                <p className="text-lg font-bold text-red-500">{macrosLive.gras} <span className="text-xs">g</span></p>
+              </div>
+            </div>
+          </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -180,7 +228,7 @@ const handleSubmit = async (e) => {
               <label className="block text-gray-700 font-semibold mb-1">Porciones</label>
               <input type="number" name="numero_porcion" value={recetaData.numero_porcion}
                 onChange={handleChange} min="1" max="6"
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-400" />
+                className="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed text-gray-500" disabled title="Las recetas base siempre se crean para 1 porción." />
             </div>
             <div>
               <label className="block text-gray-700 font-semibold mb-1">País</label>
@@ -241,4 +289,10 @@ const handleSubmit = async (e) => {
   );
 };
 
-export default RecetaForm;
+export default function RecetaForm() {
+  return (
+    <AuthProvider>
+      <RecetaFormContent />
+    </AuthProvider>
+  );
+}

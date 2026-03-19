@@ -14,9 +14,26 @@ import Recetario from "../components/Recetario/Recetario";
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
+    <!-- Evitar FOUC en modo oscuro -->
+    <script is:inline>
+      const theme = (() => {
+        if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
+          return localStorage.getItem('theme');
+        }
+        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          return 'dark';
+        }
+        return 'light';
+      })();
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    </script>
   </head>
 
-  <body class="bg-gray-50">
+  <body class="bg-stone-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-300">
 
     <Navbar client:only="react" />
 

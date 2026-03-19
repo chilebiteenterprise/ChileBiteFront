@@ -8,273 +8,169 @@ import Navbar from "../layouts/Navbar"
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>ChileBite</title>
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    />
-  </head>
+    <title>ChileBite - Descubre y Comparte Recetas</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- Evitar FOUC en modo oscuro: inicializar tema antes del render -->
+    <script is:inline>
+      const theme = (() => {
+        if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
+          return localStorage.getItem('theme');
+        }
+        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          return 'dark';
+        }
+        return 'light';
+      })();
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    </script>
+
+  <style is:global>
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+    
+    /* Scroll Animations Base */
+    .scroll-reveal { opacity: 0; transform: translateY(40px); transition: all 0.8s cubic-bezier(0.5, 0, 0, 1); }
+    .scroll-reveal.visible { opacity: 1; transform: translateY(0); }
+    
+    .scroll-fade-in { opacity: 0; transition: opacity 1s ease; }
+    .scroll-fade-in.visible { opacity: 1; }
+
+    .parallax-bg { background-attachment: fixed; }
+  </style>
 
   <script>
-    const sections = document.querySelectorAll('.scroll-section');
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
-          } else {
-            entry.target.classList.remove('visible');
-          }
-        });
-      },
-      { threshold: 0.5 }
-    );
-
-    sections.forEach(section => observer.observe(section));
-
-    const fades = document.querySelectorAll('.scroll-fade-left, .scroll-fade-right');
-
-    const fadeObserver = new IntersectionObserver((entries) => {
+    // Intersection Observer for scroll animations
+    const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           entry.target.classList.add('visible');
         }
       });
-    }, { threshold: 0.3 });
+    }, { threshold: 0.15, rootMargin: '0px 0px -50px 0px' });
 
-    fades.forEach(el => fadeObserver.observe(el));
-
-    const comunidadObserver = new IntersectionObserver((entries) => {
-      entries.forEach((entry, i) => {
-        if (entry.isIntersecting) {
-          setTimeout(() => entry.target.classList.add("visible"), i * 150);
-        } else {
-          entry.target.classList.remove("visible");
-        }
-      });
-    }, { threshold: 0.3 });
-
-    document.querySelectorAll(".scroll-fade-up").forEach(el => comunidadObserver.observe(el));
-
-    const restoObserver = new IntersectionObserver((entries) => {
-      entries.forEach((entry, i) => {
-        if (entry.isIntersecting) {
-          setTimeout(() => entry.target.classList.add("visible"), i * 150);
-        } else {
-          entry.target.classList.remove("visible");
-        }
-      });
-    }, { threshold: 0.3 });
-
-    document.querySelectorAll(".scroll-fade-down, .scroll-fade-left, .scroll-fade-right")
-      .forEach(el => restoObserver.observe(el));
-
-    const cierreObserver = new IntersectionObserver((entries) => {
-      entries.forEach((entry, i) => {
-        if (entry.isIntersecting) {
-          setTimeout(() => entry.target.classList.add("visible"), i * 200);
-        } else {
-          entry.target.classList.remove("visible");
-        }
-      });
-    }, { threshold: 0.3 });
-
-    document.querySelectorAll(".scroll-fade-up, .scroll-scale")
-      .forEach(el => cierreObserver.observe(el));
+    document.querySelectorAll('.scroll-reveal, .scroll-fade-in').forEach(el => observer.observe(el));
   </script>
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin-top: 100px;
-      line-height: 1.6;
-      margin: 0;
-      padding: 0;
-      background-color: #fafafa;
-    }
-    img {
-      max-width: 100%;
-      height: auto;
-      border-radius: 5px;
-    }
-    h1, h2, h3 {
-      color: #333;
-    }
-    p {
-      margin-bottom: 1rem;
-    }
-
-    .bg-scroll-section {
-      background-color: #DDB892; 
-    }
-
-    .scroll-section {
-      min-height: 100vh; 
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      opacity: 0;
-      transform: translateY(50px);
-      transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-    }
-    .scroll-section.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .scroll-fade-left, .scroll-fade-right {
-      opacity: 0;
-      transform: translateX(50px);
-      transition: opacity 0.8s ease, transform 0.8s ease;
-    }
-    .scroll-fade-left { transform: translateX(-50px); }
-    .scroll-fade-left.visible, .scroll-fade-right.visible {
-      opacity: 1;
-      transform: translateX(0);
-    }
-
-    .scroll-fade-up {
-      opacity: 0;
-      transform: translateY(40px);
-      transition: opacity 0.8s ease-out, transform 0.8s ease-out;
-    }
-    .scroll-fade-up.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .scroll-fade-down,
-    .scroll-fade-left,
-    .scroll-fade-right {
-      opacity: 0;
-      transition: opacity 0.8s ease-out, transform 0.8s ease-out;
-    }
-    .scroll-fade-down { transform: translateY(-40px); }
-    .scroll-fade-left { transform: translateX(-40px); }
-    .scroll-fade-right { transform: translateX(40px); }
-    .scroll-fade-down.visible,
-    .scroll-fade-left.visible,
-    .scroll-fade-right.visible {
-      opacity: 1;
-      transform: translate(0, 0);
-    }
-
-    .scroll-fade-up, .scroll-scale {
-      opacity: 0;
-      transition: opacity 0.8s ease-out, transform 0.8s ease-out;
-    }
-    .scroll-fade-up {
-      transform: translateY(40px);
-    }
-    .scroll-fade-up.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-    .scroll-scale {
-      transform: scale(0.95);
-    }
-    .scroll-scale.visible {
-      opacity: 1;
-      transform: scale(1);
-    }
-  </style>
-
-  <body class="bg-gray-50">
+  <body class="bg-stone-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-300">
     <Navbar client:only="react" />
+    
     <main>
-
-      <!-- Hero -->
-      <div class="relative my-20 h-[600px] bg-[url('../../public/images/Titulo.webp')] bg-cover bg-center bg-no-repeat flex items-center justify-center">
-        <div class="absolute inset-0 bg-black opacity-30"></div>
-        <div class="relative bg-white bg-opacity-75 rounded-lg shadow-lg w-full max-w-4xl p-10 mx-4">
-          <h1 class="text-4xl md:text-5xl font-bold text-center text-gray-800 mb-8">
-            Bienvenido usuario
-          </h1> 
-          <p class="text-center text-lg text-gray-700 leading-relaxed">
-            Te damos la bienvenida a nuestra página web, este apartado es solo para informarte sobre qué trata este proyecto. Déjanos presentarnos: nuestros nombres son <b>Chrystopher Silva</b> y <b>Miguel Escobar</b>, somos un grupo de dos personas trabajando juntos para brindarte nuestro servicio. En este caso te haré una pregunta...
+      <!-- Hero Section -->
+      <section class="relative min-h-[90vh] flex items-center justify-center pt-20 px-4">
+        <div class="absolute inset-0 bg-[url('/images/Titulo.webp')] bg-cover bg-center parallax-bg"></div>
+        <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-gray-900"></div>
+        
+        <div class="relative z-10 w-full max-w-4xl text-center scroll-reveal visible">
+          <div class="inline-block mb-6 px-4 py-1.5 rounded-full bg-black/30 backdrop-blur-md border border-white/20 text-white text-sm font-semibold tracking-wide uppercase">
+            Una experiencia gastronómica
+          </div>
+          <h1 class="text-5xl md:text-7xl font-black text-white tracking-tight mb-8">
+            Bienvenido a <span class="text-[#b08968]">ChileBite</span>
+          </h1>
+          <p class="text-lg md:text-xl text-gray-200 font-medium leading-relaxed max-w-3xl mx-auto backdrop-blur-sm bg-black/20 p-6 rounded-3xl border border-white/10">
+            Somos Chrystopher Silva y Miguel Escobar. Creamos esta plataforma para que descubras, compartas y disfrutes las mejores recetas y locales cerca de ti.
           </p>
         </div>
-      </div>
-
-      <!-- Info -->
-      <section class="scroll-section bg-scroll-section text-white p-10 rounded-lg shadow-lg mx-4 min-h-screen flex flex-col justify-center">
-        <h2 class="text-4xl md:text-5xl font-bold mb-4 text-white">
-          ¿Quieres aprender a cocinar? ¿Deseas conocer restaurantes cercanos a ti?
-        </h2>
-        <p class="text-lg max-w-6xl">
-          bueno en este caso mi compañero y yo te ofrecemos este sitio web para que puedas satisfacer todas 
-          esas necesidades y más, con esta página en el catálogo de locales podrás buscar los mejores lugares para poder comer la comida 
-          que más prefieras serca de tu zona, y también en el catálogo de resetas podrás buscar las mejores de resetas para que puedas 
-          hacer en tu casa para ti o para sorprender a tus familiares, el cual cuenta con videos tutoriales de nuestro canal en Youtube,
-        </p>
       </section>
 
-      <!-- Galería -->
-      <section class="bg-gradient-to-r from-[#f8f8f8] to-[#eaeaea] py-16 px-6 min-h-screen flex flex-col justify-center">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
-          <div class="scroll-fade-left">
-            <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-              Una galería hecha para ti
-            </h2>
-            <p class="text-gray-700 leading-relaxed text-lg">
-              Disfruta de una interfaz agradable y fácil de usar, diseñada para que encuentres lo que buscas sin complicaciones. 
-              Dentro de nuestra galería de recetas encontrarás desde platos tradicionales hasta opciones innovadoras, todas explicadas 
-              paso a paso, con videos tutoriales y filtros por país, dificultad, porciones o nombre.
+      <!-- Propuesta de Valor -->
+      <section class="py-24 px-4 bg-gray-900 relative">
+        <div class="max-w-7xl mx-auto">
+          <div class="text-center mb-16 scroll-reveal">
+            <h2 class="text-3xl md:text-5xl font-extrabold text-white mb-6">¿Qué te ofrecemos?</h2>
+            <p class="text-lg text-gray-400 max-w-2xl mx-auto">
+              Todo lo que necesitas para tu próxima aventura culinaria, en un solo lugar.
             </p>
           </div>
-          <div class="scroll-fade-right flex justify-center">
-            <img src="../../public/images/Sitio.png" alt="Interfaz Galería" 
-                class="rounded-2xl shadow-2xl max-w-md transition-transform duration-500 hover:scale-105">
+          
+          <div class="grid md:grid-cols-2 gap-8">
+            <div class="p-10 rounded-[2.5rem] bg-gray-800 border-gray-700 scroll-reveal hover:-translate-y-2 transition-transform duration-300">
+              <div class="w-16 h-16 rounded-2xl bg-[#b08968]/20 flex items-center justify-center mb-6">
+                <i class="fa-solid fa-utensils text-2xl text-[#b08968]"></i>
+              </div>
+              <h3 class="text-2xl font-bold mb-4 text-white">Aprende a Cocinar</h3>
+              <p class="text-gray-300 leading-relaxed">
+                Explora un catálogo extenso de recetas detalladas paso a paso. Desde platos tradicionales chilenos hasta innovación gastronómica, apoyado con nuestros videotutoriales exclusivos.
+              </p>
+            </div>
+            
+            <div class="p-10 rounded-[2.5rem] bg-gray-800 border-gray-700 scroll-reveal hover:-translate-y-2 transition-transform duration-300">
+              <div class="w-16 h-16 rounded-2xl bg-[#b08968]/20 flex items-center justify-center mb-6">
+                <i class="fa-solid fa-store text-2xl text-[#b08968]"></i>
+              </div>
+              <h3 class="text-2xl font-bold mb-4 text-white">Descubre Locales</h3>
+              <p class="text-gray-300 leading-relaxed">
+                Encuentra los mejores restaurantes y picadas en tu zona. Filtra por tus preferencias y sal a disfrutar de la mejor gastronomía en tu ciudad.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Feature Split -->
+      <section class="py-24 px-4 bg-gradient-to-b from-gray-900 to-gray-800 overflow-hidden">
+        <div class="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center">
+          <div class="scroll-reveal pr-0 md:pr-10">
+            <h2 class="text-4xl md:text-5xl font-extrabold text-white mb-6">
+              Una galería hecha <span class="text-[#b08968]">a tu medida</span>
+            </h2>
+            <p class="text-lg text-gray-300 leading-relaxed mb-8">
+              Disfruta de una interfaz agradable y fácil de usar, diseñada para que encuentres lo que buscas sin complicaciones. Filtra por país, dificultad, cantidad de porciones y más. Guarda tus favoritas en un solo clic.
+            </p>
+            <a href="/Recetas" class="inline-flex items-center space-x-2 px-8 py-4 rounded-xl bg-[#b08968] text-white font-bold hover:bg-[#9a7657] transition-colors shadow-lg shadow-[#b08968]/30">
+              <span>Explorar Recetas</span>
+              <i class="fa-solid fa-arrow-right"></i>
+            </a>
+          </div>
+          <div class="scroll-reveal relative">
+            <div class="absolute inset-0 bg-gradient-to-tr from-[#b08968]/30 to-transparent rounded-3xl blur-3xl"></div>
+            <img src="/images/Sitio.png" alt="Interfaz Galería" class="relative rounded-3xl shadow-2xl border border-gray-700 mx-auto w-full max-w-lg object-cover" />
           </div>
         </div>
       </section>
 
       <!-- Comunidad -->
-      <section class="scroll-comunidad text-center bg-white py-16 min-h-screen flex flex-col justify-center">
-        <h2 class="scroll-fade-up text-2xl md:text-3xl font-semibold text-gray-800 mb-4">
-          Forma parte de la comunidad
-        </h2>
-        <p class="scroll-fade-up text-gray-700 mb-6 leading-relaxed max-w-2xl mx-auto">
-          Únete a otros usuarios, comparte opiniones y recetas favoritas, descubre nuevas ideas culinarias. 
-          Guarda tus recetas favoritas y da “me gusta” a las que más te gusten para que se posicionen en el top.
-        </p>
-        <img src="/images/Carta.png" alt="Carta de recetas" 
-            class="scroll-fade-up rounded-lg shadow-lg mx-auto max-w-md">
+      <section class="py-24 px-4 bg-gray-900">
+        <div class="max-w-4xl mx-auto text-center scroll-reveal">
+          <div class="inline-block mb-6 px-4 py-1.5 rounded-full bg-gray-800 text-[#b08968] font-bold tracking-wide uppercase text-sm">
+            Comunidad ChileBite
+          </div>
+          <h2 class="text-4xl md:text-5xl font-extrabold text-white mb-8">
+            Conecta, Guarda y Comparte
+          </h2>
+          <p class="text-lg text-gray-300 leading-relaxed mb-12">
+            Únete a otros entusiastas de la comida. Participa creando tu perfil, guarda tus recetas predilectas, y da 'me gusta' para ayudar a posicionar los mejores platos en la comunidad.
+          </p>
+          <img src="/images/Carta.png" alt="Carta de recetas" class="rounded-3xl shadow-2xl mx-auto w-full max-w-xl object-contain border border-gray-800" />
+        </div>
       </section>
 
-      <!-- Restaurantes -->
-      <section class="scroll-restaurantes bg-white py-16 text-center min-h-screen flex flex-col justify-center">
-        <h2 class="scroll-fade-down text-2xl md:text-3xl font-semibold text-gray-800 mb-6">
-          ¿Deseas trabajar con nosotros?
-        </h2>
-        <p class="scroll-fade-left text-gray-700 mb-4 leading-relaxed max-w-2xl mx-auto">
-          Si eres un pequeño negocio o restaurante y deseas colaborar, crea tu cuenta de <b>Restaurante</b> 
-          y gestiona tu perfil, ofreciendo tus servicios a nuestra comunidad y llegando a más usuarios.
-        </p>
-        <p class="scroll-fade-right text-gray-700 leading-relaxed max-w-2xl mx-auto">
-          Podrás mostrar tus platillos y servicios a una audiencia más amplia, 
-          sin necesidad de crear tu propia página web.
-        </p>
+      <!-- Negocios CTA -->
+      <section class="py-24 px-4 bg-black text-white relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/food.png')]"></div>
+        <div class="absolute -top-[20rem] -right-[20rem] w-[40rem] h-[40rem] bg-[#b08968] rounded-full blur-[10rem] opacity-30"></div>
+        
+        <div class="max-w-4xl mx-auto text-center relative z-10 scroll-reveal">
+          <h2 class="text-4xl md:text-5xl font-extrabold mb-6">¿Deseas llegar a más clientes?</h2>
+          <p class="text-xl text-gray-300 mb-10 leading-relaxed">
+            Si eres dueño de un restaurante, pequeña picada o emprendimiento gastronómico, únete a nuestra red. Crea un perfil de <span class="text-[#b08968] font-bold">Restaurante</span> y gestiona tu visibilidad sin costo.
+          </p>
+          <a href="/Register" class="inline-block px-10 py-5 rounded-2xl bg-white text-gray-900 font-extrabold text-lg hover:scale-105 transition-transform shadow-[0_0_40px_rgba(255,255,255,0.3)]">
+            Registra tu Local Hoy
+          </a>
+        </div>
       </section>
 
-      <!-- Cierre -->
-      <section class="scroll-cierre bg-gray-50 py-20 text-center min-h-screen flex flex-col justify-center">
-        <h3 class="scroll-fade-up text-xl md:text-2xl font-semibold text-gray-800 mb-4">
-          ¡Gracias por visitarnos!
-        </h3>
-        <p class="scroll-scale text-gray-700 mb-8 leading-relaxed max-w-2xl mx-auto">
-          Esperamos que disfrutes tu experiencia y encuentres todo lo que necesitas para satisfacer 
-          tus antojos culinarios. Si tienes preguntas o sugerencias, contáctanos. 
-          ¡Estamos aquí para ayudarte!
-        </p>
-        <h3 class="scroll-fade-up text-xl md:text-2xl font-semibold text-gray-800">
-          Suerte, querido usuario
-        </h3>
-      </section>
-      <Footer/>
     </main>
+
+    <Footer client:visible />
   </body>
 </html>

@@ -1,11 +1,15 @@
 import { useState } from "react";
-import { Mail, Lock, User, Eye, EyeOff } from "lucide-react";
-import Loader from "../Botones/Loader";
+import { Mail, Lock, User, Eye, EyeOff, Loader2 } from "lucide-react";
+import { supabase } from "../../lib/supabaseClient";
+import { useAuth, AuthProvider } from "../../context/AuthContext";
+import { Toast, toast, Alert } from "@heroui/react";
 
-export default function Register({ abrirLogin, setUserNavbar }) {
+function LoginContent() {
+  const { loginWithGoogle } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isLogin, setIsLogin] = useState(false); 
+  const [isForgotPw, setIsForgotPw] = useState(false); 
   const [formData, setFormData] = useState({
     nombres: "",
     apellido_paterno: "",
@@ -13,6 +17,7 @@ export default function Register({ abrirLogin, setUserNavbar }) {
     email: "",
     password: "",
     confirmPassword: "",
+    username: "",
   });
   const [errors, setErrors] = useState({});
 
@@ -23,16 +28,20 @@ export default function Register({ abrirLogin, setUserNavbar }) {
 
   const validate = () => {
     const newErrors = {};
-    if (!formData.nombres) newErrors.nombres = "Ingresa tus nombres";
-    if (!formData.apellido_paterno) newErrors.apellido_paterno = "Ingresa apellido paterno";
-    if (!formData.apellido_materno) newErrors.apellido_materno = "Ingresa apellido materno";
     if (!formData.email) newErrors.email = "Ingresa tu correo";
     else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "Correo inválido";
+
+    if (isForgotPw) return newErrors;
+
+    if (!isLogin) {
+      if (!formData.nombres) newErrors.nombres = "Ingresa tus nombres";
+      if (!formData.apellido_paterno) newErrors.apellido_paterno = "Ingresa apellido paterno";
+      if (!formData.username) newErrors.username = "Ingresa un nombre de usuario";
+      if (formData.password !== formData.confirmPassword)
+        newErrors.confirmPassword = "Las contraseñas no coinciden";
+    }
     if (!formData.password) newErrors.password = "Ingresa tu contraseña";
-    // En el futuro afregar más validaciones de seguridad
-    // if (formData.password.length < 8) newErrors.password = "Debe tener al menos 8 caracteres";
-    if (formData.password !== formData.confirmPassword)
-      newErrors.confirmPassword = "Las contraseñas no coinciden";
+    
     return newErrors;
   };
 
@@ -45,237 +54,198 @@ export default function Register({ abrirLogin, setUserNavbar }) {
     }
 
     setLoading(true);
-
-    const userData = {
-      username: formData.email.split("@")[0],
-      nombres: formData.nombres,
-      apellido_paterno: formData.apellido_paterno,
-      apellido_materno: formData.apellido_materno,
-      email: formData.email,
-      password: formData.password,
-      confirmPassword: formData.confirmPassword,
-    };
-
     try {
-      // Crear usuario
-      const res = await fetch("http://127.0.0.1:8000/api/register/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(userData),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        alert("Error al registrar usuario: " + JSON.stringify(data));
+      if (isForgotPw) {
+        const { error } = await supabase.auth.resetPasswordForEmail(formData.email, {
+          redirectTo: `${window.location.origin}/RecuperarPassword`,
+        });
+        if (error) throw error;
+        toast.success("Te enviamos instrucciones a tu correo para restablecer tu contraseña.");
+        setFormData({ ...formData, email: "" });
+        setIsForgotPw(false);
+        setLoading(false);
         return;
       }
 
-      // Loguear automáticamente al usuario recién creado
-      const loginRes = await fetch("http://127.0.0.1:8000/api/login/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: formData.email, password: formData.password }),
-      });
+      if (isLogin) {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: formData.email,
+          password: formData.password,
+        });
+        if (error) throw error;
+        toast.success("¡Sesión iniciada! Bienvenido de vuelta.");
+        setTimeout(() => { window.location.href = "/"; }, 1000);
+      } else {
+        const { data, error } = await supabase.auth.signUp({
+          email: formData.email,
+          password: formData.password,
+          options: {
+            data: {
+              full_name: `${formData.nombres} ${formData.apellido_paterno}`,
+              user_name: formData.username,
+              nombres: formData.nombres,
+              apellido_paterno: formData.apellido_paterno,
+              apellido_materno: formData.apellido_materno,
+              avatar_url: `https://ui-avatars.com/api/?name=${formData.nombres}+${formData.apellido_paterno}&background=b08968&color=fff`,
+            }
+          }
+        });
 
-      const loginData = await loginRes.json();
+        if (error) throw error;
 
-      if (!loginRes.ok) {
-        alert("Usuario creado, pero fallo el login automático: " + JSON.stringify(loginData));
-        return;
+        if (data.session) {
+          toast.success("¡Cuenta creada exitosamente! Bienvenido a ChileBite.");
+          setTimeout(() => { window.location.href = "/"; }, 1200);
+        } else {
+          toast.success("¡Registro exitoso! Verifica tu correo para continuar.");
+          setIsLogin(true);
+        }
       }
-
-      // Guardar tokens y usuario en localStorage
-      localStorage.setItem("access_token", loginData.tokens.access);
-      localStorage.setItem("refresh_token", loginData.tokens.refresh);
-      localStorage.setItem("user", JSON.stringify(loginData.user));
-
-      // Actualizar estado del navbar
-      if (setUserNavbar) setUserNavbar(loginData.user);
-
-      // Redirigir al home
-      window.location.href = "/";
-
     } catch (err) {
-      console.error(err);
-      alert("Error de conexión con el servidor");
+      setErrors({ global: err.message || "Error en la autenticación" });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-stone-100 flex flex-col">
-      <div className="flex-1 flex items-center justify-center px-4 py-12">
-        <div className="w-full max-w-lg bg-white rounded-3xl shadow-2xl p-8">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold mb-2" style={{ color: "#b08968" }}>Crear Cuenta</h1>
-            <p className="text-gray-600">Únete a nuestra comunidad gastronómica</p>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Nombres */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Nombres</label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="text"
-                  name="nombres"
-                  value={formData.nombres}
-                  onChange={handleChange}
-                  placeholder="Tus nombres"
-                  className="w-full pl-10 pr-4 py-3 border-2 rounded-xl outline-none transition-colors duration-300"
-                  style={{ borderColor: errors.nombres ? "red" : "#e5e7eb" }}
-                />
-                {errors.nombres && <p className="text-red-500 text-sm mt-1">{errors.nombres}</p>}
-              </div>
-            </div>
-
-            {/* Apellidos */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Apellido Paterno</label>
-                <input
-                  type="text"
-                  name="apellido_paterno"
-                  value={formData.apellido_paterno}
-                  onChange={handleChange}
-                  placeholder="Apellido Paterno"
-                  className="w-full pl-3 pr-3 py-3 border-2 rounded-xl outline-none transition-colors duration-300"
-                  style={{ borderColor: errors.apellido_paterno ? "red" : "#e5e7eb" }}
-                />
-                {errors.apellido_paterno && <p className="text-red-500 text-sm mt-1">{errors.apellido_paterno}</p>}
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Apellido Materno</label>
-                <input
-                  type="text"
-                  name="apellido_materno"
-                  value={formData.apellido_materno}
-                  onChange={handleChange}
-                  placeholder="Apellido Materno"
-                  className="w-full pl-3 pr-3 py-3 border-2 rounded-xl outline-none transition-colors duration-300"
-                  style={{ borderColor: errors.apellido_materno ? "red" : "#e5e7eb" }}
-                />
-                {errors.apellido_materno && <p className="text-red-500 text-sm mt-1">{errors.apellido_materno}</p>}
-              </div>
-            </div>
-
-            {/* Email */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Correo Electrónico</label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="tu@email.com"
-                  className="w-full pl-10 pr-4 py-3 border-2 rounded-xl outline-none transition-colors duration-300"
-                  style={{ borderColor: errors.email ? "red" : "#e5e7eb" }}
-                />
-                {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
-              </div>
-            </div>
-
-{/* Contraseña y Confirmar */}
-<div className="grid grid-cols-2 gap-6">
-  {/* Contraseña */}
-  <div className="flex flex-col">
-    <label className="block text-sm font-medium text-gray-700 mb-2">Contraseña</label>
-    <div className="relative">
-      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-      <input
-        type={showPassword ? "text" : "password"}
-        name="password"
-        value={formData.password}
-        onChange={handleChange}
-        placeholder="••••••••"
-        className="w-full pl-10 pr-12 py-3 border-2 rounded-xl outline-none transition-colors duration-300"
-        style={{ borderColor: errors.password ? "red" : "#e5e7eb" }}
-      />
-      <button
-        type="button"
-        onClick={() => setShowPassword(!showPassword)}
-        className="absolute right-3 top-1/2 -translate-y-1/2"
-      >
-        {showPassword ? <EyeOff className="w-5 h-5 text-gray-400" /> : <Eye className="w-5 h-5 text-gray-400" />}
-      </button>
-    </div>
-    {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
-    <p className="text-xs text-gray-500 mt-1">
-      La contraseña debe tener al menos 8 caracteres, incluir mayúsculas y números.
-    </p>
-  </div>
-
-  {/* Confirmar Contraseña */}
-  <div className="flex flex-col">
-    <label className="block text-sm font-medium text-gray-700 mb-2">Confirmar Contraseña</label>
-    <div className="relative">
-      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-      <input
-        type={showConfirmPassword ? "text" : "password"}
-        name="confirmPassword"
-        value={formData.confirmPassword}
-        onChange={handleChange}
-        placeholder="••••••••"
-        className="w-full pl-10 pr-12 py-3 border-2 rounded-xl outline-none transition-colors duration-300"
-        style={{ borderColor: errors.confirmPassword ? "red" : "#e5e7eb" }}
-      />
-      <button
-        type="button"
-        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-        className="absolute right-3 top-1/2 -translate-y-1/2"
-      >
-        {showConfirmPassword ? <EyeOff className="w-5 h-5 text-gray-400" /> : <Eye className="w-5 h-5 text-gray-400" />}
-      </button>
-    </div>
-    {errors.confirmPassword && <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>}
-  </div>
-</div>
-
-
-            {/* Botón Crear Cuenta o Loader */}
-            <div>
-              {loading ? <Loader client:only="react" /> : (
-                <button
-                  type="submit"
-                  className="w-full py-3 rounded-xl text-white font-semibold transition-all duration-300 hover:shadow-xl hover:scale-105"
-                  style={{ backgroundColor: "#b08968" }}
-                >
-                  Crear Cuenta
-                </button>
-              )}
-            </div>
-
-            {/* Error global */}
-            {errors.global && <p className="text-red-500 text-center mt-2">{errors.global}</p>}
-          </form>
-
-          {/* Link a login */}
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
-              ¿Ya tienes cuenta?{" "}
-              <span
-                onClick={() => {
-                  if (window.abrirLoginNavbar) {
-                    window.abrirLoginNavbar();
-                  } else {
-                    console.warn("No se encontró la función abrirLoginNavbar");
-                  }
-                }}
-                className="font-semibold hover:underline cursor-pointer"
-                style={{ color: "#b08968" }}
-              >
-                Inicia sesión aquí
-              </span>
-            </p>
-          </div>
-
-        </div>
+    <div className="w-full max-w-xl mx-auto bg-surface/80 rounded-[2.5rem] shadow-2xl shadow-stone-200/50 dark:shadow-none p-10 md:p-12 border border-border backdrop-blur-xl transition-all duration-300">
+      <Toast.Provider placement="bottom end" />
+      <div className="text-center mb-10">
+        <h1 className="text-4xl font-extrabold mb-3 tracking-tight text-foreground">
+          {isForgotPw ? "Recuperar Contraseña" : isLogin ? "¡Hola de nuevo!" : "Crea tu Cuenta"}
+        </h1>
+        <p className="text-default-500 font-medium tracking-wide">
+          {isForgotPw 
+            ? "Ingresa tu correo y te enviaremos un enlace mágico" 
+            : isLogin ? "Inicia sesión para descubrir nuevos sabores" : "Únete a la comunidad gastronómica de Chile"}
+        </p>
       </div>
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {!isLogin && !isForgotPw && (
+          <div className="animate-in fade-in slide-in-from-top-4 duration-500 space-y-6">
+             <div>
+                <label className="text-xs font-bold text-default-600 uppercase tracking-widest ml-1">Username</label>
+                <div className="relative mt-1">
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#b08968]" />
+                  <input type="text" name="username" value={formData.username} onChange={handleChange} placeholder="nombre_usuario"
+                    className="w-full pl-12 pr-4 py-4 rounded-2xl bg-field hover:bg-field-hover border-2 border-transparent focus:border-[#b08968] focus:bg-default text-foreground outline-none transition-all font-medium placeholder-default-500" />
+                </div>
+                {errors.username && <p className="text-danger-500 text-xs mt-1 ml-1 font-bold">{errors.username}</p>}
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+               <div>
+                  <label className="text-xs font-bold text-default-600 uppercase tracking-widest ml-1">Nombres</label>
+                  <input type="text" name="nombres" value={formData.nombres} onChange={handleChange} placeholder="Juan"
+                    className="w-full px-5 py-4 mt-1 rounded-2xl bg-field hover:bg-field-hover border-2 border-transparent focus:border-[#b08968] focus:bg-default text-foreground outline-none transition-all font-medium placeholder-default-500" />
+                  {errors.nombres && <p className="text-danger-500 text-xs mt-1 font-bold">{errors.nombres}</p>}
+               </div>
+               <div>
+                  <label className="text-xs font-bold text-default-600 uppercase tracking-widest ml-1">Apellido</label>
+                  <input type="text" name="apellido_paterno" value={formData.apellido_paterno} onChange={handleChange} placeholder="Pérez"
+                    className="w-full px-5 py-4 mt-1 rounded-2xl bg-field hover:bg-field-hover border-2 border-transparent focus:border-[#b08968] focus:bg-default text-foreground outline-none transition-all font-medium placeholder-default-500" />
+                  {errors.apellido_paterno && <p className="text-danger-500 text-xs mt-1 font-bold">{errors.apellido_paterno}</p>}
+               </div>
+            </div>
+          </div>
+        )}
+
+        <div>
+          <label className="text-xs font-bold text-default-600 uppercase tracking-widest ml-1">Correo Electrónico</label>
+          <div className="relative mt-1">
+            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#b08968]" />
+            <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="ejemplo@correo.com"
+              className="w-full pl-12 pr-4 py-4 rounded-2xl bg-field hover:bg-field-hover border-2 border-transparent focus:border-[#b08968] focus:bg-default text-foreground outline-none transition-all font-medium placeholder-default-500" />
+          </div>
+          {errors.email && <p className="text-danger-500 text-xs mt-1 ml-1 font-bold">{errors.email}</p>}
+        </div>
+
+        {!isForgotPw && (
+          <div className={`grid grid-cols-1 ${!isLogin ? 'md:grid-cols-2' : ''} gap-6`}>
+            <div>
+              <label className="text-xs font-bold text-default-600 uppercase tracking-widest ml-1">Contraseña</label>
+            <div className="relative mt-1">
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#b08968]" />
+              <input type={showPassword ? "text" : "password"} name="password" value={formData.password} onChange={handleChange} placeholder="••••••••"
+                className="w-full pl-12 pr-12 py-4 rounded-2xl bg-field hover:bg-field-hover border-2 border-transparent focus:border-[#b08968] focus:bg-default text-foreground outline-none transition-all font-medium placeholder-default-500" />
+              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-default-500 hover:text-[#b08968] transition-colors">
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
+            {isLogin && (
+              <div className="flex justify-end mt-2 px-1">
+                <button type="button" onClick={() => setIsForgotPw(true)} className="text-xs font-bold text-[#b08968] hover:underline">
+                  ¿Olvidaste tu contraseña?
+                </button>
+              </div>
+            )}
+            {errors.password && <p className="text-danger-500 text-xs mt-1 ml-1 font-bold">{errors.password}</p>}
+          </div>
+
+          {!isLogin && (
+            <div>
+              <label className="text-xs font-bold text-default-600 uppercase tracking-widest ml-1">Confirmar</label>
+              <div className="relative mt-1">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#b08968]" />
+                <input type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} placeholder="••••••••"
+                  className="w-full pl-12 pr-4 py-4 rounded-2xl bg-field hover:bg-field-hover border-2 border-transparent focus:border-[#b08968] focus:bg-default text-foreground outline-none transition-all font-medium placeholder-default-500" />
+              </div>
+              {errors.confirmPassword && <p className="text-danger-500 text-xs mt-1 ml-1 font-bold">{errors.confirmPassword}</p>}
+            </div>
+          )}
+        </div>
+        )}
+
+        <button type="submit" disabled={loading}
+          className="w-full py-4 rounded-2xl text-white font-extrabold text-lg transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 shadow-xl shadow-[#b08968]/30 dark:shadow-[#b08968]/20 mt-4 flex items-center justify-center gap-2"
+          style={{ backgroundColor: "#b08968" }}>
+          {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : (isForgotPw ? "Enviar enlace mágico" : isLogin ? "Entrar ahora" : "Completar Registro")}
+        </button>
+
+      {errors.global && (
+        <Alert status="danger" className="mt-4">
+          <Alert.Indicator />
+          <Alert.Content>
+            <Alert.Description>{errors.global}</Alert.Description>
+          </Alert.Content>
+        </Alert>
+      )}
+      </form>
+
+      <div className="mt-8 text-center border-t border-divider pt-8">
+        <p className="text-sm font-medium text-default-500">
+          {isForgotPw ? (
+            <button type="button" onClick={() => setIsForgotPw(false)} className="text-[#b08968] font-extrabold hover:underline">
+               Volver al inicio de sesión
+            </button>
+          ) : (
+            <>
+              {isLogin ? "¿Eres nuevo por aquí? " : "¿Ya tienes una cuenta? "}
+              <button type="button" onClick={() => { setIsLogin(!isLogin); }} className="text-[#b08968] font-extrabold hover:underline ml-1">
+                {isLogin ? "Crea una cuenta gratis" : "Inicia sesión"}
+              </button>
+            </>
+          )}
+        </p>
+      </div>
+      
+      {!isForgotPw && (
+        <div className="mt-6">
+            <button type="button" onClick={() => loginWithGoogle()} className="w-full flex items-center justify-center gap-3 py-4 border-2 border-border rounded-2xl font-bold text-foreground-700 hover:bg-default-hover transition-all">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-5 h-5 bg-white rounded-full p-0.5" alt="Google" />
+                Continuar con Google
+            </button>
+        </div>
+      )}
     </div>
+  );
+}
+
+export default function LoginRegister() {
+  return (
+    <AuthProvider>
+      <LoginContent />
+    </AuthProvider>
   );
 }

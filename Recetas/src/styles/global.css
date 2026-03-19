@@ -1,13 +1,31 @@
 @import "tailwindcss";
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@custom-variant dark (&:where(.dark, .dark *));
+@import "@heroui/styles";
+
+@layer theme, base, components, utilities;
 
 @layer base {
+  /* Light mode defaults */
   :root {
     color-scheme: light;
+    background-color: #fafaf9;
+    color: #1c1917;
+  }
+
+  /* Dark mode: only when .dark class is present on <html> */
+  html.dark {
+    color-scheme: dark;
+    background-color: #111827;
+    color: #f1f5f9;
+  }
+
+  /* Ensure body follows html theme */
+  body {
+    background-color: inherit;
+    color: inherit;
   }
 }
+
 
 /* Estilos personalizados del contenedor */
 .detalle-receta-contenedor {

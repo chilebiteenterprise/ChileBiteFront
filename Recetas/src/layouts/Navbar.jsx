@@ -1,121 +1,117 @@
 import { useState, useEffect, useRef } from "react";
-import { ChefHat, BookOpen, MapPin, User, Menu, X, Mail, Lock } from "lucide-react";
+import { ChefHat, BookOpen, MapPin, User, Menu, X, Mail, Lock, Moon, Sun } from "lucide-react";
+import { supabase } from "../lib/supabaseClient";
+import { AuthProvider, useAuth } from "../context/AuthContext";
+import { Toast, toast, Alert } from "@heroui/react";
 
-/**
- * Navbar principal
- * Funcionalidades:
- * - Login/logout (desktop y mobile)
- * - Persistencia de sesión con localStorage
- * - Mensajes de error de login visibles
- * - Mostrar avatar y email del usuario
- * - Responsive: mobile menu
- * 
- * Pendientes para producción:
- * - HttpOnly cookies en lugar de localStorage
- * - Toasts más profesionales
- * - Optimización de re-render con React Router
- */
-
-
-export default function Navbar() {
-  // ===== Estados =====
+function NavbarContent() {
+  const { user, profile, logout, loginWithGoogle } = useAuth();
+  
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [user, setUser] = useState(null); 
   const [loginError, setLoginError] = useState(null); 
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isForgotPwOpen, setIsForgotPwOpen] = useState(false);
+  const [isSendingReset, setIsSendingReset] = useState(false);
   const loginRef = useRef(null);
 
+  const isHomePage = typeof window !== 'undefined' && window.location.pathname === '/';
+  const isLoggedIn = !!user;
 
-  
-  // ===== Logout =====
-  const handleLogout = () => {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
-    localStorage.removeItem("user");
-    setUser(null);
-    setIsLoggedIn(false);
-    setIsLoginOpen(false);
+  // Darkmode init
+  useEffect(() => {
+    const isDark = document.documentElement.classList.contains("dark");
+    setIsDarkMode(isDark);
+
+    const observer = new MutationObserver(() => {
+      setIsDarkMode(document.documentElement.classList.contains("dark"));
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"]
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  const toggleDarkMode = () => {
+    const newMode = !document.documentElement.classList.contains("dark");
+    if (newMode) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
   };
 
-  // ===== Persistir login al recargar =====
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    const token = localStorage.getItem("access_token");
-    if (storedUser && token) {
-      setUser(JSON.parse(storedUser));
-      setIsLoggedIn(true);
-    }
-  }, []);
-
-  // ===== Exponer función para abrir login desde otro componente =====
   useEffect(() => {
     window.abrirLoginNavbar = () => setIsLoginOpen(true);
-  }, []);
-
-
-  // ===== Scroll y click fuera =====
-  useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
-
     const handleClickOutside = (event) => {
+      // Don't close if clicking inside the ref
       if (loginRef.current && !loginRef.current.contains(event.target)) {
         setIsLoginOpen(false);
         setLoginError(null);
+        setIsForgotPwOpen(false);
       }
     };
 
     window.addEventListener("scroll", handleScroll);
     document.addEventListener("mousedown", handleClickOutside);
-
     return () => {
       window.removeEventListener("scroll", handleScroll);
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
-  // ===== Links de navegación =====
   const navLinks = [
     { id: "recetas", label: "Recetas", href: "/Recetas", icon: BookOpen },
     { id: "locales", label: "Locales", href: "/Locales", icon: MapPin },
   ];
 
-  // ===== Login =====
   const handleLogin = async (e) => {
     e.preventDefault();
+    setLoginError(null);
     const form = e.target;
-    const email = form.email.value;
-    const password = form.password.value;
-
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/login/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+      const { error } = await supabase.auth.signInWithPassword({
+        email: form.email.value,
+        password: form.password.value,
       });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setLoginError(data.error || "Error inesperado. Revisa tus datos.");
-        return;
-      }
-
-      // ===== Guardar tokens y datos del usuario =====
-      // Para producción: usar HttpOnly cookies en lugar de localStorage
-      localStorage.setItem("access_token", data.tokens.access);
-      localStorage.setItem("refresh_token", data.tokens.refresh);
-      localStorage.setItem("user", JSON.stringify(data.user));
-
-      setUser(data.user);
-      setIsLoggedIn(true);
+      if (error) throw error;
       setIsLoginOpen(false);
-      setLoginError(null);
+      toast.success("¡Bienvenido de nuevo! Sesión iniciada.");
     } catch (error) {
-      console.error("Error de conexión:", error);
-      setLoginError("Error de conexión. Intenta nuevamente.");
+      setLoginError(error.message || "Credenciales incorrectas");
     }
+  };
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    setLoginError(null);
+    setIsSendingReset(true);
+    const form = e.target;
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(form.email.value, {
+        redirectTo: `${window.location.origin}/RecuperarPassword`,
+      });
+      if (error) throw error;
+      toast.success("Te enviamos instrucciones a tu correo.");
+      setIsForgotPwOpen(false);
+      setIsLoginOpen(false);
+    } catch (error) {
+      setLoginError(error.message || "Error al enviar el correo");
+    } finally {
+      setIsSendingReset(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    toast.success("Has cerrado sesión correctamente.");
   };
 
   const handleUserClick = () => {
@@ -123,8 +119,11 @@ export default function Navbar() {
     setLoginError(null);
   };
 
+  const currentAvatar = profile?.avatar_url || user?.user_metadata?.avatar_url || "/default-avatar.png";
+
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${isScrolled ? "bg-white/95 backdrop-blur-md shadow-lg" : "bg-transparent"}`}>
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${isScrolled ? "bg-background/95 backdrop-blur-md shadow-lg" : "bg-transparent"}`}>
+      <Toast.Provider placement="bottom end" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
 
@@ -134,7 +133,7 @@ export default function Navbar() {
               <div className="absolute inset-0 rounded-full opacity-20 group-hover:opacity-30 transition-opacity duration-300" style={{ backgroundColor: "#b08968" }} />
               <ChefHat className="w-8 h-8 relative z-10 transition-transform duration-300 group-hover:rotate-12" style={{ color: "#b08968" }} />
             </div>
-            <span className="text-2xl font-bold tracking-tight transition-all duration-300 group-hover:tracking-wide" style={{ color: "#b08968" }}>
+            <span className="text-2xl font-bold tracking-tight transition-all duration-300 group-hover:tracking-wide dark:text-white" style={{ color: "#b08968" }}>
               Chilebite
             </span>
           </a>
@@ -144,11 +143,12 @@ export default function Navbar() {
             {navLinks.map((link) => {
               const Icon = link.icon;
               const isActive = window.location.pathname === link.href;
+              const linkColor = isActive ? "#b08968" : (isScrolled ? "#6b7280" : (isDarkMode || isHomePage ? "#e5e7eb" : "#4b5563"));
               return (
                 <a key={link.id} href={link.href} className="relative px-4 py-2 rounded-lg transition-all duration-300 group">
                   <div className="flex items-center space-x-2">
-                    <Icon className={`w-5 h-5 transition-all duration-300 ${isActive ? "scale-110" : "group-hover:scale-110"}`} style={{ color: isActive ? "#b08968" : "#6b7280" }} />
-                    <span className={`font-medium transition-colors duration-300 ${isActive ? "font-semibold" : ""}`} style={{ color: isActive ? "#b08968" : "#6b7280" }}>{link.label}</span>
+                    <Icon className={`w-5 h-5 transition-all duration-300 ${isActive ? "scale-110" : "group-hover:scale-110"}`} style={{ color: linkColor }} />
+                    <span className={`font-medium transition-colors duration-300 ${isActive ? "font-semibold" : ""}`} style={{ color: linkColor }}>{link.label}</span>
                   </div>
                 </a>
               );
@@ -157,57 +157,120 @@ export default function Navbar() {
 
           {/* User actions desktop */}
           <div className="hidden md:flex items-center relative" ref={loginRef}>
-            <button onClick={handleUserClick} className="p-2 rounded-full transition-all duration-300 hover:scale-110" style={{ backgroundColor: "#b08968" }}>
-              <User className="w-5 h-5 text-white" />
+            <button onClick={handleUserClick} className={`p-1.5 rounded-full transition-all duration-300 hover:scale-110 flex items-center justify-center overflow-hidden border-2 ${isLoggedIn ? "border-[#b08968]" : "bg-[#b08968] border-transparent"}`}>
+               {isLoggedIn ? (
+                  <img src={currentAvatar} alt="Avatar" className="w-7 h-7 object-cover rounded-full" />
+               ) : (
+                  <User className="w-6 h-6 text-white m-0.5" />
+               )}
             </button>
 
             {isLoginOpen && (
-              <div className="absolute top-14 right-0 w-80 bg-white rounded-2xl shadow-2xl p-6 z-50">
+              <div className="absolute top-14 right-0 w-80 bg-overlay rounded-3xl shadow-2xl p-6 z-50 border border-border animate-in fade-in slide-in-from-top-4 duration-200">
+                {/* Opciones Generales (Dark Mode) */}
+                <div className="flex justify-between items-center mb-4 pb-4 border-b border-divider">
+                  <span className="text-sm font-bold text-default-500 uppercase tracking-wider">Apariencia</span>
+                  <button onClick={toggleDarkMode} className="flex items-center justify-center p-2 rounded-full bg-default hover:bg-default-hover transition-colors text-default-600">
+                    {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                  </button>
+                </div>
+
                 {!isLoggedIn ? (
-                  <>
-                    <h3 className="text-xl font-bold mb-4" style={{ color: "#b08968" }}>Iniciar Sesión</h3>
-                    
-                    <form onSubmit={handleLogin} className="space-y-4">
-                      {/* Email */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                        <div className="relative">
-                          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: "#9ca3af" }} />
-                          <input type="email" name="email" required className="w-full pl-10 pr-4 py-2 border-2 rounded-lg outline-none" placeholder="tu@email.com" />
+                  isForgotPwOpen ? (
+                    <>
+                      <h3 className="text-xl font-black mb-2 dark:text-white" style={{ color: "#b08968" }}>Recuperar Acceso</h3>
+                      <p className="text-xs text-default-500 mb-4">Ingresa tu correo y te enviaremos un enlace mágico.</p>
+                      
+                      <form onSubmit={handleResetPassword} className="space-y-4">
+                        <div>
+                          <label className="block text-xs font-bold text-default-600 mb-1 ml-1 uppercase tracking-wide">Email</label>
+                          <div className="relative">
+                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: "#b08968" }} />
+                            <input type="email" name="email" required className="w-full pl-10 pr-4 py-3 border-2 border-border rounded-xl outline-none bg-field text-foreground placeholder-default-500 focus:border-[#b08968] focus:bg-default transition-colors font-medium" placeholder="tu@email.com" />
+                          </div>
                         </div>
-                      </div>
+                        
+                        {loginError && (
+                          <Alert status="danger" className="py-2">
+                            <Alert.Indicator />
+                            <Alert.Content><Alert.Description>{loginError}</Alert.Description></Alert.Content>
+                          </Alert>
+                        )}
 
-                      {/* Password */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
-                        <div className="relative">
-                          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: "#9ca3af" }} />
-                          <input type="password" name="password" required className="w-full pl-10 pr-4 py-2 border-2 rounded-lg outline-none" placeholder="••••••••" />
+                        <button type="submit" disabled={isSendingReset} className="w-full py-3 mt-2 rounded-xl text-white font-extrabold hover:opacity-90 hover:scale-[1.02] transition-all shadow-lg disabled:opacity-50" style={{ backgroundColor: "#b08968", shadowColor: "rgba(176, 137, 104, 0.4)" }}>
+                          {isSendingReset ? "Enviando..." : "Enviar enlace mágico"}
+                        </button>
+                      </form>
+                      
+                      <div className="mt-5 pt-5 border-t border-divider">
+                        <button type="button" onClick={() => setIsForgotPwOpen(false)} className="w-full text-center text-sm font-extrabold hover:underline" style={{ color: "#b08968" }}>
+                          Volver al inicio de sesión
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <h3 className="text-xl font-black mb-4 dark:text-white" style={{ color: "#b08968" }}>Iniciar Sesión</h3>
+                      
+                      <form onSubmit={handleLogin} className="space-y-4">
+                        {/* Email */}
+                        <div>
+                          <label className="block text-xs font-bold text-default-600 mb-1 ml-1 uppercase tracking-wide">Email</label>
+                          <div className="relative">
+                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: "#b08968" }} />
+                            <input type="email" name="email" required className="w-full pl-10 pr-4 py-3 border-2 border-border rounded-xl outline-none bg-field text-foreground placeholder-default-500 focus:border-[#b08968] focus:bg-default transition-colors font-medium" placeholder="tu@email.com" />
+                          </div>
                         </div>
-                      </div>
 
-                      {/* Login error */}
-                      {loginError && <p className="text-red-500 text-sm">{loginError}</p>}
+                        {/* Password */}
+                        <div>
+                          <div className="flex justify-between items-end mb-1 ml-1">
+                            <label className="block text-xs font-bold text-default-600 uppercase tracking-wide">Contraseña</label>
+                            <button type="button" onClick={() => setIsForgotPwOpen(true)} className="text-[10px] font-bold text-[#b08968] hover:underline focus:outline-none">¿Olvidaste tu contraseña?</button>
+                          </div>
+                          <div className="relative">
+                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: "#b08968" }} />
+                            <input type="password" name="password" required className="w-full pl-10 pr-4 py-3 border-2 border-border rounded-xl outline-none bg-field text-foreground placeholder-default-500 focus:border-[#b08968] focus:bg-default transition-colors font-medium" placeholder="••••••••" />
+                          </div>
+                        </div>
 
-                      <button type="submit" className="w-full py-2.5 rounded-lg text-white font-medium" style={{ backgroundColor: "#b08968" }}>
-                        Iniciar Sesión
+                      {/* Login error as HeroUI alert */}
+                      {loginError && (
+                        <Alert status="danger" className="py-2">
+                          <Alert.Indicator />
+                          <Alert.Content>
+                            <Alert.Description>{loginError}</Alert.Description>
+                          </Alert.Content>
+                        </Alert>
+                      )}
+
+                      <button type="submit" className="w-full py-3 mt-2 rounded-xl text-white font-extrabold hover:opacity-90 hover:scale-[1.02] transition-all shadow-lg" style={{ backgroundColor: "#b08968", shadowColor: "rgba(176, 137, 104, 0.4)" }}>
+                        Entrar
+                      </button>
+                      
+                      <div className="relative my-5"><div className="absolute inset-0 flex items-center"><span className="w-full border-t border-divider"></span></div><div className="relative flex justify-center text-xs uppercase"><span className="bg-overlay px-2 text-default-500 font-bold">O</span></div></div>
+                      
+                      <button type="button" onClick={() => loginWithGoogle()} className="w-full flex items-center justify-center space-x-3 py-3 border-2 border-border text-foreground-700 rounded-xl hover:bg-default-hover transition-colors font-bold truncate">
+                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-5 h-5 bg-white rounded-full p-0.5" alt="Google" />
+                        <span>Continuar con Google</span>
                       </button>
                     </form>
 
-                    <div className="mt-4 pt-4 border-t border-gray-200 space-y-2">
-                      <a href="/Login" className="block text-center text-sm py-2 rounded-lg" style={{ color: "#b08968" }}>Recuperar contraseña</a>
-                      <a href="/Register" className="block text-center text-sm py-2 rounded-lg font-medium" style={{ color: "#b08968", backgroundColor: "#f5f0ec" }}>Crear cuenta nueva</a>
+                    <div className="mt-5 pt-5 border-t border-divider space-y-2">
+                       <p className="text-center text-sm font-medium text-default-500">¿No tienes cuenta? <a href="/Register" className="font-extrabold hover:underline ml-1" style={{ color: "#b08968" }}>Regístrate</a></p>
                     </div>
                   </>
+                )
                 ) : (
-                  <div className="space-y-3">
-                    {/* Avatar + email */}
-                    <div className="flex items-center space-x-3 pb-3 border-b border-gray-200">
-                      <div className="w-12 h-12 rounded-full flex items-center justify-center overflow-hidden" style={{ backgroundColor: "#f5f0ec" }}>
-                        <img src={user.avatar || "/default-avatar.png"} alt="Avatar"className="w-12 h-12 object-cover"/>
+                  <div className="space-y-4">
+                    {/* Avatar + info */}
+                    <div className="flex items-center space-x-3 pb-4 border-b border-divider">
+                      <div className="w-14 h-14 rounded-full flex items-center justify-center overflow-hidden border-2 p-0.5" style={{ borderColor: "#b08968" }}>
+                        <img src={currentAvatar} alt="Avatar" className="w-full h-full object-cover rounded-full"/>
                       </div>
-                      <div>
-                        <p className="font-semibold text-gray-800">{user?.email}</p>
+                      <div className="overflow-hidden">
+                        <p className="font-extrabold text-foreground truncate text-lg">{profile?.username || user?.user_metadata?.user_name || user?.user_metadata?.full_name || "Usuario"}</p>
+                        <p className="text-xs font-medium text-default-500 truncate w-40">{user.email}</p>
                       </div>
                     </div>
 
@@ -215,16 +278,16 @@ export default function Navbar() {
                    <button
                       onClick={() => {
                         window.location.href = "/Perfil";
-                        setIsLoginOpen(false); // cerrar dropdown
+                        setIsLoginOpen(false);
                       }}
-                      className="block w-full py-2.5 text-center rounded-lg text-white font-medium"
+                      className="block w-full py-3 text-center rounded-xl text-white font-bold hover:scale-[1.02] transition-all shadow-md"
                       style={{ backgroundColor: "#b08968" }}
                     >
                       Ver mi perfil
                     </button>
 
                     {/* Logout */}
-                    <button onClick={handleLogout} className="block w-full py-2.5 text-center rounded-lg text-white font-medium hover:opacity-90 transition" style={{ backgroundColor: "#a15c38" }}>
+                    <button onClick={handleLogout} className="w-full py-3 text-center rounded-xl text-default-600 font-bold hover:bg-danger-soft hover:text-danger flex items-center justify-center transition-colors">
                       Cerrar sesión
                     </button>
                   </div>
@@ -234,46 +297,71 @@ export default function Navbar() {
           </div>
 
           {/* Mobile menu button */}
-          <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="md:hidden p-2 rounded-lg" style={{ color: "#b08968" }}>
-            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className={`md:hidden p-2 rounded-lg ${isScrolled || (!isDarkMode && !isHomePage) ? "text-gray-800 dark:text-white" : "text-white"}`}>
+            {isMobileMenuOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
           </button>
 
           {/* Mobile menu */}
-          <div className={`md:hidden absolute top-full left-0 right-0 bg-white shadow-lg transition-all duration-300 overflow-hidden z-40 ${isMobileMenuOpen ? "max-h-[1000px] py-4" : "max-h-0"}`}>
+          <div className={`md:hidden absolute top-full left-0 right-0 bg-background shadow-2xl transition-all duration-300 overflow-hidden z-40 ${isMobileMenuOpen ? "max-h-[1000px] py-4 border-t border-divider" : "max-h-0"}`}>
             <div className="px-4 space-y-3">
+              <div className="flex justify-between items-center mb-4 px-4 pb-4 border-b border-divider">
+                  <span className="text-sm font-bold text-default-500 uppercase tracking-wider">Modo Oscuro</span>
+                  <button onClick={toggleDarkMode} className="p-2 rounded-full bg-default text-default-600 hover:bg-default-hover">
+                    {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                  </button>
+              </div>
+              
               {navLinks.map((link) => {
                 const Icon = link.icon;
                 const isActive = window.location.pathname === link.href;
                 return (
-                  <a key={link.id} href={link.href} className={`flex items-center space-x-3 px-4 py-2 rounded-lg transition-all duration-300 ${isActive ? "bg-[#f5f0ec]" : "hover:bg-gray-50"}`}>
-                    <Icon className="w-5 h-5" style={{ color: isActive ? "#b08968" : "#6b7280" }} />
-                    <span className={`font-medium ${isActive ? "font-semibold" : ""}`} style={{ color: isActive ? "#b08968" : "#6b7280" }}>{link.label}</span>
+                  <a key={link.id} href={link.href} className={`flex items-center space-x-3 px-4 py-3.5 rounded-2xl transition-all duration-300 ${isActive ? "bg-default" : "hover:bg-default-hover"}`}>
+                    <Icon className="w-5 h-5" style={{ color: isActive ? "#b08968" : "var(--color-default-500)" }} />
+                    <span className={`font-medium ${isActive ? "font-bold text-[#b08968]" : "text-foreground-600"}`}>{link.label}</span>
                   </a>
                 );
               })}
 
               {/* User section mobile */}
               {!isLoggedIn ? (
-                <div className="mt-3 space-y-2">
-                  <form onSubmit={handleLogin} className="space-y-2">
-                    <input type="email" name="email" placeholder="Email" className="w-full px-3 py-2 border rounded-lg outline-none" />
-                    <input type="password" name="password" placeholder="Contraseña" className="w-full px-3 py-2 border rounded-lg outline-none" />
-                    {loginError && <p className="text-red-500 text-sm">{loginError}</p>}
-                    <button type="submit" className="w-full py-2 rounded-lg text-white font-medium" style={{ backgroundColor: "#b08968" }}>Iniciar sesión</button>
+                <div className="mt-6 pt-6 border-t border-divider space-y-4 px-2">
+                  <form onSubmit={handleLogin} className="space-y-3">
+                    <input type="email" name="email" placeholder="Email" className="w-full px-5 py-3.5 border-2 border-transparent bg-field text-foreground placeholder-default-500 focus:border-[#b08968] focus:bg-default rounded-xl outline-none transition-all font-medium" />
+                    <input type="password" name="password" placeholder="Contraseña" className="w-full px-5 py-3.5 border-2 border-transparent bg-field text-foreground placeholder-default-500 focus:border-[#b08968] focus:bg-default rounded-xl outline-none transition-all font-medium" />
+                    {loginError && (
+                      <Alert status="danger" className="py-2">
+                        <Alert.Indicator />
+                        <Alert.Content>
+                          <Alert.Description>{loginError}</Alert.Description>
+                        </Alert.Content>
+                      </Alert>
+                    )}
+                    <button type="submit" className="w-full py-4 rounded-xl text-white font-extrabold text-lg shadow-lg" style={{ backgroundColor: "#b08968" }}>Iniciar sesión</button>
                   </form>
-                  <a href="/Login" className="block text-center text-sm py-2 rounded-lg text-[#b08968] hover:bg-gray-50">Recuperar contraseña</a>
-                  <a href="/Register" className="block text-center text-sm py-2 rounded-lg font-medium text-[#b08968]" style={{ backgroundColor: "#f5f0ec" }}>Crear cuenta nueva</a>
+                  <div className="relative my-5"><div className="absolute inset-0 flex items-center"><span className="w-full border-t border-divider"></span></div><div className="relative flex justify-center text-xs uppercase"><span className="bg-background px-2 text-default-500 font-bold">O</span></div></div>
+                  
+                  <button onClick={() => loginWithGoogle()} className="w-full flex items-center justify-center space-x-3 py-4 border-2 border-border rounded-xl font-bold text-foreground-700 hover:bg-default-hover transition-colors">
+                     <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-5 h-5 bg-white rounded-full p-0.5" alt="Google" />
+                     <span>Continuar con Google</span>
+                  </button>
+                  <div className="flex justify-between items-center text-sm pt-4 px-2">
+                    <a href="/Register" className="font-extrabold" style={{ color: "#b08968" }}>Crear cuenta</a>
+                    <a href="/Login" className="text-default-500 font-medium hover:text-default-700">¿Olvidaste tu contraseña?</a>
+                  </div>
                 </div>
               ) : (
-                <div className="mt-3 space-y-2">
-                  <div className="flex items-center space-x-3 p-2 bg-[#f5f0ec] rounded-lg overflow-hidden">
-                    <img src={user?.avatar_url || ""} alt="Avatar" className="w-8 h-8 object-cover rounded-full"/>
-                    <div>
-                      <p className="font-semibold text-gray-800">{user?.email}</p>
+                <div className="mt-6 pt-6 border-t border-divider space-y-4 px-2">
+                  <div className="flex items-center space-x-4 p-4 bg-default rounded-2xl overflow-hidden">
+                    <img src={currentAvatar} alt="Avatar" className="w-12 h-12 object-cover rounded-full border-2 border-divider"/>
+                    <div className="overflow-hidden">
+                      <p className="font-extrabold text-foreground truncate text-lg">{profile?.username || "Usuario"}</p>
+                      <p className="text-sm font-medium text-default-500 truncate w-48">{user?.email}</p>
                     </div>
                   </div>
-                  <a href="/Perfil" className="block w-full py-2.5 text-center rounded-lg text-white font-medium" style={{ backgroundColor: "#b08968" }}>Ver mi perfil</a>
-                  <button onClick={handleLogout} className="block w-full py-2.5 text-center rounded-lg text-white font-medium hover:opacity-90 transition" style={{ backgroundColor: "#a15c38" }}>Cerrar sesión</button>
+                  <div className="grid grid-cols-2 gap-3 mt-2">
+                    <a href="/Perfil" className="flex items-center justify-center w-full py-3.5 rounded-xl text-white font-bold transition-transform active:scale-95" style={{ backgroundColor: "#b08968" }}>Perfil</a>
+                    <button onClick={logout} className="flex items-center justify-center w-full py-3.5 rounded-xl font-bold bg-danger-soft active:scale-95 transition-transform text-danger">Salir</button>
+                  </div>
                 </div>
               )}
             </div>
@@ -282,5 +370,13 @@ export default function Navbar() {
         </div>
       </div>
     </nav>
+  );
+}
+
+export default function Navbar() {
+  return (
+    <AuthProvider>
+      <NavbarContent />
+    </AuthProvider>
   );
 }

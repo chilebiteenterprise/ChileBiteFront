@@ -35,6 +35,8 @@ export default function RecetaCard({ receta, usuarioEsAdmin = false, onDeleteSuc
 
   // === CARGA INICIAL: sincroniza con backend ===
 useEffect(() => {
+  if (!idToUse) return; // FIX: Prevent 404 on undefined when previewing a new recipe
+  
   const fetchEstado = async () => {
     try {
       const token = localStorage.getItem("access_token");
@@ -147,7 +149,15 @@ useEffect(() => {
   return (
     <div className="receta-card cursor-pointer" onClick={handleCardClick}>
       <div className="receta-img-container relative">
-        <img src={receta.imagen_url} alt={receta.nombre} className="receta-img" />
+        <img 
+          src={receta.imagen_url || "https://placehold.co/400x300?text=Receta"} 
+          alt={receta.nombre} 
+          className="receta-img" 
+          onError={(e) => {
+            e.target.onerror = null; 
+            e.target.src = "https://placehold.co/400x300?text=No+Image";
+          }}
+        />
 
         <div className="absolute top-2 right-2 flex gap-2 z-20" data-receta-ignore="true">
           {/* Guardar */}

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { MessageSquare, Send, MessageCircle, Trash2, Edit3, Check, X, ShieldCheck, CornerUpLeft, Filter, Clock, Users, ThumbsUp } from 'lucide-react';
+import { useAuth } from "../../context/AuthContext";
 
 
 function getTimeAgo(dateString) {
@@ -57,7 +58,7 @@ const CommentForm = ({
     return (
         <div className={`mt-4 ${isReplying ? 'ml-0' : 'mb-8'}`} ref={inputRef}>
             {isReplying && (
-                <div className={`mb-3 p-3 rounded-lg border flex items-start justify-between bg-${replyingToComment.rol === 'admin' ? 'sky-50 border-sky-300' : 'amber-50 border-amber-300'} border-l-4`}>
+                <div className={`mb-3 p-3 rounded-lg border flex items-start justify-between bg-${(replyingToComment.role === 'admin' || replyingToComment.rol === 'admin') ? 'sky-50 border-sky-300' : 'amber-50 border-amber-300'} border-l-4`}>
                     <div className="flex items-center">
                         <CornerUpLeft size={16} className={`mr-2 text-${primaryColor}-600`} />
                         <span className={`text-sm text-${primaryColor}-800`}>
@@ -130,7 +131,7 @@ function CommentItem({ comment, currentUserId, currentUserRole, onReply, onEdit,
     const timeAgo = getTimeAgo(comment.fecha_creacion);
     const replies = comment.replies || []; 
     
-    const isAdmin = comment.rol === 'admin'; 
+    const isAdmin = comment.role === 'admin' || comment.rol === 'admin'; 
     const isCurrentReplyTarget = currentUserId && comment.id === replyingTo; 
 
     // Clases CSS dinámicas basadas en el rol para diferenciación visual
@@ -322,30 +323,26 @@ export default function CommentSection({ recipeId }) {
     
     const API_BASE = `http://localhost:8000/api/recetas/${recipeId}/comments/`;
 
-    const getToken = () => localStorage.getItem("access_token");
+    const { session, profile } = useAuth();
+    const getToken = () => session?.access_token || localStorage.getItem("access_token");
     
     const handleLoadMore = () => {
         setVisibleCommentCount(prevCount => prevCount + LOAD_STEP);
     };
 
-    // Cargar usuario desde localStorage al montar el componente
+    // Cargar usuario desde el AuthContext
     useEffect(() => {
-        const storedUserJson = localStorage.getItem("user");
-        if (storedUserJson) {
-            try {
-                const user = JSON.parse(storedUserJson);
-                setCurrentUser({
-                    ...user,
-                    id: user.id || user.usuario_id,
-                    nombres: user.nombres || user.usuario_nombre,
-                    rol: user.rol === 'admin' ? 'admin' : 'normal'
-                });
-            } catch (e) {
-                console.error("Error al parsear el objeto de usuario de localStorage.", e);
-                setCurrentUser(null);
-            }
+        if (profile) {
+            setCurrentUser({
+                ...profile,
+                id: profile.id,
+                nombres: profile.nombres,
+                rol: (profile.role === 'admin' || profile.rol === 'admin') ? 'admin' : 'normal'
+            });
+        } else {
+            setCurrentUser(null);
         }
-    }, []); 
+    }, [profile]); 
 
     // Función para cargar los comentarios y aplicar los roles
     const loadComments = useCallback(async () => {
@@ -548,7 +545,7 @@ export default function CommentSection({ recipeId }) {
     
     const replyingToComment = replyingTo ? comments.find((c) => c.id === replyingTo) : null;
     
-    const isCurrentUserAdmin = currentUser?.rol === 'admin';
+    const isCurrentUserAdmin = currentUser?.role === 'admin' || currentUser?.rol === 'admin';
     const primaryColor = isCurrentUserAdmin ? 'sky' : 'amber';
     const secondaryColor = isCurrentUserAdmin ? 'slate' : 'amber';
     
@@ -644,7 +641,7 @@ export default function CommentSection({ recipeId }) {
                                 key={comment.id}
                                 comment={comment}
                                 currentUserId={currentUser?.id || null}
-                                currentUserRole={currentUser?.rol || 'normal'}
+                                currentUserRole={currentUser?.role || currentUser?.rol || 'normal'}
                                 onReply={handleReply}
                                 onEdit={handleEditComment}
                                 onDelete={handleDeleteComment}

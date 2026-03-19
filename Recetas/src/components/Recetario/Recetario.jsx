@@ -1,10 +1,11 @@
 import { useState, useMemo, useEffect } from "react";
+import { useAuth, AuthProvider } from "../../context/AuthContext";
 import Filtros from "./Filtros";
 import RecetaCard from "./RecetaCard";
 
-const Recetario = () => {
+const RecetarioContent = () => {
+    const { profile } = useAuth();
     // === LÓGICA DE ADMINISTRADOR: ESTADOS INICIALES ===
-    const [usuario, setUsuario] = useState(null);
     const [recipes, setRecipes] = useState([]); 
     const [loading, setLoading] = useState(true);
 
@@ -22,20 +23,7 @@ const Recetario = () => {
 
     // === LÓGICA DE ADMINISTRADOR: EFECTOS ===
 
-    useEffect(() => {
-        try {
-            const userJson = localStorage.getItem('user');
-            if (userJson) {
-                const userData = JSON.parse(userJson);
-                setUsuario(userData);
-            }
-        } catch (e) {
-            console.error("Error al leer/parsear el usuario de localStorage:", e);
-            setUsuario(null);
-        }
-    }, []);
-
-    const usuarioEsAdmin = usuario && usuario.rol === 'admin';
+    const usuarioEsAdmin = profile?.role === 'admin' || profile?.rol === 'admin';
 
     // === LÓGICA DE ELIMINACIÓN: FUNCIÓN DE CALLBACK ===
     // Esta función recibe el ID de la receta eliminada de RecetaCard y actualiza el estado
@@ -330,4 +318,10 @@ const Recetario = () => {
     );
 };
 
-export default Recetario;
+export default function Recetario() {
+    return (
+        <AuthProvider>
+            <RecetarioContent />
+        </AuthProvider>
+    );
+}
