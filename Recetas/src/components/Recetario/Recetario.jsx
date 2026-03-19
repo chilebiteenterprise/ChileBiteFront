@@ -2,6 +2,8 @@ import { useState, useMemo, useEffect } from "react";
 import { useAuth, AuthProvider } from "../../context/AuthContext";
 import Filtros from "./Filtros";
 import RecetaCard from "./RecetaCard";
+import RecetarioToolBar from "./RecetarioToolBar";
+import AdminFloatingMenu from "./Botones/AdminFloatingMenu";
 
 const RecetarioContent = () => {
     const { profile } = useAuth();
@@ -18,7 +20,6 @@ const RecetarioContent = () => {
     const [sortField, setSortField] = useState("");
     const [sortOrder, setSortOrder] = useState("asc");
     const [currentPage, setCurrentPage] = useState(1);
-    const [showFilters, setShowFilters] = useState(false);
     const perPage = 12;
 
     // === LÓGICA DE ADMINISTRADOR: EFECTOS ===
@@ -134,24 +135,6 @@ const RecetarioContent = () => {
         currentPage * perPage
     );
 
-    useEffect(() => {
-        const handleClickOutside = (e) => {
-            const drawer = document.getElementById("drawer-filtros");
-            const button = document.getElementById("drawer-btn");
-            if (
-                showFilters &&
-                drawer &&
-                !drawer.contains(e.target) &&
-                button &&
-                !button.contains(e.target)
-            ) {
-                setShowFilters(false);
-            }
-        };
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, [showFilters]);
-
 
     if (loading) {
         return (
@@ -170,111 +153,30 @@ const RecetarioContent = () => {
     }
 
     return (
-        <div className="flex flex-col lg:flex-row gap-6 relative min-h-[calc(100vh-4rem)]">
+        <div className="flex flex-row gap-4 lg:gap-6 relative min-h-[calc(100vh-4rem)]">
             {/* ======================================================== */}
-            <button
-                id="drawer-btn"
-                className="lg:hidden fixed top-1/2 left-0 z-50 bg-[#A0522D] text-white p-2 rounded-tr-lg rounded-br-lg
-                            transform -translate-x-3 hover:-translate-x-0 transition-all duration-300 ease-in-out
-                            flex items-center justify-center gap-1"
-                onClick={() => setShowFilters(!showFilters)}>
-                {showFilters ? "◀" : "▶"} Filtros
-            </button>
+            
+            <Filtros
+                selectedCategories={selectedCategories}
+                setSelectedCategories={setSelectedCategories}
+                selectedPortions={selectedPortions}
+                setSelectedPortions={setSelectedPortions}
+                selectedCountry={selectedCountry}
+                setSelectedCountry={setSelectedCountry}
+                selectedDifficulty={selectedDifficulty}
+                setSelectedDifficulty={setSelectedDifficulty}
+                resetFilters={resetFilters}
+            />
 
-            <aside
-                id="drawer-filtros"
-                className={`bg-gray-50 p-4 shadow-md rounded-xl
-                            fixed top-0 left-0 z-40 w-[300px] h-screen transform ${
-                                showFilters ? "translate-x-0" : "-translate-x-full"
-                            } transition-transform duration-300 ease-in-out
-                            lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 lg:flex-shrink-0`}>
-                <Filtros
-                    selectedCategories={selectedCategories}
-                    setSelectedCategories={setSelectedCategories}
-                    selectedPortions={selectedPortions}
-                    setSelectedPortions={setSelectedPortions}
-                    selectedCountry={selectedCountry}
-                    setSelectedCountry={setSelectedCountry}
-                    selectedDifficulty={selectedDifficulty}
-                    setSelectedDifficulty={setSelectedDifficulty}
-                    resetFilters={resetFilters}
+            <main className="flex-1 overflow-y-auto px-4 lg:px-6 relative min-h-0 pb-6 rounded-l-2xl">
+                <RecetarioToolBar 
+                    searchQuery={searchQuery}
+                    setSearchQuery={setSearchQuery}
+                    sortField={sortField}
+                    setSortField={setSortField}
+                    sortOrder={sortOrder}
+                    setSortOrder={setSortOrder}
                 />
-            </aside>
-
-            <main className="flex-1 overflow-y-auto max-h-[200vh] px-4">
-                <div className="bg-white p-4 rounded-lg shadow-sm mb-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                    
-                    <div className="flex items-center flex-1 justify-center lg:justify-start gap-4">
-                        <h1 className="text-3xl font-bold text-center text-indigo-800 tracking-wide">
-                            Recetario
-                        </h1>
-                        
-                        {/* === ETIQUETA VISUAL DE ADMINISTRADOR === */}
-                        {usuarioEsAdmin && (
-                            <span className="px-3 py-1 text-sm font-bold text-white bg-red-600 rounded-full shadow-md whitespace-nowrap">
-                                ADMINISTRADOR
-                            </span>
-                        )}
-                    </div>
-                    
-                    {/* === BOTÓN DE CREAR RECETA SOLO PARA ADMINS === */}
-                    {usuarioEsAdmin && (
-                        <button
-                            onClick={() => {
-                                window.location.href = '/admin/receta-form'; 
-                            }}
-                            className="px-6 py-3 bg-red-600 text-white font-semibold rounded-full shadow-lg hover:bg-red-700 transition-colors duration-300 flex-shrink-0 w-full lg:w-auto"
-                            >
-                                + Nueva Receta 👨‍🍳
-                            </button>
-                    )}
-                    {/* ======================================================== */}
-
-                    <div className="relative w-full">
-                        <input
-                            type="text"
-                            placeholder="Buscar receta..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="input w-full rounded-full px-10 py-3 border-2 border-transparent focus:outline-none focus:border-blue-500 placeholder-gray-400 transition-all duration-300 shadow-md"
-                        />
-                        <div className="absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                            <svg
-                                className="w-5 h-5 text-gray-700"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1110.5 3a7.5 7.5 0 016.15 13.65z"
-                                />
-                            </svg>
-                        </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 w-full flex-wrap">
-                        <span className="text-sm text-gray-700">Ordenar por:</span>
-                        <select
-                            className="input rounded-full px-4 py-2 border-2 border-transparent focus:outline-none focus:border-blue-500 transition-all duration-300 shadow-md appearance-none"
-                            value={sortField}
-                            onChange={(e) => setSortField(e.target.value)}>
-                            <option value="">Elija orden</option>
-                            <option value="contador_likes">Popularidad</option>
-                            <option value="dificultad">Dificultad</option>
-                            <option value="numero_porcion">Porciones</option>
-                        </select>
-                        <button
-                            className="px-4 py-2 border-2 rounded-full shadow-md hover:bg-gray-100 transition-colors duration-300"
-                            onClick={() =>
-                                setSortOrder(sortOrder === "asc" ? "desc" : "asc")
-                            }>
-                            ↑↓
-                        </button>
-                    </div>
-                </div>
 
                 {/* Grid de recetas */}
                 {paginatedRecipes.length > 0 ? (
@@ -298,14 +200,14 @@ const RecetarioContent = () => {
 
                 {/* Paginación */}
                 {paginatedRecipes.length > 0 && (
-                    <div className="mt-2 flex justify-center gap-2 flex-wrap mb-4">
+                    <div className="mt-6 flex justify-center gap-2 flex-wrap mb-4">
                         {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
                             <button
                                 key={num}
-                                className={`px-3 py-1 border rounded ${
+                                className={`px-4 py-2 border rounded-xl font-medium transition-colors ${
                                     num === currentPage
-                                        ? "bg-indigo-600 text-white"
-                                        : "bg-gray-200 text-gray-800"
+                                        ? "bg-[#A0522D] text-white border-transparent"
+                                        : "bg-white dark:bg-[#0f1115] text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50"
                                 }`}
                                 onClick={() => setCurrentPage(num)}>
                                 {num}
@@ -313,6 +215,9 @@ const RecetarioContent = () => {
                         ))}
                     </div>
                 )}
+                
+                {/* ADMIN DOCK */}
+                {usuarioEsAdmin && <AdminFloatingMenu />}
             </main>
         </div>
     );

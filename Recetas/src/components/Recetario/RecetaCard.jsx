@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import Checkbox from "./Botones/Checkbox.jsx";
 import ContenedorFire from "./Botones/ContenedorFire.jsx";
 import { Heart, Bookmark } from "lucide-react";
 import "./RecetaCard.css";
