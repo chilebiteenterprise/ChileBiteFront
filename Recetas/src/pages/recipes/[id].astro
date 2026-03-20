@@ -5,6 +5,46 @@ import Navbar from '@/shared/layout/Navbar';
 import RecetaDetalle from '@/features/recipes/components/RecipeDetail';
 import CommentSection from '@/features/comments/components/CommentSection';
 
+export async function getStaticPaths() {
+  try {
+    // Tomamos la URL del API o usamos un fallback al de Render
+    const apiURL = import.meta.env.PUBLIC_API_URL || "https://chilebiteback.onrender.com";
+    
+    // Función para procesar y consolidar la paginación de Django REST
+    const parseAllPages = async (url) => {
+        let results = [];
+        let nextUrl = url;
+        while(nextUrl) {
+            const res = await fetch(nextUrl);
+            if (!res.ok) break;
+            const data = await res.json();
+            if (data.results) {
+               results.push(...data.results);
+               nextUrl = data.next;
+            } else if (Array.isArray(data)) {
+               results.push(...data);
+               nextUrl = null;
+            } else {
+               nextUrl = null;
+            }
+        }
+        return results;
+    };
+    
+    const recetas = await parseAllPages(`${apiURL}/api/recetas/`);
+    if (!recetas || recetas.length === 0) {
+      return [{ params: { id: "1" } }]; // Fallback por seguridad si la API no responde
+    }
+    
+    return recetas.map((receta) => ({
+      params: { id: receta.id.toString() },
+    }));
+  } catch (err) {
+    console.error("Error obteniendo rutas estáticas (getStaticPaths):", err);
+    return [{ params: { id: "1" } }];
+  }
+}
+
 const { id } = Astro.params;
 ---
 

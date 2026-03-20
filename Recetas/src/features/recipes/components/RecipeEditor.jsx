@@ -44,9 +44,9 @@ const RecetaFormContent = () => {
   const [isOpenPais, setIsOpenPais] = useState(false);
 
   useEffect(() => {
-    fetch(${import.meta.env.PUBLIC_API_URL}/api/paises/).then(r => r.json()).then(data => setPaises(data));
-    fetch(${import.meta.env.PUBLIC_API_URL}/api/tipos-plato/).then(r => r.json()).then(data => setTiposPlato(data));
-    fetch(${import.meta.env.PUBLIC_API_URL}/api/estilos-vida/).then(r => r.json()).then(data => setEstilosVida(data));
+    fetch($).then(r => r.json()).then(data => setPaises(data));
+    fetch($).then(r => r.json()).then(data => setTiposPlato(data));
+    fetch($).then(r => r.json()).then(data => setEstilosVida(data));
   }, []);
 
   useEffect(() => {

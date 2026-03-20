@@ -52,9 +52,9 @@ const RecipeFilters = ({
   const [dietas, setDietas] = useState([]);
 
   React.useEffect(() => {
-    fetch(${import.meta.env.PUBLIC_API_URL}/api/paises/).then(r => r.json()).then(data => setPaises(data.map(d => d.nombre)));
-    fetch(${import.meta.env.PUBLIC_API_URL}/api/tipos-plato/).then(r => r.json()).then(data => setTiposPlato(data.map(d => d.nombre)));
-    fetch(${import.meta.env.PUBLIC_API_URL}/api/estilos-vida/).then(r => r.json()).then(data => setDietas(data.map(d => d.nombre)));
+    fetch($).then(r => r.json()).then(data => setPaises(data.map(d => d.nombre)));
+    fetch($).then(r => r.json()).then(data => setTiposPlato(data.map(d => d.nombre)));
+    fetch($).then(r => r.json()).then(data => setDietas(data.map(d => d.nombre)));
   }, []);
 
   const toggleCategory = (cat) => {

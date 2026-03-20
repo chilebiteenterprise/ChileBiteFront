@@ -22,9 +22,9 @@ function TaxonomiasAdminContent() {
     }, [profile, session, loading]);
 
     const fetchData = () => {
-        fetch(${import.meta.env.PUBLIC_API_URL}/api/paises/).then(r => r.json()).then(setPaises);
-        fetch(${import.meta.env.PUBLIC_API_URL}/api/tipos-plato/).then(r => r.json()).then(setTiposPlato);
-        fetch(${import.meta.env.PUBLIC_API_URL}/api/estilos-vida/).then(r => r.json()).then(setEstilosVida);
+        fetch($).then(r => r.json()).then(setPaises);
+        fetch($).then(r => r.json()).then(setTiposPlato);
+        fetch($).then(r => r.json()).then(setEstilosVida);
     };
 
     const handleSave = async () => {
