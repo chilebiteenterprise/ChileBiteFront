@@ -39,8 +39,8 @@ function TaxonomiasAdminContent() {
 
         const method = formData.id ? 'PUT' : 'POST';
         const url = formData.id 
-            ? `/api/${endpoint}/${formData.id}/` 
-            : `/api/${endpoint}/`;
+            ? `${apiUrl}/api/${endpoint}/${formData.id}/` 
+            : `${apiUrl}/api/${endpoint}/`;
 
         await fetch(url, {
             method,
@@ -62,7 +62,7 @@ function TaxonomiasAdminContent() {
         if (entity === 'tipoplato') endpoint = 'tipos-plato';
         if (entity === 'estilovida') endpoint = 'estilos-vida';
 
-        await fetch(`/api/${endpoint}/${id}/`, {
+        await fetch(`${apiUrl}/api/${endpoint}/${id}/`, {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${token}` }
         });

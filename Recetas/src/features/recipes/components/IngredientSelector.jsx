@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, Plus, Trash2 } from 'lucide-react';
 
 const IngredientSelector = ({ ingredientes_detalle = [], onChange }) => {
+  const apiUrl = import.meta.env.PUBLIC_API_URL || "https://chilebiteback.onrender.com";
   const [search, setSearch] = useState('');
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -18,7 +19,7 @@ const IngredientSelector = ({ ingredientes_detalle = [], onChange }) => {
     const fetchIngredientes = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/ingredientes/?search=${encodeURIComponent(search)}`);
+        const res = await fetch(`${apiUrl}/api/ingredientes/?search=${encodeURIComponent(search)}`);
         const data = await res.json();
         setResults(data);
       } catch (err) {

@@ -4,6 +4,7 @@ import { useAuth } from '@/features/auth/context/AuthContext';
 
 export default function AdminFloatingMenu({ selectedRecipes = [], onDeleteSuccess, onClearSelection }) {
     const { session } = useAuth();
+    const apiUrl = import.meta.env.PUBLIC_API_URL || "https://chilebiteback.onrender.com";
     const state = useOverlayState();
     const [isDeleting, setIsDeleting] = useState(false);
 
@@ -17,7 +18,7 @@ export default function AdminFloatingMenu({ selectedRecipes = [], onDeleteSucces
             const headers = { "Authorization": `Bearer ${token}` };
             
             for (const id of selectedRecipes) {
-                await fetch(`/api/recetas/${id}/`, {
+                await fetch(`${apiUrl}/api/recetas/${id}/`, {
                     method: 'DELETE',
                     headers
                 });

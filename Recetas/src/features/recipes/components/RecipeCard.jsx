@@ -11,6 +11,7 @@ export default function RecipeCard({ receta, usuarioEsAdmin = false, isSelected 
   const [guardado, setGuardado] = useState(false);
 
   const idToUse = receta.id_receta || receta.id;
+  const apiUrl = import.meta.env.PUBLIC_API_URL || "https://chilebiteback.onrender.com";
 
   // === CARGA INICIAL: sincroniza con backend ===
   useEffect(() => {
@@ -21,7 +22,7 @@ export default function RecipeCard({ receta, usuarioEsAdmin = false, isSelected 
         const token = session?.access_token;
         const headers = token ? { "Authorization": `Bearer ${token}` } : {};
 
-        const response = await fetch(`/api/recetas/${idToUse}/`, { headers });
+        const response = await fetch(`${apiUrl}/api/recetas/${idToUse}/`, { headers });
         if (!response.ok) throw new Error("Error al obtener la receta");
         const data = await response.json();
 
@@ -43,7 +44,7 @@ export default function RecipeCard({ receta, usuarioEsAdmin = false, isSelected 
     if (!token) return toast.danger("Acceso Denegado", { description: "Debes estar logueado para marcar como favorito" });
 
     try {
-      const response = await fetch(`/api/recetas/${idToUse}/like/`, {
+      const response = await fetch(`${apiUrl}/api/recetas/${idToUse}/like/`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
       });
@@ -64,7 +65,7 @@ export default function RecipeCard({ receta, usuarioEsAdmin = false, isSelected 
     if (!token) return toast.danger("Acceso Denegado", { description: "Debes estar logueado para guardar" });
 
     try {
-      const response = await fetch(`/api/recetas/${idToUse}/guardar/`, {
+      const response = await fetch(`${apiUrl}/api/recetas/${idToUse}/guardar/`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
       });

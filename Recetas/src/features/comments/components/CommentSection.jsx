@@ -349,7 +349,8 @@ function CommentSectionContent({ recipeId }) {
     const [sortType, setSortType] = useState('recent'); 
     
     const topCommentInputRef = useRef(null); 
-    const API_BASE = `/api/recetas/${recipeId}/comments/`;
+    const apiUrl = import.meta.env.PUBLIC_API_URL || "https://chilebiteback.onrender.com";
+    const API_BASE = `${apiUrl}/api/recetas/${recipeId}/comments/`;
 
     const { session, profile } = useAuth();
     const getToken = () => session?.access_token || localStorage.getItem("access_token");
@@ -447,7 +448,7 @@ function CommentSectionContent({ recipeId }) {
         );
 
         try {
-            const res = await fetch(`/api/comments/${commentId}/like/`, {
+            const res = await fetch(`${apiUrl}/api/comments/${commentId}/like/`, {
                 method: 'POST', 
                 headers: { 
                     Authorization: `Bearer ${token}`,
@@ -528,7 +529,7 @@ function CommentSectionContent({ recipeId }) {
         if (!token) return;
 
         try {
-            const res = await fetch(`/api/comments/${commentId}/`, {
+            const res = await fetch(`${apiUrl}/api/comments/${commentId}/`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
@@ -554,7 +555,7 @@ function CommentSectionContent({ recipeId }) {
         if (!token) return;
         
         try {
-            const res = await fetch(`/api/comments/${commentId}/`, {
+            const res = await fetch(`${apiUrl}/api/comments/${commentId}/`, {
                 method: "DELETE",
                 headers: { Authorization: `Bearer ${token}` },
             });
@@ -574,7 +575,7 @@ function CommentSectionContent({ recipeId }) {
         if (!token || !banModalData) return;
         
         try {
-            const res = await fetch(`/api/ban/`, {
+            const res = await fetch(`${apiUrl}/api/ban/`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
