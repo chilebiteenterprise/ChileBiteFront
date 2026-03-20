@@ -44,9 +44,10 @@ const RecetaFormContent = () => {
   const [isOpenPais, setIsOpenPais] = useState(false);
 
   useEffect(() => {
-    fetch($).then(r => r.json()).then(data => setPaises(data));
-    fetch($).then(r => r.json()).then(data => setTiposPlato(data));
-    fetch($).then(r => r.json()).then(data => setEstilosVida(data));
+    const apiUrl = import.meta.env.PUBLIC_API_URL || "https://chilebiteback.onrender.com";
+    fetch(`${apiUrl}/api/taxonomies/paises/`).then(r => r.json()).then(data => setPaises(data));
+    fetch(`${apiUrl}/api/taxonomies/tipos_plato/`).then(r => r.json()).then(data => setTiposPlato(data));
+    fetch(`${apiUrl}/api/taxonomies/estilos_vida/`).then(r => r.json()).then(data => setEstilosVida(data));
   }, []);
 
   useEffect(() => {

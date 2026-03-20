@@ -52,9 +52,11 @@ const RecipeFilters = ({
   const [dietas, setDietas] = useState([]);
 
   React.useEffect(() => {
-    fetch($).then(r => r.json()).then(data => setPaises(data.map(d => d.nombre)));
-    fetch($).then(r => r.json()).then(data => setTiposPlato(data.map(d => d.nombre)));
-    fetch($).then(r => r.json()).then(data => setDietas(data.map(d => d.nombre)));
+    // Fetch initial data for filters
+    const apiUrl = import.meta.env.PUBLIC_API_URL || "https://chilebiteback.onrender.com";
+    fetch(`${apiUrl}/api/taxonomies/paises/`).then(r => r.json()).then(data => setPaises(data.map(d => d.nombre)));
+    fetch(`${apiUrl}/api/taxonomies/tipos_plato/`).then(r => r.json()).then(data => setTiposPlato(data.map(d => d.nombre)));
+    fetch(`${apiUrl}/api/taxonomies/estilos_vida/`).then(r => r.json()).then(data => setDietas(data.map(d => d.nombre)));
   }, []);
 
   const toggleCategory = (cat) => {

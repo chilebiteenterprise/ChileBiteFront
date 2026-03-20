@@ -54,10 +54,14 @@ const RecetarioContent = () => {
         const fetchRecipes = async () => {
             setLoading(true);
             try {
-                const res = await fetch($);
+                const apiUrl = import.meta.env.PUBLIC_API_URL || "https://chilebiteback.onrender.com";
+                const res = await fetch(`${apiUrl}/api/recetas/`);
                 if (!res.ok) throw new Error("Error al obtener recetas");
                 const data = await res.json();
-                setRecipes(Array.isArray(data) ? data : []);
+                
+                // Extraer los resultados si la API usa paginación (Django REST)
+                const recipesData = data.results ? data.results : (Array.isArray(data) ? data : []);
+                setRecipes(recipesData);
             } catch (err) {
                 setError(err.message);
             } finally {
