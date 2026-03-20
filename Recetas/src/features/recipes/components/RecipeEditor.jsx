@@ -46,9 +46,9 @@ const RecetaFormContent = () => {
   useEffect(() => {
     const rawApiUrl = import.meta.env.PUBLIC_API_URL || "https://chilebiteback.onrender.com";
     const apiUrl = rawApiUrl?.startsWith("http") ? rawApiUrl : `https://${rawApiUrl}`;
-    fetch(`${apiUrl}/api/taxonomies/paises/`).then(r => r.json()).then(data => setPaises(data));
-    fetch(`${apiUrl}/api/taxonomies/tipos_plato/`).then(r => r.json()).then(data => setTiposPlato(data));
-    fetch(`${apiUrl}/api/taxonomies/estilos_vida/`).then(r => r.json()).then(data => setEstilosVida(data));
+    fetch(`${apiUrl}/api/paises/`).then(r => r.json()).then(data => setPaises(data));
+    fetch(`${apiUrl}/api/tipos-plato/`).then(r => r.json()).then(data => setTiposPlato(data));
+    fetch(`${apiUrl}/api/estilos-vida/`).then(r => r.json()).then(data => setEstilosVida(data));
   }, []);
 
   useEffect(() => {
@@ -92,7 +92,9 @@ const RecetaFormContent = () => {
   const fetchRecipeDetails = async (currentId) => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/recetas/${currentId}/`);
+      const rawApiUrl = import.meta.env.PUBLIC_API_URL || "https://chilebiteback.onrender.com";
+      const apiUrl = rawApiUrl?.startsWith("http") ? rawApiUrl : `https://${rawApiUrl}`;
+      const res = await fetch(`${apiUrl}/api/recetas/${currentId}/`);
       if (!res.ok) throw new Error("Error al cargar la receta para editar.");
       const data = await res.json();
       setRecetaData({ ...initialRecipeState, ...data, id: data.id || currentId });
@@ -178,10 +180,12 @@ const RecetaFormContent = () => {
         return;
     }
 
+    const rawApiUrl = import.meta.env.PUBLIC_API_URL || "https://chilebiteback.onrender.com";
+    const apiUrl = rawApiUrl?.startsWith("http") ? rawApiUrl : `https://${rawApiUrl}`;
     const method = isEditing ? 'PUT' : 'POST';
     const url = isEditing
-      ? `/api/recetas/${id}/`
-      : `/api/recetas/`;
+      ? `${apiUrl}/api/recetas/${id}/`
+      : `${apiUrl}/api/recetas/`;
 
     const formattedIngredientes = (recetaData.ingredientes_detalle || []).map(item => ({
       ingrediente_id: item.ingrediente?.id,

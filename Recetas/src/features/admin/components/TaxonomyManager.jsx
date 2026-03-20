@@ -26,9 +26,9 @@ function TaxonomiasAdminContent() {
     }, [profile, session, loading]);
 
     const fetchData = () => {
-        fetch(`${apiUrl}/api/taxonomies/paises/`).then(r => r.json()).then(setPaises);
-        fetch(`${apiUrl}/api/taxonomies/tipos_plato/`).then(r => r.json()).then(setTiposPlato);
-        fetch(`${apiUrl}/api/taxonomies/estilos_vida/`).then(r => r.json()).then(setEstilosVida);
+        fetch(`${apiUrl}/api/paises/`).then(r => r.json()).then(setPaises);
+        fetch(`${apiUrl}/api/tipos-plato/`).then(r => r.json()).then(setTiposPlato);
+        fetch(`${apiUrl}/api/estilos-vida/`).then(r => r.json()).then(setEstilosVida);
     };
 
     const handleSave = async () => {

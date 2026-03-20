@@ -55,9 +55,9 @@ const RecipeFilters = ({
     // Fetch initial data for filters
     const rawApiUrl = import.meta.env.PUBLIC_API_URL || "https://chilebiteback.onrender.com";
     const apiUrl = rawApiUrl?.startsWith("http") ? rawApiUrl : `https://${rawApiUrl}`;
-    fetch(`${apiUrl}/api/taxonomies/paises/`).then(r => r.json()).then(data => setPaises(data.map(d => d.nombre)));
-    fetch(`${apiUrl}/api/taxonomies/tipos_plato/`).then(r => r.json()).then(data => setTiposPlato(data.map(d => d.nombre)));
-    fetch(`${apiUrl}/api/taxonomies/estilos_vida/`).then(r => r.json()).then(data => setDietas(data.map(d => d.nombre)));
+    fetch(`${apiUrl}/api/paises/`).then(r => r.json()).then(data => setPaises(data.map(d => d.nombre)));
+    fetch(`${apiUrl}/api/tipos-plato/`).then(r => r.json()).then(data => setTiposPlato(data.map(d => d.nombre)));
+    fetch(`${apiUrl}/api/estilos-vida/`).then(r => r.json()).then(data => setDietas(data.map(d => d.nombre)));
   }, []);
 
   const toggleCategory = (cat) => {
