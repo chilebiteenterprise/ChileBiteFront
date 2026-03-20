@@ -349,7 +349,8 @@ function CommentSectionContent({ recipeId }) {
     const [sortType, setSortType] = useState('recent'); 
     
     const topCommentInputRef = useRef(null); 
-    const apiUrl = import.meta.env.PUBLIC_API_URL || "https://chilebiteback.onrender.com";
+    const rawApiUrl = import.meta.env.PUBLIC_API_URL || "https://chilebiteback.onrender.com";
+    const apiUrl = rawApiUrl?.startsWith("http") ? rawApiUrl : `https://${rawApiUrl}`;
     const API_BASE = `${apiUrl}/api/recetas/${recipeId}/comments/`;
 
     const { session, profile } = useAuth();

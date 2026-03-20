@@ -12,6 +12,10 @@ function TaxonomiasAdminContent() {
     const [currentEntity, setCurrentEntity] = useState(''); // 'pais', 'tipoplato', 'estilovida'
     const [formData, setFormData] = useState({ id: null, nombre: '' });
 
+    // Define apiUrl at the component level
+    const rawApiUrl = import.meta.env.PUBLIC_API_URL || "https://chilebiteback.onrender.com";
+    const apiUrl = rawApiUrl.startsWith('http') ? rawApiUrl : `https://${rawApiUrl}`;
+
     useEffect(() => {
         if (!loading && profile) {
             if (profile.role !== 'admin' && profile.rol !== 'admin') window.location.href = '/';
@@ -22,7 +26,6 @@ function TaxonomiasAdminContent() {
     }, [profile, session, loading]);
 
     const fetchData = () => {
-        const apiUrl = import.meta.env.PUBLIC_API_URL || "https://chilebiteback.onrender.com";
         fetch(`${apiUrl}/api/taxonomies/paises/`).then(r => r.json()).then(setPaises);
         fetch(`${apiUrl}/api/taxonomies/tipos_plato/`).then(r => r.json()).then(setTiposPlato);
         fetch(`${apiUrl}/api/taxonomies/estilos_vida/`).then(r => r.json()).then(setEstilosVida);

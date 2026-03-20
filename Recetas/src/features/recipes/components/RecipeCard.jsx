@@ -11,7 +11,8 @@ export default function RecipeCard({ receta, usuarioEsAdmin = false, isSelected 
   const [guardado, setGuardado] = useState(false);
 
   const idToUse = receta.id_receta || receta.id;
-  const apiUrl = import.meta.env.PUBLIC_API_URL || "https://chilebiteback.onrender.com";
+  const rawApiUrl = import.meta.env.PUBLIC_API_URL || "https://chilebiteback.onrender.com";
+  const apiUrl = rawApiUrl?.startsWith("http") ? rawApiUrl : `https://${rawApiUrl}`;
 
   // === CARGA INICIAL: sincroniza con backend ===
   useEffect(() => {

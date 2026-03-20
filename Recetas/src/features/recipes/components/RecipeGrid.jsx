@@ -54,7 +54,8 @@ const RecetarioContent = () => {
         const fetchRecipes = async () => {
             setLoading(true);
             try {
-                const apiUrl = import.meta.env.PUBLIC_API_URL || "https://chilebiteback.onrender.com";
+                const rawApiUrl = import.meta.env.PUBLIC_API_URL || "https://chilebiteback.onrender.com";
+                const apiUrl = rawApiUrl?.startsWith("http") ? rawApiUrl : `https://${rawApiUrl}`;
                 const res = await fetch(`${apiUrl}/api/recetas/`);
                 if (!res.ok) throw new Error("Error al obtener recetas");
                 const data = await res.json();

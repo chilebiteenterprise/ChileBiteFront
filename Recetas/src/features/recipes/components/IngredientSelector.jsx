@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Search, Plus, Trash2 } from 'lucide-react';
 
 const IngredientSelector = ({ ingredientes_detalle = [], onChange }) => {
-  const apiUrl = import.meta.env.PUBLIC_API_URL || "https://chilebiteback.onrender.com";
+  const rawApiUrl = import.meta.env.PUBLIC_API_URL || "https://chilebiteback.onrender.com";
+  const apiUrl = rawApiUrl?.startsWith("http") ? rawApiUrl : `https://${rawApiUrl}`;
   const [search, setSearch] = useState('');
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);

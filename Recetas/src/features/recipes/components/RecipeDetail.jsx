@@ -12,7 +12,8 @@ const parseTextToList = (text) => {
 
 function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false, usuario }) {
   const { session } = useAuth();
-  const apiUrl = import.meta.env.PUBLIC_API_URL || "https://chilebiteback.onrender.com";
+  const rawApiUrl = import.meta.env.PUBLIC_API_URL || "https://chilebiteback.onrender.com";
+  const apiUrl = rawApiUrl?.startsWith("http") ? rawApiUrl : `https://${rawApiUrl}`;
   const [receta, setReceta] = useState(recetaProp || null);
   const [currentPage, setCurrentPage] = useState(1);
   const [mediaTab, setMediaTab] = useState('steps');

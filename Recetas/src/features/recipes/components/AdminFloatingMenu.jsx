@@ -4,7 +4,8 @@ import { useAuth } from '@/features/auth/context/AuthContext';
 
 export default function AdminFloatingMenu({ selectedRecipes = [], onDeleteSuccess, onClearSelection }) {
     const { session } = useAuth();
-    const apiUrl = import.meta.env.PUBLIC_API_URL || "https://chilebiteback.onrender.com";
+    const rawApiUrl = import.meta.env.PUBLIC_API_URL || "https://chilebiteback.onrender.com";
+    const apiUrl = rawApiUrl?.startsWith("http") ? rawApiUrl : `https://${rawApiUrl}`;
     const state = useOverlayState();
     const [isDeleting, setIsDeleting] = useState(false);
 
