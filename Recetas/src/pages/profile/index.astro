@@ -1,0 +1,44 @@
+---
+import "@/styles/global.css";
+import Footer from '@/shared/layout/Footer';
+import Navbar from '@/shared/layout/Navbar'
+import UserProfile from '@/features/profiles/components/UserProfile'
+
+---
+
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mi Perfil - ChileBite</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    
+    <!-- Evitar FOUC en modo oscuro -->
+    <script is:inline>
+      const theme = (() => {
+        if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
+          return localStorage.getItem('theme');
+        }
+        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          return 'dark';
+        }
+        return 'light';
+      })();
+    
+      if (theme === 'light') {
+        document.documentElement.classList.remove('dark');
+      } else {
+        document.documentElement.classList.add('dark');
+      }
+    </script>
+</head>
+<body class="bg-stone-50 text-gray-800 dark:bg-gray-900 dark:text-gray-200 transition-colors duration-300 min-h-screen flex flex-col">
+    <Navbar client:only="react" />
+    
+    <main class="flex-grow pt-24 pb-12 px-4 max-w-7xl mx-auto w-full">
+        <UserProfile client:only="react" />
+    </main>
+
+    <Footer/>
+</body>
+</html>

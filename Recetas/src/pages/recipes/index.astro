@@ -1,0 +1,51 @@
+---
+import "@/styles/global.css";
+import Footer from "@/shared/layout/Footer";
+import Navbar from "@/shared/layout/Navbar";
+import RecipeGrid from "@/features/recipes/components/RecipeGrid";
+---
+
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Galería de Recetas</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <!-- Evitar FOUC en modo oscuro -->
+    <script is:inline>
+      const theme = (() => {
+        if (
+          typeof localStorage !== "undefined" &&
+          localStorage.getItem("theme")
+        ) {
+          return localStorage.getItem("theme");
+        }
+        if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+          return "dark";
+        }
+        return "light";
+      })();
+      if (theme === "dark") {
+        document.documentElement.classList.add("dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+      }
+    </script>
+  </head>
+
+  <body
+    class="bg-stone-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-300"
+  >
+    <Navbar client:only="react" />
+
+    <!-- Wrapper normal debajo del navbar -->
+    <div class="pt-20 pb-5">
+      <RecipeGrid client:load />
+    </div>
+  </body>
+
+  <Footer />
+</html>

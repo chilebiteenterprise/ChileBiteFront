@@ -10,7 +10,8 @@ Está construido con **Astro** + **React** y usa **Tailwind CSS** para el diseñ
 * **Astro (v5.x):** Generador de sitios estáticos y SSR.  
 * **React:** Componentes interactivos.  
 * **Tailwind CSS:** Estilos y diseño responsivo.  
-* **HeroUI:** Librería de componentes para React + Tailwind.  
+* **HeroUI v3 Beta:** Librería principal de componentes UI interactivos.  
+* **Supabase:** SDK `@supabase/supabase-js` para gestión completa de Autenticación, Perfiles y Almacenamiento.
 * **Docker:** Para contenedores opcionales de desarrollo y despliegue.  
 * **npm:** Manejo de dependencias y scripts.
 
@@ -43,11 +44,30 @@ Antes de levantar el frontend necesitas:
 | `.env` | Variables de entorno (puerto, URL de backend, etc.). |
 
 > [!TIP]
-> **Nota:** Modifica `.env` si cambias el puerto o la URL del backend, por ejemplo:
+> **Nota:** Modifica `.env` si cambias el puerto o las claves, por ejemplo:
 > ```env
 > VITE_API_URL=http://localhost:8000/api
-> VITE_PORT=4321
+> VITE_SUPABASE_URL=https://[tu-id].supabase.co
+> VITE_SUPABASE_ANON_KEY=ey...
 > ```
+
+---
+
+## 🎨 Premium Glassmorphism Design System
+
+Cualquier nuevo componente que se agregue al frontend **debe adherirse a las reglas estéticas de Glassmorphism Premium**:
+1. Utilizar utilidades de cristal: `backdrop-blur-md`, `bg-white/10` (en light) o `bg-zinc-900/40` (en dark).
+2. Clases nativas de Tailwind o equivalentes en HeroUI que añadan transiciones de estado: `transition-all`, hover properties suaves, animaciones de resorte.
+3. Para la gama de color, emplear la paleta de colores café (eg. `#b08968`) e integrarse sin problemas con los modos `light` y `dark`.
+4. Siempre usar la clase estandarizada `premium-glass-panel` si está disponible en la hoja de estilos global antes de intentar micro-manejar CSS en línea.
+
+---
+
+## 🔒 Autenticación y Astro Islands (Supabase)
+
+La plataforma utiliza **Supabase Auth** de forma nativa. Para prevenir problemas de hidratación asíncrona entre múltiples *Astro Islands* (componentes React separados que se renderizan independientemente), hemos implementado un **Singleton Pattern en el AuthContext**.
+- Este patrón garantiza que la sesión de Supabase (`supabase.auth.getSession`) se solicita una única vez y las promesas se comparten entre todos los árboles React, evitando cuellos de botella y dobles ejecuciones.
+- Las vistas condicionales asumen `useAuth()` para extraer el estado real del usuario sin realizar llamadas superfluas al backend de Django.
 
 ---
 

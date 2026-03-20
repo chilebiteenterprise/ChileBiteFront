@@ -1,7 +1,7 @@
 ---
-import "../styles/global.css";
-import Footer from "../layouts/Footer";
-import Navbar from "../layouts/Navbar"
+import "@/styles/global.css";
+import Footer from '@/shared/layout/Footer';
+import Navbar from '@/shared/layout/Navbar'
 ---
 
 <html lang="es">
@@ -125,7 +125,7 @@ import Navbar from "../layouts/Navbar"
             <p class="text-lg text-gray-300 leading-relaxed mb-8">
               Disfruta de una interfaz agradable y fácil de usar, diseñada para que encuentres lo que buscas sin complicaciones. Filtra por país, dificultad, cantidad de porciones y más. Guarda tus favoritas en un solo clic.
             </p>
-            <a href="/Recetas" class="inline-flex items-center space-x-2 px-8 py-4 rounded-xl bg-[#b08968] text-white font-bold hover:bg-[#9a7657] transition-colors shadow-lg shadow-[#b08968]/30">
+            <a href="/recipes" class="inline-flex items-center space-x-2 px-8 py-4 rounded-xl bg-[#b08968] text-white font-bold hover:bg-[#9a7657] transition-colors shadow-lg shadow-[#b08968]/30">
               <span>Explorar Recetas</span>
               <i class="fa-solid fa-arrow-right"></i>
             </a>
@@ -163,7 +163,7 @@ import Navbar from "../layouts/Navbar"
           <p class="text-xl text-gray-300 mb-10 leading-relaxed">
             Si eres dueño de un restaurante, pequeña picada o emprendimiento gastronómico, únete a nuestra red. Crea un perfil de <span class="text-[#b08968] font-bold">Restaurante</span> y gestiona tu visibilidad sin costo.
           </p>
-          <a href="/Register" class="inline-block px-10 py-5 rounded-2xl bg-white text-gray-900 font-extrabold text-lg hover:scale-105 transition-transform shadow-[0_0_40px_rgba(255,255,255,0.3)]">
+          <a href="/auth/register" class="inline-block px-10 py-5 rounded-2xl bg-white text-gray-900 font-extrabold text-lg hover:scale-105 transition-transform shadow-[0_0_40px_rgba(255,255,255,0.3)]">
             Registra tu Local Hoy
           </a>
         </div>

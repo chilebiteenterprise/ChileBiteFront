@@ -1,0 +1,49 @@
+---
+import "@/styles/global.css";
+import Footer from '@/shared/layout/Footer';
+import Navbar from '@/shared/layout/Navbar';
+import RecetaDetalle from '@/features/recipes/components/RecipeDetail';
+import CommentSection from '@/features/comments/components/CommentSection';
+
+const { id } = Astro.params;
+---
+
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Detalle de Receta</title>
+    <!-- Evitar FOUC en modo oscuro -->
+    <script is:inline>
+      const theme = (() => {
+        if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
+          return localStorage.getItem('theme');
+        }
+        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          return 'dark';
+        }
+        return 'light';
+      })();
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    </script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+<Navbar client:only="react" />
+  <body class="bg-[#f7f7f6] dark:bg-[#0f1115] font-['Inter'] transition-colors duration-300 antialiased min-h-screen">
+    <!-- Wrapper normal debajo del navbar -->
+    <main class="mt-20 flex-1 relative z-10 w-full">
+        <RecetaDetalle idReceta={id} client:only="react" />
+        <div class="max-w-[1400px] mx-auto w-full px-4 lg:px-8 pb-16">
+            <CommentSection recipeId={id} client:only="react" />
+        </div>
+    </main>
+  </body>
+  <Footer/>
+</html>

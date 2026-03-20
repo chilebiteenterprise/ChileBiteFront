@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#b08969",
+                        "primary-dark": "#a0522d",
+                        "background-light": "#ffffff",
+                        "background-dark": "#1c1916",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<title>ChileBite Creator Studio</title>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased">
+<!-- Top Navigation -->
+<header class="sticky top-0 z-50 w-full border-b border-slate-100 dark:border-slate-800 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md">
+<div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="size-8 bg-primary rounded-lg flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-xl">restaurant_menu</span>
+</div>
+<h1 class="text-lg font-bold tracking-tight text-slate-900 dark:text-white">ChileBite <span class="text-primary font-medium">Studio</span></h1>
+</div>
+<div class="flex items-center gap-6">
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-primary transition-colors" href="#">Panel</a>
+<a class="text-sm font-medium text-primary" href="#">Editor de Recetas</a>
+<a class="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-primary transition-colors" href="#">Mis Creaciones</a>
+</nav>
+<div class="flex items-center gap-3 border-l border-slate-100 dark:border-slate-800 pl-6">
+<button class="p-2 text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="size-9 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center overflow-hidden">
+<img alt="Avatar" class="w-full h-full object-cover" data-alt="User profile avatar placeholder" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAkHqfjNuBDDqiYMfiAs6poHaAZqN6G6b0EUZuPkcT5PED6x6bherufw5hnW-nXrLMpCPJ0JgX9wTzzsROL8Bs0EsINw30vkjsYAamjTLKLMFRd6Zb21UMxnbcMZnnh1ZREgbjBBIzhtEh9H7J0BmtfIGRw6BQ4WXhM2UX4n6CAwKTG-0GWoW96_Zq0OVXr8hlleADoeh4IYHFSEAVYAutlAXbShikhHZfX4HOekaBSOBj2Zm4Ovktkizsr35CNIK08efvntm0gQkKl"/>
+</div>
+</div>
+</div>
+</div>
+</header>
+<main class="max-w-6xl mx-auto px-6 pt-10 pb-32">
+<!-- Hero Section: Media & Video -->
+<section class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
+<div class="lg:col-span-2 group relative">
+<div class="aspect-[16/7] w-full rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 flex flex-col items-center justify-center gap-4 transition-all hover:border-primary/50 cursor-pointer overflow-hidden relative">
+<div class="flex flex-col items-center text-slate-400 group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-5xl mb-2">add_a_photo</span>
+<p class="text-sm font-medium">Arrastra la foto principal de tu receta</p>
+<p class="text-xs opacity-60 mt-1">Sugerido: 1600 x 900px (JPG, PNG)</p>
+</div>
+<div class="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+</div>
+</div>
+<div class="flex flex-col gap-6">
+<div class="p-6 rounded-2xl bg-primary/5 border border-primary/10 flex flex-col gap-4">
+<div class="flex items-center gap-2 text-primary">
+<span class="material-symbols-outlined">videocam</span>
+<h3 class="font-semibold text-sm uppercase tracking-wider">Video de la Receta</h3>
+</div>
+<div class="relative">
+<input class="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm" placeholder="URL de YouTube o Vimeo" type="text" value=""/>
+</div>
+<p class="text-xs text-slate-500">Añade un tutorial paso a paso para aumentar el alcance de tu receta.</p>
+</div>
+<div class="p-6 rounded-2xl border border-slate-100 dark:border-slate-800 flex items-center gap-4">
+<span class="material-symbols-outlined text-primary text-3xl">timer</span>
+<div>
+<p class="text-xs font-bold text-slate-400 uppercase">Tiempo Estimado</p>
+<input class="bg-transparent border-none p-0 focus:ring-0 text-slate-900 dark:text-white font-medium placeholder:text-slate-300" placeholder="Ej. 45 min" type="text"/>
+</div>
+</div>
+</div>
+</section>
+<!-- Title Section -->
+<section class="mb-12">
+<input class="w-full bg-transparent border-none p-0 text-5xl md:text-6xl font-extrabold text-slate-900 dark:text-white placeholder:text-slate-200 dark:placeholder:text-slate-800 focus:ring-0 selection:bg-primary/20" placeholder="Título de tu receta..." type="text"/>
+<div class="h-1 w-24 bg-primary mt-6 rounded-full"></div>
+</section>
+<!-- Main Content Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+<!-- Left Column: Instructions -->
+<div class="lg:col-span-2 space-y-10">
+<!-- Description -->
+<div class="space-y-4">
+<div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+<label class="text-sm font-bold text-slate-400 uppercase tracking-widest">Breve Descripción</label>
+<div class="flex gap-2 text-slate-400">
+<button class="hover:text-primary transition-colors"><span class="material-symbols-outlined text-xl">format_bold</span></button>
+<button class="hover:text-primary transition-colors"><span class="material-symbols-outlined text-xl">format_italic</span></button>
+</div>
+</div>
+<textarea class="w-full bg-transparent border-none p-0 text-xl leading-relaxed text-slate-600 dark:text-slate-400 focus:ring-0 resize-none placeholder:italic" placeholder="Cuéntale al mundo por qué esta receta es especial..." rows="3"></textarea>
+</div>
+<!-- Preparation -->
+<div class="space-y-4">
+<div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+<label class="text-sm font-bold text-slate-400 uppercase tracking-widest">Instrucciones de Preparación</label>
+<div class="flex gap-4 text-slate-400">
+<button class="hover:text-primary transition-colors"><span class="material-symbols-outlined text-xl">format_list_numbered</span></button>
+<button class="hover:text-primary transition-colors"><span class="material-symbols-outlined text-xl">format_list_bulleted</span></button>
+<button class="hover:text-primary transition-colors"><span class="material-symbols-outlined text-xl">link</span></button>
+</div>
+</div>
+<textarea class="w-full bg-transparent border-none p-0 text-lg leading-relaxed text-slate-800 dark:text-slate-200 focus:ring-0 resize-none" placeholder="Paso 1: Empieza por picar finamente la cebolla..." rows="12"></textarea>
+</div>
+</div>
+<!-- Right Column: Sidebar -->
+<aside class="space-y-8">
+<div class="bg-slate-50 dark:bg-slate-900/40 p-8 rounded-3xl border border-slate-100 dark:border-slate-800 space-y-8">
+<!-- Selects -->
+<div class="space-y-6">
+<div class="space-y-2">
+<label class="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">País de Origen</label>
+<div class="relative">
+<select class="w-full appearance-none bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none cursor-pointer">
+<option value="cl">Chile</option>
+<option value="mx">México</option>
+<option value="pe">Perú</option>
+<option value="es">España</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">expand_more</span>
+</div>
+</div>
+<div class="space-y-2">
+<label class="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">Tipo de Plato</label>
+<div class="relative">
+<select class="w-full appearance-none bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none cursor-pointer">
+<option value="">Seleccionar tipo...</option>
+<option value="entrada">Entrada</option>
+<option value="fondo">Plato de Fondo</option>
+<option value="postre">Postre</option>
+<option value="picoteo">Picoteo</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">expand_more</span>
+</div>
+</div>
+<div class="space-y-2">
+<label class="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">Dificultad</label>
+<div class="grid grid-cols-3 gap-2">
+<button class="py-2 text-xs font-medium rounded-lg border border-slate-200 dark:border-slate-700 hover:border-primary transition-colors text-slate-600 dark:text-slate-400">Fácil</button>
+<button class="py-2 text-xs font-medium rounded-lg border-2 border-primary bg-primary/5 text-primary">Media</button>
+<button class="py-2 text-xs font-medium rounded-lg border border-slate-200 dark:border-slate-700 hover:border-primary transition-colors text-slate-600 dark:text-slate-400">Chef</button>
+</div>
+</div>
+</div>
+<hr class="border-slate-200 dark:border-slate-800"/>
+<!-- Lifestyle Chips -->
+<div class="space-y-4">
+<label class="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">Estilos de Vida</label>
+<div class="flex flex-wrap gap-2">
+<label class="cursor-pointer group">
+<input class="hidden peer" type="checkbox"/>
+<span class="px-4 py-2 rounded-full border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-600 dark:text-slate-400 peer-checked:bg-primary peer-checked:border-primary peer-checked:text-white transition-all block">Vegano</span>
+</label>
+<label class="cursor-pointer group">
+<input checked="" class="hidden peer" type="checkbox"/>
+<span class="px-4 py-2 rounded-full border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-600 dark:text-slate-400 peer-checked:bg-primary peer-checked:border-primary peer-checked:text-white transition-all block">Keto</span>
+</label>
+<label class="cursor-pointer group">
+<input class="hidden peer" type="checkbox"/>
+<span class="px-4 py-2 rounded-full border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-600 dark:text-slate-400 peer-checked:bg-primary peer-checked:border-primary peer-checked:text-white transition-all block">Sin Gluten</span>
+</label>
+<label class="cursor-pointer group">
+<input class="hidden peer" type="checkbox"/>
+<span class="px-4 py-2 rounded-full border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-600 dark:text-slate-400 peer-checked:bg-primary peer-checked:border-primary peer-checked:text-white transition-all block">Proteico</span>
+</label>
+<label class="cursor-pointer group">
+<input class="hidden peer" type="checkbox"/>
+<span class="px-4 py-2 rounded-full border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-600 dark:text-slate-400 peer-checked:bg-primary peer-checked:border-primary peer-checked:text-white transition-all block">Bajo en Carbo</span>
+</label>
+</div>
+</div>
+</div>
+<!-- Helpful Tips Card -->
+<div class="p-6 rounded-3xl bg-slate-900 dark:bg-slate-800 text-white shadow-xl shadow-primary/10">
+<div class="flex items-center gap-3 mb-4">
+<span class="material-symbols-outlined text-primary">lightbulb</span>
+<h4 class="font-bold text-sm">Consejo de Pro</h4>
+</div>
+<p class="text-sm text-slate-300 leading-relaxed">Las recetas con más de 3 fotos de pasos intermedios reciben un 40% más de interacción de la comunidad.</p>
+</div>
+</aside>
+</div>
+</main>
+<!-- Sticky Footer -->
+<footer class="fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-background-dark/95 border-t border-slate-100 dark:border-slate-800 py-4 px-6 backdrop-blur-md z-50">
+<div class="max-w-6xl mx-auto flex items-center justify-between">
+<div class="flex items-center gap-2 text-slate-400 text-sm">
+<span class="material-symbols-outlined text-sm animate-pulse text-green-500">cloud_done</span>
+<span>Guardado automáticamente a las 14:32</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="px-6 py-2.5 rounded-xl text-sm font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors">
+                    Cancelar
+                </button>
+<button class="bg-primary hover:bg-primary-dark text-white px-8 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-primary/20 transition-all active:scale-95">
+                    Guardar Receta
+                </button>
+</div>
+</div>
+</footer>
+</body></html>
