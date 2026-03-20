@@ -47,7 +47,7 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
         const token = session?.access_token || localStorage.getItem("access_token");
         const headers = token ? { "Authorization": `Bearer ${token}` } : {};
 
-        const response = await fetch(`http://127.0.0.1:8000/api/recetas/${idReceta}/`, { headers });
+        const response = await fetch(`/api/recetas/${idReceta}/`, { headers });
         if (!response.ok) throw new Error(`Error ${response.status}`);
         
         const data = await response.json();
@@ -102,7 +102,7 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
       if (token) headers['Authorization'] = `Bearer ${token}`;
 
       if (!token) return toast.danger("Acceso Denegado", { description: "Debes estar logueado para marcar como favorito" });
-      await fetch(`http://127.0.0.1:8000/api/recetas/${idReceta}/like/`, { method: 'POST', headers });
+      await fetch(`/api/recetas/${idReceta}/like/`, { method: 'POST', headers });
       setIsFavorite(prev => !prev);
     } catch (err) { console.error(err); }
   };
@@ -113,7 +113,7 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
     try {
       const headers = { 'Content-Type': 'application/json' };
       if (token) headers['Authorization'] = `Bearer ${token}`;
-      await fetch(`http://127.0.0.1:8000/api/recetas/${idReceta}/guardar/`, { method: 'POST', headers });
+      await fetch(`/api/recetas/${idReceta}/guardar/`, { method: 'POST', headers });
       setIsSaved(prev => !prev);
     } catch (err) { console.error(err); }
   };

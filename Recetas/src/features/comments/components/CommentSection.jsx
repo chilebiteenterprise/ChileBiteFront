@@ -349,7 +349,7 @@ function CommentSectionContent({ recipeId }) {
     const [sortType, setSortType] = useState('recent'); 
     
     const topCommentInputRef = useRef(null); 
-    const API_BASE = `http://localhost:8000/api/recetas/${recipeId}/comments/`;
+    const API_BASE = `/api/recetas/${recipeId}/comments/`;
 
     const { session, profile } = useAuth();
     const getToken = () => session?.access_token || localStorage.getItem("access_token");
@@ -447,7 +447,7 @@ function CommentSectionContent({ recipeId }) {
         );
 
         try {
-            const res = await fetch(`http://localhost:8000/api/comments/${commentId}/like/`, {
+            const res = await fetch(`/api/comments/${commentId}/like/`, {
                 method: 'POST', 
                 headers: { 
                     Authorization: `Bearer ${token}`,
@@ -528,7 +528,7 @@ function CommentSectionContent({ recipeId }) {
         if (!token) return;
 
         try {
-            const res = await fetch(`http://localhost:8000/api/comments/${commentId}/`, {
+            const res = await fetch(`/api/comments/${commentId}/`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
@@ -554,7 +554,7 @@ function CommentSectionContent({ recipeId }) {
         if (!token) return;
         
         try {
-            const res = await fetch(`http://localhost:8000/api/comments/${commentId}/`, {
+            const res = await fetch(`/api/comments/${commentId}/`, {
                 method: "DELETE",
                 headers: { Authorization: `Bearer ${token}` },
             });
@@ -574,7 +574,7 @@ function CommentSectionContent({ recipeId }) {
         if (!token || !banModalData) return;
         
         try {
-            const res = await fetch(`http://localhost:8000/api/ban/`, {
+            const res = await fetch(`/api/ban/`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

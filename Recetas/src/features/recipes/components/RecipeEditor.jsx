@@ -44,9 +44,9 @@ const RecetaFormContent = () => {
   const [isOpenPais, setIsOpenPais] = useState(false);
 
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/api/paises/").then(r => r.json()).then(data => setPaises(data));
-    fetch("http://127.0.0.1:8000/api/tipos-plato/").then(r => r.json()).then(data => setTiposPlato(data));
-    fetch("http://127.0.0.1:8000/api/estilos-vida/").then(r => r.json()).then(data => setEstilosVida(data));
+    fetch(${import.meta.env.PUBLIC_API_URL}/api/paises/).then(r => r.json()).then(data => setPaises(data));
+    fetch(${import.meta.env.PUBLIC_API_URL}/api/tipos-plato/).then(r => r.json()).then(data => setTiposPlato(data));
+    fetch(${import.meta.env.PUBLIC_API_URL}/api/estilos-vida/).then(r => r.json()).then(data => setEstilosVida(data));
   }, []);
 
   useEffect(() => {
@@ -90,7 +90,7 @@ const RecetaFormContent = () => {
   const fetchRecipeDetails = async (currentId) => {
     setLoading(true);
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/recetas/${currentId}/`);
+      const res = await fetch(`/api/recetas/${currentId}/`);
       if (!res.ok) throw new Error("Error al cargar la receta para editar.");
       const data = await res.json();
       setRecetaData({ ...initialRecipeState, ...data, id: data.id || currentId });
@@ -178,8 +178,8 @@ const RecetaFormContent = () => {
 
     const method = isEditing ? 'PUT' : 'POST';
     const url = isEditing
-      ? `http://127.0.0.1:8000/api/recetas/${id}/`
-      : `http://127.0.0.1:8000/api/recetas/`;
+      ? `/api/recetas/${id}/`
+      : `/api/recetas/`;
 
     const formattedIngredientes = (recetaData.ingredientes_detalle || []).map(item => ({
       ingrediente_id: item.ingrediente?.id,

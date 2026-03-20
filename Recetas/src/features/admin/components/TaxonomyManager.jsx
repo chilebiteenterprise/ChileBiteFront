@@ -22,9 +22,9 @@ function TaxonomiasAdminContent() {
     }, [profile, session, loading]);
 
     const fetchData = () => {
-        fetch("http://127.0.0.1:8000/api/paises/").then(r => r.json()).then(setPaises);
-        fetch("http://127.0.0.1:8000/api/tipos-plato/").then(r => r.json()).then(setTiposPlato);
-        fetch("http://127.0.0.1:8000/api/estilos-vida/").then(r => r.json()).then(setEstilosVida);
+        fetch(${import.meta.env.PUBLIC_API_URL}/api/paises/).then(r => r.json()).then(setPaises);
+        fetch(${import.meta.env.PUBLIC_API_URL}/api/tipos-plato/).then(r => r.json()).then(setTiposPlato);
+        fetch(${import.meta.env.PUBLIC_API_URL}/api/estilos-vida/).then(r => r.json()).then(setEstilosVida);
     };
 
     const handleSave = async () => {
@@ -38,8 +38,8 @@ function TaxonomiasAdminContent() {
 
         const method = formData.id ? 'PUT' : 'POST';
         const url = formData.id 
-            ? `http://127.0.0.1:8000/api/${endpoint}/${formData.id}/` 
-            : `http://127.0.0.1:8000/api/${endpoint}/`;
+            ? `/api/${endpoint}/${formData.id}/` 
+            : `/api/${endpoint}/`;
 
         await fetch(url, {
             method,
@@ -61,7 +61,7 @@ function TaxonomiasAdminContent() {
         if (entity === 'tipoplato') endpoint = 'tipos-plato';
         if (entity === 'estilovida') endpoint = 'estilos-vida';
 
-        await fetch(`http://127.0.0.1:8000/api/${endpoint}/${id}/`, {
+        await fetch(`/api/${endpoint}/${id}/`, {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${token}` }
         });

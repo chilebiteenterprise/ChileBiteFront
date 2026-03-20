@@ -18,7 +18,7 @@ const IngredientSelector = ({ ingredientes_detalle = [], onChange }) => {
     const fetchIngredientes = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`http://127.0.0.1:8000/api/ingredientes/?search=${encodeURIComponent(search)}`);
+        const res = await fetch(`/api/ingredientes/?search=${encodeURIComponent(search)}`);
         const data = await res.json();
         setResults(data);
       } catch (err) {

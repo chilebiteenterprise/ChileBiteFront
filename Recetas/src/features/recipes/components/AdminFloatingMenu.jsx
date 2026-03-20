@@ -17,7 +17,7 @@ export default function AdminFloatingMenu({ selectedRecipes = [], onDeleteSucces
             const headers = { "Authorization": `Bearer ${token}` };
             
             for (const id of selectedRecipes) {
-                await fetch(`http://127.0.0.1:8000/api/recetas/${id}/`, {
+                await fetch(`/api/recetas/${id}/`, {
                     method: 'DELETE',
                     headers
                 });

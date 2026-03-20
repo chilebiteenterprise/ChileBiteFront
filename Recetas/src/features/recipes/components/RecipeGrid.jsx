@@ -54,7 +54,7 @@ const RecetarioContent = () => {
         const fetchRecipes = async () => {
             setLoading(true);
             try {
-                const res = await fetch("http://127.0.0.1:8000/api/recetas/");
+                const res = await fetch(${import.meta.env.PUBLIC_API_URL}/api/recetas/);
                 if (!res.ok) throw new Error("Error al obtener recetas");
                 const data = await res.json();
                 setRecipes(Array.isArray(data) ? data : []);
