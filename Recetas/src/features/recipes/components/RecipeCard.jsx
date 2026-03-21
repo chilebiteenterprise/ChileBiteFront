@@ -143,24 +143,6 @@ export default function RecipeCard({ receta, usuarioEsAdmin = false, isSelected 
           <button 
             type="button"
             onClick={handleSave}
-            title={guardado ? "Quitar de Guardados" : "Guardar Receta"}
-            className={`w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-md transition-colors border shadow-md ${guardado ? "bg-yellow-500/90 text-white border-yellow-400" : "bg-black/40 text-white border-white/20 hover:bg-black/60"}`}
-          >
-            <Bookmark className={`w-5 h-5 ${guardado ? "fill-current" : ""}`} />
-          </button>
-        </div>
-        <h3 className="text-xl font-bold text-slate-900 dark:text-white leading-tight tracking-tight mb-2 line-clamp-2">
-            {receta.nombre}
-        </h3>
-        <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed line-clamp-2 italic">
-            {receta.descripcion_corta}
-        </p>
-      </div>
-
-      {/* Footer */}
-      <div className="px-5 py-4 flex items-center justify-between border-t border-slate-200/50 dark:border-slate-800/50 mt-auto">
-        {/* Left: Flame Icons + Media */}
-        <div className="flex items-center gap-2">
           <FireContainer selectedDifficulty={dificultadNum} setSelectedDifficulty={() => {}} />
           <span className="text-[11px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">
             {receta.dificultad}
