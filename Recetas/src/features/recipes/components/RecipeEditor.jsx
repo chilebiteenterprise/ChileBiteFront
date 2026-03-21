@@ -4,6 +4,8 @@ import RecipeCard from './RecipeCard';
 import RecetaDetalle from './RecipeDetail'; 
 import IngredientSelector from './IngredientSelector';
 import { addToast, ToastProvider } from "@heroui/toast";
+import DOMPurify from 'dompurify';
+import { useRateLimit } from '@/hooks/useRateLimit';
 
 const DIFICULTADES = ['Muy Fácil', 'Fácil', 'Media', 'Difícil', 'Muy Difícil'];
 
@@ -42,6 +44,9 @@ const RecetaFormContent = () => {
   // Estados visuales custom
   const [pasos, setPasos] = useState(['']);
   const [isOpenPais, setIsOpenPais] = useState(false);
+
+  // Anti-Spam Rate Limiting (evita clicks dobles/bots)
+  const { isRateLimited, executeWithLimit } = useRateLimit(3000);
 
   useEffect(() => {
     const rawApiUrl = import.meta.env.PUBLIC_API_URL || "https://chilebiteback.onrender.com";
@@ -168,72 +173,78 @@ const RecetaFormContent = () => {
     return { cal: cal.toFixed(1), prot: prot.toFixed(1), carb: carb.toFixed(1), gras: gras.toFixed(1) };
   }, [recetaData.ingredientes_detalle]);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    const token = getAuthToken();
-    if (!token) {
-        addToast({ title: "Acceso Denegado", description: "Token de administrador no encontrado.", color: "danger" });
-        return;
-    }
-    if (isEditing && !id) {
-        addToast({ title: "Error Interno", description: "ID de receta no definido para editar.", color: "danger" });
-        return;
-    }
-
-    const rawApiUrl = import.meta.env.PUBLIC_API_URL || "https://chilebiteback.onrender.com";
-    const apiUrl = rawApiUrl?.startsWith("http") ? rawApiUrl : `https://${rawApiUrl}`;
-    const method = isEditing ? 'PUT' : 'POST';
-    const url = isEditing
-      ? `${apiUrl}/api/recetas/${id}/`
-      : `${apiUrl}/api/recetas/`;
-
-    const formattedIngredientes = (recetaData.ingredientes_detalle || []).map(item => ({
-      ingrediente_id: item.ingrediente?.id,
-      cantidad: item.cantidad,
-      unidad: item.unidad
-    }));
-
-    // Ensure final array join (using standard \n\n instead of double escaped)
-    const finalData = { 
-        ...recetaData, 
-        preparacion: pasos.filter(p => p.trim() !== '').join('\n\n'),
-        ingredientes_detalle: formattedIngredientes
-    };
-    if (!isEditing) finalData.contador_likes = 0;
-
-    try {
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify(finalData),
-      });
-
-      let data;
-      try { data = await response.json(); } catch { data = null; }
-
-      if (response.ok) {
-        addToast({
-            title: `Receta ${isEditing ? 'modificada' : 'creada'} con éxito`,
-            description: "Redirigiendo al recetario...",
-            color: "success",
-            timeout: 3000,
-            className: "bg-white dark:bg-[#0f1115] text-[#17c964] border-2 border-[#17c964]/30 font-bold",
-        });
-        setTimeout(() => window.location.href='/recipes', 3000);
-      } else {
-        const errorMsg = data?.detail || data || `Fallo al guardar (Código: ${response.status})`;
-        throw new Error(typeof errorMsg === 'string' ? errorMsg : JSON.stringify(errorMsg));
+    executeWithLimit(async () => {
+      const token = getAuthToken();
+      if (!token) {
+          addToast({ title: "Acceso Denegado", description: "Token de administrador no encontrado.", color: "danger" });
+          return;
       }
-    } catch (error) {
-      console.error("Error al enviar la receta:", error);
-      addToast({
-          title: "Error al guardar",
-          description: error.message,
-          color: "danger",
-          timeout: 5000,
-          className: "bg-white dark:bg-[#0f1115] text-[#f31260] border-2 border-[#f31260]/30 font-bold",
-      });
-    }
+      if (isEditing && !id) {
+          addToast({ title: "Error Interno", description: "ID de receta no definido para editar.", color: "danger" });
+          return;
+      }
+
+      const rawApiUrl = import.meta.env.PUBLIC_API_URL || "https://chilebiteback.onrender.com";
+      const apiUrl = rawApiUrl?.startsWith("http") ? rawApiUrl : `https://${rawApiUrl}`;
+      const method = isEditing ? 'PUT' : 'POST';
+      const url = isEditing
+        ? `${apiUrl}/api/recetas/${id}/`
+        : `${apiUrl}/api/recetas/`;
+
+      const formattedIngredientes = (recetaData.ingredientes_detalle || []).map(item => ({
+        ingrediente_id: item.ingrediente?.id,
+        cantidad: item.cantidad,
+        unidad: item.unidad
+      }));
+
+      // Sanitizar datos contra XSS antes de enviar al backend
+      const finalData = { 
+          ...recetaData, 
+          nombre: DOMPurify.sanitize(recetaData.nombre || ''),
+          descripcion_corta: DOMPurify.sanitize(recetaData.descripcion_corta || ''),
+          descripcion_larga: DOMPurify.sanitize(recetaData.descripcion_larga || ''),
+          sugerencias: DOMPurify.sanitize(recetaData.sugerencias || ''),
+          preparacion: DOMPurify.sanitize(pasos.filter(p => p.trim() !== '').join('\n\n')),
+          ingredientes_detalle: formattedIngredientes
+      };
+      if (!isEditing) finalData.contador_likes = 0;
+
+      try {
+        const response = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify(finalData),
+        });
+
+        let data;
+        try { data = await response.json(); } catch { data = null; }
+
+        if (response.ok) {
+          addToast({
+              title: `Receta ${isEditing ? 'modificada' : 'creada'} con éxito`,
+              description: "Redirigiendo al recetario...",
+              color: "success",
+              timeout: 3000,
+              className: "bg-white dark:bg-[#0f1115] text-[#17c964] border-2 border-[#17c964]/30 font-bold",
+          });
+          setTimeout(() => window.location.href='/recipes', 3000);
+        } else {
+          const errorMsg = data?.detail || data || `Fallo al guardar (Código: ${response.status})`;
+          throw new Error(typeof errorMsg === 'string' ? errorMsg : JSON.stringify(errorMsg));
+        }
+      } catch (error) {
+        console.error("Error al enviar la receta:", error);
+        addToast({
+            title: "Error al guardar",
+            description: error.message,
+            color: "danger",
+            timeout: 5000,
+            className: "bg-white dark:bg-[#0f1115] text-[#f31260] border-2 border-[#f31260]/30 font-bold",
+        });
+      }
+    });
   };
 
   if (authStatus === 'loading' || loading)
@@ -564,10 +575,18 @@ const RecetaFormContent = () => {
             </button>
             <button 
                 type="submit"
-                className="w-full md:w-auto bg-[#b08969] hover:bg-[#9c785c] text-white px-12 py-4 rounded-2xl text-sm font-black shadow-xl shadow-[#b08969]/30 hover:shadow-[#b08969]/50 transition-all active:scale-[0.98] flex items-center justify-center gap-3">
-                <svg xmlns="http://www.w3.org/2000/svg" className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
+                disabled={isRateLimited}
+                className={`w-full md:w-auto px-12 py-4 rounded-2xl text-sm font-black shadow-xl transition-all flex items-center justify-center gap-3 ${isRateLimited ? 'bg-slate-400 text-slate-200 cursor-not-allowed shadow-none border border-slate-300' : 'bg-[#b08969] hover:bg-[#9c785c] text-white shadow-[#b08969]/30 hover:shadow-[#b08969]/50 active:scale-[0.98]'}`}>
+                {isRateLimited ? (
+                  <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
                 {isEditing ? 'Guardar Cambios' : 'Publicar Receta'}
             </button>
         </div>

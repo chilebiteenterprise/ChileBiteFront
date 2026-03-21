@@ -108,20 +108,6 @@ const RecetarioContent = () => {
                 return isTipoPlato || isEstiloVida;
             });
         }
-
-        if (selectedPortions.length > 0)
-            result = result.filter((r) =>
-                selectedPortions.includes(String(r.numero_porcion))
-            );
-
-        if (selectedCountry)
-            result = result.filter((r) => r.pais_detalle?.nombre === selectedCountry);
-
-        if (selectedDifficulty > 0)
-            result = result.filter(
-                (r) => dificultadToNivel(r.dificultad) <= selectedDifficulty
-            );
-
         if (searchQuery.trim() !== "")
             result = result.filter((r) =>
                 r.nombre.toLowerCase().includes(searchQuery.toLowerCase())

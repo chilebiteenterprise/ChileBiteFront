@@ -3,7 +3,8 @@ import { MessageSquare, Send, MessageCircle, Trash2, Edit3, Check, X, ShieldChec
 import { toast } from "@heroui/react";
 import { useAuth, AuthProvider } from '@/features/auth/context/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
-
+import DOMPurify from 'dompurify';
+import { useRateLimit } from '@/hooks/useRateLimit';
 function getTimeAgo(dateString) {
     const date = new Date(dateString);
     const now = new Date();
@@ -128,7 +129,7 @@ const CommentForm = ({
 };
 
 
-function CommentItem({ comment, currentUserId, currentUserRole, onReply, onEdit, onDelete, onToggleVisibility, onBan, replyingTo, newComment, setNewComment, handleSubmitComment, currentUser, onLike }) {
+function CommentItem({ comment, currentUserId, currentUserRole, onReply, onEdit, onDelete, onToggleVisibility, onBan, replyingTo, newComment, setNewComment, handleSubmitComment, currentUser, onLike, isSubmitting }) {
     const [isEditing, setIsEditing] = useState(false);
     const [editContent, setEditContent] = useState(comment.texto);
 
@@ -297,7 +298,7 @@ function CommentItem({ comment, currentUserId, currentUserRole, onReply, onEdit,
                             replyingToComment={comment}
                             currentUser={currentUser}
                             inputRef={replyInputRef}
-                            isSubmitting={false} 
+                            isSubmitting={isSubmitting} 
                         />
                     )}
 
@@ -320,6 +321,7 @@ function CommentItem({ comment, currentUserId, currentUserRole, onReply, onEdit,
                                     setNewComment={setNewComment}
                                     handleSubmitComment={handleSubmitComment}
                                     currentUser={currentUser}
+                                    isSubmitting={isSubmitting}
                                 />
                             ))}
                         </div>
@@ -347,6 +349,9 @@ function CommentSectionContent({ recipeId }) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [visibleCommentCount, setVisibleCommentCount] = useState(INITIAL_LOAD); 
     const [sortType, setSortType] = useState('recent'); 
+    
+    // Anti-Spam Rate Limiting
+    const { isRateLimited, executeWithLimit } = useRateLimit(3000);
     
     const topCommentInputRef = useRef(null); 
     const rawApiUrl = import.meta.env.PUBLIC_API_URL || "https://chilebiteback.onrender.com";
@@ -467,7 +472,7 @@ function CommentSectionContent({ recipeId }) {
         }
     }
 
-    const handleSubmitComment = async () => {
+    const handleSubmitComment = () => {
         if (!newComment.trim()) return;
         
         if (!currentUser) {
@@ -478,51 +483,55 @@ function CommentSectionContent({ recipeId }) {
         const token = getToken(); 
         if (!token) return;
 
-        // Resolve parent comment root for single level nesting view
-        let finalParent = replyingTo;
-        if (replyingTo) {
-            const parentComment = comments.find(c => c.id === replyingTo);
-            if (parentComment && parentComment.comentario_padre) {
-                finalParent = parentComment.comentario_padre; // Attach to root
-            }
-        }
-
-        const payload = {
-            texto: finalParent !== replyingTo && replyingTo ? `@${comments.find(c=>c.id===replyingTo)?.usuario_nombre} ${newComment.trim()}` : newComment.trim(),
-            comentario_padre: finalParent, 
-        };
-        
-        setIsSubmitting(true);
-
-        try {
-            const res = await fetch(API_BASE, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify(payload),
-            });
-
-            if (res.status === 403) {
-                toast.error("Tu cuenta ha sido suspendida para comentar.");
-                return;
+        executeWithLimit(async () => {
+            // Resolve parent comment root for single level nesting view
+            let finalParent = replyingTo;
+            if (replyingTo) {
+                const parentComment = comments.find(c => c.id === replyingTo);
+                if (parentComment && parentComment.comentario_padre) {
+                    finalParent = parentComment.comentario_padre; // Attach to root
+                }
             }
 
-            if (!res.ok) throw new Error("Error creando comentario");
+            const rawText = finalParent !== replyingTo && replyingTo ? `@${comments.find(c=>c.id===replyingTo)?.usuario_nombre} ${newComment.trim()}` : newComment.trim();
 
-            toast.success("Comentario publicado!"); 
-            setNewComment('');
-            setReplyingTo(null);
-            loadComments(); 
-            setVisibleCommentCount(INITIAL_LOAD); 
+            const payload = {
+                texto: DOMPurify.sanitize(rawText),
+                comentario_padre: finalParent, 
+            };
+            
+            setIsSubmitting(true);
 
-        } catch (err) {
-            console.error(err);
-            toast.error("No se pudo publicar el comentario");
-        } finally {
-            setIsSubmitting(false); 
-        }
+            try {
+                const res = await fetch(API_BASE, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify(payload),
+                });
+
+                if (res.status === 403) {
+                    toast.error("Tu cuenta ha sido suspendida para comentar.");
+                    return;
+                }
+
+                if (!res.ok) throw new Error("Error creando comentario");
+
+                toast.success("Comentario publicado!"); 
+                setNewComment('');
+                setReplyingTo(null);
+                loadComments(); 
+                setVisibleCommentCount(INITIAL_LOAD); 
+
+            } catch (err) {
+                console.error(err);
+                toast.error("No se pudo publicar el comentario");
+            } finally {
+                setIsSubmitting(false); 
+            }
+        });
     };
 
     const handleEditComment = async (commentId, newContent, estadoStr = 'visible') => {
@@ -536,7 +545,7 @@ function CommentSectionContent({ recipeId }) {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({ texto: newContent, estado: estadoStr }),
+                body: JSON.stringify({ texto: DOMPurify.sanitize(newContent), estado: estadoStr }),
             });
             if (!res.ok) throw new Error("Error editando comentario");
             toast.success("Comentario actualizado");
@@ -682,7 +691,7 @@ function CommentSectionContent({ recipeId }) {
                         replyingToComment={null}
                         currentUser={currentUser}
                         inputRef={topCommentInputRef}
-                        isSubmitting={isSubmitting}
+                        isSubmitting={isSubmitting || isRateLimited}
                     />
                 )}
                 
@@ -727,6 +736,7 @@ function CommentSectionContent({ recipeId }) {
                                 setNewComment={setNewComment}
                                 handleSubmitComment={handleSubmitComment}
                                 currentUser={currentUser}
+                                isSubmitting={isSubmitting || isRateLimited}
                             />
                         ))}
                         

@@ -149,22 +149,6 @@ export default function RecipeCard({ receta, usuarioEsAdmin = false, isSelected 
             <Bookmark className={`w-5 h-5 ${guardado ? "fill-current" : ""}`} />
           </button>
         </div>
-
-        {/* Subtle bottom overlay for text contrast */}
-        <div className="absolute inset-x-0 bottom-0 h-24 bg-linear-to-t from-black/70 to-transparent pointer-events-none z-0"></div>
-
-        {/* Floating Badges (Bottom-Left) */}
-        <div className="absolute bottom-3 left-3 flex flex-wrap gap-2 z-10 pr-3 pointer-events-none">
-          {receta.pais_detalle && (
-            <div className="px-3 py-1.5 rounded-full bg-black/40 backdrop-blur-lg border border-white/20 text-white text-[10px] font-bold uppercase tracking-widest shadow-lg">
-               {receta.pais_detalle.nombre}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Central Zone */}
-      <div className="p-5 flex-1 flex flex-col">
         <h3 className="text-xl font-bold text-slate-900 dark:text-white leading-tight tracking-tight mb-2 line-clamp-2">
             {receta.nombre}
         </h3>

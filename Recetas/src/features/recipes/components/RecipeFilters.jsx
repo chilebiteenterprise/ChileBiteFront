@@ -167,10 +167,10 @@ const RecipeFilters = ({
                   placeholder="Todos los países"
                   selectedKeys={selectedCountry ? [selectedCountry] : []}
                   onSelectionChange={(keys) => {
-                    const val = Array.from(keys)[0];
+                    const val = (keys instanceof Set || (keys && typeof keys.has === 'function')) ? Array.from(keys)[0] : keys;
                     setSelectedCountry(val || "");
                   }}
-                  variant="bordered"
+                  aria-label="Filtrar por país"
                   size="sm"
                   classNames={{
                     trigger: "bg-gray-50 dark:bg-gray-800/40 border-gray-200 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-500 transition-colors",
