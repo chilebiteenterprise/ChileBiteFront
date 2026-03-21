@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import FireContainer from "./FireContainer.jsx";
-import { Heart, Bookmark, Check, Eye } from "lucide-react";
+import { Heart, Bookmark, Check, Eye, MapPin } from "lucide-react";
 import { toast } from "@heroui/react";
 import { useAuth } from '@/features/auth/context/AuthContext';
 
@@ -128,6 +128,14 @@ export default function RecipeCard({ receta, usuarioEsAdmin = false, isSelected 
           onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/800x600?text=No+Image"; }}
         />
         
+        {/* Floating Country Badge (Bottom-Left) */}
+        <div className="absolute bottom-3 left-3 z-30" data-receta-ignore="true">
+          <span className="px-3 py-1.5 rounded-full flex items-center gap-1.5 backdrop-blur-md transition-colors border shadow-md bg-black/40 text-white border-white/20 text-[10px] font-bold tracking-widest uppercase">
+            <MapPin className="w-3.5 h-3.5" />
+            {receta.pais_detalle ? receta.pais_detalle.nombre : receta.pais}
+          </span>
+        </div>
+
         {/* Floating Badges (Top-Right) */}
         <div className="absolute top-4 right-4 z-30 flex flex-col gap-2" data-receta-ignore="true">
           {usuarioEsAdmin && (
@@ -153,14 +161,9 @@ export default function RecipeCard({ receta, usuarioEsAdmin = false, isSelected 
 
       {/* Middle Content */}
       <div className="p-5 flex flex-col gap-3">
-        <div className="flex items-start justify-between gap-4">
-          <h3 className="text-xl font-bold text-slate-900 dark:text-white leading-tight tracking-tight line-clamp-2">
-            {receta.nombre}
-          </h3>
-          <span className="shrink-0 px-3 py-1 bg-[#b08969]/10 text-[#b08969] dark:text-[#d4a373] text-xs font-semibold tracking-wide uppercase rounded-full">
-            {receta.pais_detalle ? receta.pais_detalle.nombre : receta.pais}
-          </span>
-        </div>
+        <h3 className="text-xl font-bold text-slate-900 dark:text-white leading-tight tracking-tight line-clamp-2">
+          {receta.nombre}
+        </h3>
         <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed line-clamp-2 italic">
             {receta.descripcion_corta}
         </p>
