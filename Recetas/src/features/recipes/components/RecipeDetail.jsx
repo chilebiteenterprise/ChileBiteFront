@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth, AuthProvider } from '@/features/auth/context/AuthContext';
-import { toast } from "@heroui/react";
+import { toast, Skeleton } from "@heroui/react";
 import { ChefHat, Clock, Users, Heart, Share2, BookOpen, ListOrdered, Video, Bookmark, Minus, Plus, Flame, Beef, Wheat, Droplet } from 'lucide-react';
 
 const COLOR_PRINCIPAL = '#b08968';
@@ -132,7 +132,59 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
 
   const navigateBack = () => window.history.back();
 
-  if (loading) return <div className="flex items-center justify-center min-h-screen text-lg text-slate-900 dark:text-zinc-200">Cargando receta...</div>;
+  if (loading) return (
+    <div className="min-h-screen flex flex-col pt-12 pb-12 transition-colors duration-500">
+      <div className="max-w-[1400px] mx-auto w-full px-4 lg:px-8">
+        <div className="premium-glass-wrapper rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col lg:flex-row min-h-[850px] border border-slate-200 dark:border-zinc-800 relative">
+          
+          <div className="lg:w-[320px] xl:w-[380px] p-8 relative flex flex-col justify-between premium-glass-panel border-r border-slate-200 dark:border-zinc-800 z-10">
+            <div>
+              <div className="flex items-center gap-3 mb-10">
+                <Skeleton className="w-14 h-14 rounded-xl" />
+                <Skeleton className="h-8 w-32 rounded-lg" />
+              </div>
+              <div className="space-y-4">
+                {[1, 2, 3].map(i => (
+                  <Skeleton key={i} className="w-full h-14 rounded-2xl" />
+                ))}
+              </div>
+            </div>
+            
+            <div className="pt-8 mt-12 border-t border-slate-200 dark:border-zinc-700">
+              <div className="flex justify-center gap-6">
+                {[1, 2, 3].map(i => (
+                  <Skeleton key={i} className="w-14 h-14 rounded-full" />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex-1 p-8 md:p-12 xl:p-16 relative">
+            <div className="space-y-8">
+              <div className="flex flex-col md:flex-row gap-8 items-start">
+                <div className="flex-1 space-y-4 w-full">
+                  <Skeleton className="h-16 w-3/4 rounded-2xl" />
+                  <Skeleton className="h-6 w-1/4 rounded-lg mb-6" />
+                  <Skeleton className="h-32 w-full rounded-2xl" />
+                </div>
+                <div className="w-full md:w-1/3 flex-shrink-0">
+                  <Skeleton className="h-64 w-full rounded-[2rem]" />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Skeleton className="h-24 w-full rounded-2xl" />
+                <Skeleton className="h-24 w-full rounded-2xl" />
+              </div>
+
+              <Skeleton className="h-48 w-full rounded-[2rem]" />
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  );
   if (error || !receta) return (
     <div className="flex flex-col items-center justify-center min-h-screen text-center text-slate-900 dark:text-zinc-200">
       <p className="text-xl font-semibold mb-4">{error || 'Receta no encontrada'}</p>
