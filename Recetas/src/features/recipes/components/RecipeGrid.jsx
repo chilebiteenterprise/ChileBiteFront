@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import { useAuth, AuthProvider } from '@/features/auth/context/AuthContext';
 import RecipeFilters from "./RecipeFilters";
 import RecipeCard from "./RecipeCard";
+import RecipeSkeleton from "./RecipeSkeleton";
 import RecipeToolbar from "./RecipeToolbar";
 import AdminFloatingMenu from "./AdminFloatingMenu";
 import { Toast } from "@heroui/react";
@@ -168,14 +169,6 @@ const RecetarioContent = () => {
         return pages;
     };
 
-    if (loading) {
-        return (
-            <div className="flex justify-center items-center h-screen text-xl font-semibold text-gray-600">
-                Cargando recetas...
-            </div>
-        );
-    }
-
     if (error) {
         return (
             <div className="flex justify-center items-center h-screen text-red-600 font-semibold">
@@ -211,10 +204,18 @@ const RecetarioContent = () => {
                 />
 
                 {/* Grid de recetas */}
-                {paginatedRecipes.length > 0 ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-6">
+                {loading ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-6 mt-4">
+                        {Array.from({ length: 9 }).map((_, i) => (
+                            <div key={i} className="receta-card-wrapper h-[450px]">
+                                <RecipeSkeleton />
+                            </div>
+                        ))}
+                    </div>
+                ) : paginatedRecipes.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-6 mt-4">
                         {paginatedRecipes.map((r) => (
-                            <div key={r.id} className="receta-card-wrapper">
+                            <div key={r.id} className="receta-card-wrapper h-[450px]">
                                 {/* PASAR LA FUNCIÓN DE CALLBACK PARA ELIMINACIÓN */}
                                 <RecipeCard 
                                     receta={r} 
@@ -232,7 +233,7 @@ const RecetarioContent = () => {
                 )}
 
                 {/* Paginación Moderna */}
-                {totalPages > 1 && (
+                {!loading && totalPages > 1 && (
                     <div className="mt-10 flex justify-center items-center gap-2 mb-8 select-none">
                         {/* Prev Button */}
                         <button

@@ -90,7 +90,15 @@ const CommentForm = ({
             <div className="flex gap-4">
                 <div className="flex-shrink-0">
                     {currentUser?.avatar_url || currentUser?.imagen_perfil ? (
-                        <img src={currentUser.avatar_url || currentUser.imagen_perfil} alt={currentUser?.username || currentUser?.nombres || 'User'} className="w-11 h-11 rounded-full object-cover shadow-md border-2 border-primary-200" />
+                        <img 
+                            src={currentUser.avatar_url || currentUser.imagen_perfil} 
+                            alt={currentUser?.username || currentUser?.nombres || 'User'} 
+                            className="w-11 h-11 rounded-full object-cover shadow-md border-2 border-primary-200"
+                            onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = "https://ui-avatars.com/api/?name=" + (currentUser?.username || currentUser?.nombres || 'U').charAt(0) + "&background=random";
+                            }}
+                        />
                     ) : (
                         <div className="w-11 h-11 rounded-full flex items-center justify-center text-white font-semibold text-lg shadow-md bg-gradient-to-tr from-primary-600 to-primary-400">
                             {(currentUser?.username || currentUser?.nombres || 'U').charAt(0).toUpperCase()}
@@ -161,7 +169,15 @@ function CommentItem({ comment, currentUserId, currentUserRole, onReply, onEdit,
             <div className="flex gap-4">
                 <div className="flex-shrink-0">
                     {comment.usuario_avatar ? (
-                        <img src={comment.usuario_avatar} alt={comment.usuario_nombre || 'User'} className={`w-11 h-11 rounded-full object-cover shadow-xl border-2 ${isAdminComment ? 'border-sky-400' : 'border-default-200'}`} />
+                        <img 
+                            src={comment.usuario_avatar} 
+                            alt={comment.usuario_nombre || 'User'} 
+                            className={`w-11 h-11 rounded-full object-cover shadow-xl border-2 ${isAdminComment ? 'border-sky-400' : 'border-default-200'}`}
+                            onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = "https://ui-avatars.com/api/?name=" + (comment.usuario_nombre || 'U').charAt(0) + "&background=random";
+                            }}
+                        />
                     ) : (
                         <div className={`w-11 h-11 rounded-full flex items-center justify-center text-white font-semibold text-lg shadow-xl ${isAdminComment ? 'bg-gradient-to-tr from-sky-600 to-sky-400' : 'bg-gradient-to-tr from-default-600 to-default-400'}`}>
                             {comment.usuario_nombre?.charAt(0).toUpperCase() || 'U'}

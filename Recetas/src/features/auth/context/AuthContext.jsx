@@ -79,6 +79,11 @@ export const AuthProvider = ({ children }) => {
 
     // 2. Suscripción a eventos
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
+      // Sincronizar Caché Global para las navegaciones de ASTRO sin recarga
+      if (['SIGNED_IN', 'SIGNED_OUT', 'TOKEN_REFRESHED', 'USER_UPDATED', 'INITIAL_SESSION'].includes(event)) {
+          sharedSessionPromise = Promise.resolve({ data: { session: currentSession }, error: null });
+      }
+
       if (!mounted) return;
 
       if (event === "TOKEN_REFRESHED" || event === "USER_UPDATED") {
@@ -91,6 +96,8 @@ export const AuthProvider = ({ children }) => {
       setUser(currentSession?.user ?? null);
 
       if (event === "SIGNED_OUT") {
+        sharedProfilePromise = null;
+        lastProfileUserId = null;
         setProfile(null);
         setLoading(false);
         return;
@@ -181,10 +188,14 @@ export const AuthProvider = ({ children }) => {
   };
 
   /**
-   * Fuerza recarga del perfil desde Supabase (datos siempre frescos).
+   * Fuerza recarga del perfil desde Supabase y limpia el caché global.
    */
   const refreshProfile = () => {
-    if (user?.id) return fetchSupabaseProfile(user.id);
+    if (user?.id) {
+       sharedProfilePromise = null; 
+       lastProfileUserId = null;
+       return fetchSupabaseProfile(user.id);
+    }
   };
 
   const value = {

@@ -59,6 +59,19 @@ export default function AdminFloatingMenu({ selectedRecipes = [], onDeleteSucces
             color: "text-white", 
             bg: "bg-[#4A5568]",
             bgHover: "hover:bg-[#2D3748]"
+        },
+        {
+            id: 'ingredients',
+            label: "Gestionar Ingredientes",
+            icon: (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h1.5M9 14.25L15.75 21a2.25 2.25 0 003.182 0l1.06-1.06a2.25 2.25 0 000-3.182L13.25 10m-3.969-3.969l1.06-1.06a2.25 2.25 0 000-3.182L8.25 3.75m-4.5 9h1M12 12v.01M3.75 20.25v-1.5M15 6h.01M6.75 10.5h.01" />
+                </svg>
+            ),
+            action: () => window.location.href = '/admin/ingredient-manager',
+            color: "text-white", 
+            bg: "bg-[#2E8B57]",
+            bgHover: "hover:bg-[#236B43]"
         }
     ];
 
