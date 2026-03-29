@@ -5,6 +5,7 @@ export default function Footer() {
     company: [{ label: "Blog", href: "#" }],
     resources: [
       { label: "Recetas", href: "/recipes" },
+      { label: "Calculadora de Macros", href: "/calculadora" },
       { label: "Locales", href: "#" },
       { label: "Comunidad", href: "#" },
     ],

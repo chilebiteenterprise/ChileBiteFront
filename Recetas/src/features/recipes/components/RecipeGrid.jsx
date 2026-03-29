@@ -201,6 +201,7 @@ const RecetarioContent = () => {
                     setSortField={setSortField}
                     sortOrder={sortOrder}
                     setSortOrder={setSortOrder}
+                    allRecipeNames={recipes.map(r => r.nombre)}
                 />
 
                 {/* Grid de recetas */}
