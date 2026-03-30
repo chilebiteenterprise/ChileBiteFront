@@ -1,0 +1,132 @@
+---
+import "@/styles/global.css";
+import Footer from '@/shared/layout/Footer';
+import Navbar from '@/shared/layout/Navbar';
+import VideoEmbed from '@/components/common/VideoEmbed.astro';
+import { getCollection, render } from 'astro:content';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+  return posts.map(post => ({
+    params: { slug: post.slug },
+    props: post,
+  }));
+}
+
+const post = Astro.props;
+const { Content } = await render(post);
+
+// Map common components to MDX
+const components = {
+  Video: VideoEmbed,
+};
+---
+
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{post.data.title} | La Ruta del Sabor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script is:inline>
+      const theme = (() => {
+        if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
+          return localStorage.getItem('theme');
+        }
+        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          return 'dark';
+        }
+        return 'light';
+      })();
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    </script>
+  </head>
+
+  <body class="bg-stone-50 dark:bg-gray-950 text-gray-800 dark:text-gray-200 transition-colors duration-300">
+    <Navbar client:only="react" />
+
+    <main class="pt-32 pb-16 px-4">
+      <article class="max-w-4xl mx-auto">
+        {/* Breadcrumbs */}
+        <nav class="flex items-center space-x-2 text-xs font-bold uppercase tracking-widest text-gray-500 mb-8">
+          <a href="/blog" class="hover:text-[#b08968] transition-colors uppercase tracking-widest">La Ruta</a>
+          <span>/</span>
+          <span class="text-[#b08968]">{post.data.location.label}</span>
+        </nav>
+
+        {/* Header */}
+        <header class="mb-12">
+          <h1 class="text-4xl md:text-6xl font-black text-gray-900 dark:text-white leading-tight mb-6">
+            {post.data.title}
+          </h1>
+          <div class="flex items-center space-x-6 text-sm text-gray-400 font-medium">
+             <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-calendar-days text-[#b08968]"></i>
+                <time>{new Intl.DateTimeFormat('es-CL', { dateStyle: 'long' }).format(post.data.pubDate)}</time>
+             </div>
+             <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-location-dot text-[#b08968]"></i>
+                <span>{post.data.location.label}</span>
+             </div>
+          </div>
+        </header>
+
+        {/* Featured Image or main video could be here */}
+        {post.data.heroImage && (
+          <div class="rounded-3xl overflow-hidden shadow-2xl border border-white/10 mb-12 relative group h-[400px] md:h-[500px]">
+            <img 
+               src={post.data.heroImage} 
+               alt={post.data.title} 
+               class="w-full h-full object-cover transition-transform duration-700" 
+            />
+            <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+          </div>
+        )}
+
+        {/* MDX Content */}
+        <div class="prose prose-invert prose-lg max-w-none 
+          prose-headings:text-white prose-headings:font-black
+          prose-p:text-gray-300 prose-p:leading-relaxed
+          prose-a:text-[#b08968] prose-a:no-underline hover:prose-a:underline
+          prose-strong:text-white prose-blockquote:border-l-[#b08968] prose-blockquote:bg-gray-900/50 prose-blockquote:p-6 prose-blockquote:rounded-r-2xl
+          prose-img:rounded-3xl prose-img:shadow-xl
+          space-y-8"
+        >
+          <Content components={components} />
+        </div>
+
+        {/* Back Link */}
+        <div class="mt-20 pt-10 border-t border-gray-200 dark:border-white/10">
+          <a href="/blog" class="inline-flex items-center space-x-3 text-gray-900 dark:text-white font-black hover:text-[#b08968] transition-all group">
+            <i class="fa-solid fa-arrow-left group-hover:-translate-x-1 transition-transform"></i>
+            <span>Volver a la Ruta</span>
+          </a>
+        </div>
+      </article>
+    </main>
+
+    <Footer client:visible />
+  </body>
+</html>
+
+<style is:global>
+  /* Standard Tailwind Typography (prose) equivalent overrides */
+  .prose h2 { 
+    font-size: 1.875rem; 
+    line-height: 2.25rem;
+    font-weight: 700;
+    margin-top: 3rem;
+    margin-bottom: 1.5rem;
+    color: white;
+  }
+  .prose p { 
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+    color: rgb(209 213 219); /* text-gray-300 */
+    margin-bottom: 1.5rem;
+  }
+</style>

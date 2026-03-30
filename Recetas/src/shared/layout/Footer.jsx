@@ -2,7 +2,7 @@ import { ChefHat, Instagram, Twitter, Mail, MapPin } from "lucide-react";
 
 export default function Footer() {
   const footerLinks = {
-    company: [{ label: "Blog", href: "#" }],
+    company: [{ label: "La Ruta", href: "/blog" }],
     resources: [
       { label: "Recetas", href: "/recipes" },
       { label: "Calculadora de Macros", href: "/calculadora" },

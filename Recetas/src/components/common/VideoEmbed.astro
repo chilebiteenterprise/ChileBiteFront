@@ -1,0 +1,25 @@
+---
+const { platform, id } = Astro.props;
+---
+
+<div class="relative w-full rounded-3xl overflow-hidden shadow-2xl border border-white/10 group bg-gray-900 aspect-video mb-8">
+  {platform === 'YouTube' && (
+    <iframe
+      src={`https://www.youtube.com/embed/${id}`}
+      title="YouTube video player"
+      class="absolute inset-0 w-full h-full"
+      frameborder="0"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+      allowfullscreen
+    ></iframe>
+  )}
+
+  {platform === 'TikTok' && (
+    <blockquote class="tiktok-embed w-full h-full" cite={`https://www.tiktok.com/v/${id}`} data-video-id={id} style="max-width: 605px;min-width: 325px;" >
+      <section>
+        <a target="_blank" title="tiktok.com" href={`https://www.tiktok.com/v/${id}`}>tiktok.com</a> 
+      </section>
+    </blockquote>
+    <script async src="https://www.tiktok.com/embed.js"></script>
+  )}
+</div>

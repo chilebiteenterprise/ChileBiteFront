@@ -6,11 +6,11 @@ import { Toast, toast, Alert } from "@heroui/react";
 
 function NavbarContent() {
   const { user, profile, logout, loginWithGoogle } = useAuth();
-  
+
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
-  const [loginError, setLoginError] = useState(null); 
+  const [loginError, setLoginError] = useState(null);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isForgotPwOpen, setIsForgotPwOpen] = useState(false);
   const [isSendingReset, setIsSendingReset] = useState(false);
@@ -158,11 +158,11 @@ function NavbarContent() {
           {/* User actions desktop */}
           <div className="hidden md:flex items-center relative" ref={loginRef}>
             <button onClick={handleUserClick} className={`p-1.5 rounded-full transition-all duration-300 hover:scale-110 flex items-center justify-center overflow-hidden border-2 ${isLoggedIn ? "border-[#b08968]" : "bg-[#b08968] border-transparent"}`}>
-               {isLoggedIn ? (
-                  <img src={currentAvatar} alt="Avatar" className="w-7 h-7 object-cover rounded-full" />
-               ) : (
-                  <User className="w-6 h-6 text-white m-0.5" />
-               )}
+              {isLoggedIn ? (
+                <img src={currentAvatar} alt="Avatar" className="w-7 h-7 object-cover rounded-full" />
+              ) : (
+                <User className="w-6 h-6 text-white m-0.5" />
+              )}
             </button>
 
             {isLoginOpen && (
@@ -180,7 +180,7 @@ function NavbarContent() {
                     <>
                       <h3 className="text-xl font-black mb-2 dark:text-white" style={{ color: "#b08968" }}>Recuperar Acceso</h3>
                       <p className="text-xs text-default-500 mb-4">Ingresa tu correo y te enviaremos un enlace mágico.</p>
-                      
+
                       <form onSubmit={handleResetPassword} className="space-y-4">
                         <div>
                           <label className="block text-xs font-bold text-default-600 mb-1 ml-1 uppercase tracking-wide">Email</label>
@@ -189,7 +189,7 @@ function NavbarContent() {
                             <input type="email" name="email" required className="w-full pl-10 pr-4 py-3 border-2 border-border rounded-xl outline-none bg-field text-foreground placeholder-default-500 focus:border-[#b08968] focus:bg-default transition-colors font-medium" placeholder="tu@email.com" />
                           </div>
                         </div>
-                        
+
                         {loginError && (
                           <Alert status="danger" className="py-2">
                             <Alert.Indicator />
@@ -201,7 +201,7 @@ function NavbarContent() {
                           {isSendingReset ? "Enviando..." : "Enviar enlace mágico"}
                         </button>
                       </form>
-                      
+
                       <div className="mt-5 pt-5 border-t border-divider">
                         <button type="button" onClick={() => setIsForgotPwOpen(false)} className="w-full text-center text-sm font-extrabold hover:underline" style={{ color: "#b08968" }}>
                           Volver al inicio de sesión
@@ -211,7 +211,7 @@ function NavbarContent() {
                   ) : (
                     <>
                       <h3 className="text-xl font-black mb-4 dark:text-white" style={{ color: "#b08968" }}>Iniciar Sesión</h3>
-                      
+
                       <form onSubmit={handleLogin} className="space-y-4">
                         {/* Email */}
                         <div>
@@ -234,39 +234,39 @@ function NavbarContent() {
                           </div>
                         </div>
 
-                      {/* Login error as HeroUI alert */}
-                      {loginError && (
-                        <Alert status="danger" className="py-2">
-                          <Alert.Indicator />
-                          <Alert.Content>
-                            <Alert.Description>{loginError}</Alert.Description>
-                          </Alert.Content>
-                        </Alert>
-                      )}
+                        {/* Login error as HeroUI alert */}
+                        {loginError && (
+                          <Alert status="danger" className="py-2">
+                            <Alert.Indicator />
+                            <Alert.Content>
+                              <Alert.Description>{loginError}</Alert.Description>
+                            </Alert.Content>
+                          </Alert>
+                        )}
 
-                      <button type="submit" className="w-full py-3 mt-2 rounded-xl text-white font-extrabold hover:opacity-90 hover:scale-[1.02] transition-all shadow-lg" style={{ backgroundColor: "#b08968", shadowColor: "rgba(176, 137, 104, 0.4)" }}>
-                        Entrar
-                      </button>
-                      
-                      <div className="relative my-5"><div className="absolute inset-0 flex items-center"><span className="w-full border-t border-divider"></span></div><div className="relative flex justify-center text-xs uppercase"><span className="bg-overlay px-2 text-default-500 font-bold">O</span></div></div>
-                      
-                      <button type="button" onClick={() => loginWithGoogle()} className="w-full flex items-center justify-center space-x-3 py-3 border-2 border-border text-foreground-700 rounded-xl hover:bg-default-hover transition-colors font-bold truncate">
-                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-5 h-5 bg-white rounded-full p-0.5" alt="Google" />
-                        <span>Continuar con Google</span>
-                      </button>
-                    </form>
+                        <button type="submit" className="w-full py-3 mt-2 rounded-xl text-white font-extrabold hover:opacity-90 hover:scale-[1.02] transition-all shadow-lg" style={{ backgroundColor: "#b08968", shadowColor: "rgba(176, 137, 104, 0.4)" }}>
+                          Entrar
+                        </button>
 
-                    <div className="mt-5 pt-5 border-t border-divider space-y-2">
-                       <p className="text-center text-sm font-medium text-default-500">¿No tienes cuenta? <a href="/auth/register" className="font-extrabold hover:underline ml-1" style={{ color: "#b08968" }}>Regístrate</a></p>
-                    </div>
-                  </>
-                )
+                        <div className="relative my-5"><div className="absolute inset-0 flex items-center"><span className="w-full border-t border-divider"></span></div><div className="relative flex justify-center text-xs uppercase"><span className="bg-overlay px-2 text-default-500 font-bold">O</span></div></div>
+
+                        <button type="button" onClick={() => loginWithGoogle()} className="w-full flex items-center justify-center space-x-3 py-3 border-2 border-border text-foreground-700 rounded-xl hover:bg-default-hover transition-colors font-bold truncate">
+                          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-5 h-5 bg-white rounded-full p-0.5" alt="Google" />
+                          <span>Continuar con Google</span>
+                        </button>
+                      </form>
+
+                      <div className="mt-5 pt-5 border-t border-divider space-y-2">
+                        <p className="text-center text-sm font-medium text-default-500">¿No tienes cuenta? <a href="/auth/register" className="font-extrabold hover:underline ml-1" style={{ color: "#b08968" }}>Regístrate</a></p>
+                      </div>
+                    </>
+                  )
                 ) : (
                   <div className="space-y-4">
                     {/* Avatar + info */}
                     <div className="flex items-center space-x-3 pb-4 border-b border-divider">
                       <div className="w-14 h-14 rounded-full flex items-center justify-center overflow-hidden border-2 p-0.5" style={{ borderColor: "#b08968" }}>
-                        <img src={currentAvatar} alt="Avatar" className="w-full h-full object-cover rounded-full"/>
+                        <img src={currentAvatar} alt="Avatar" className="w-full h-full object-cover rounded-full" />
                       </div>
                       <div className="overflow-hidden">
                         <p className="font-extrabold text-foreground truncate text-lg">{profile?.username || user?.user_metadata?.user_name || user?.user_metadata?.full_name || "Usuario"}</p>
@@ -275,7 +275,7 @@ function NavbarContent() {
                     </div>
 
                     {/* Ver perfil */}
-                   <button
+                    <button
                       onClick={() => {
                         window.location.href = "/profile";
                         setIsLoginOpen(false);
@@ -305,12 +305,12 @@ function NavbarContent() {
           <div className={`md:hidden absolute top-full left-0 right-0 bg-background shadow-2xl transition-all duration-300 overflow-hidden z-40 ${isMobileMenuOpen ? "max-h-[1000px] py-4 border-t border-divider" : "max-h-0"}`}>
             <div className="px-4 space-y-3">
               <div className="flex justify-between items-center mb-4 px-4 pb-4 border-b border-divider">
-                  <span className="text-sm font-bold text-default-500 uppercase tracking-wider">Modo Oscuro</span>
-                  <button onClick={toggleDarkMode} className="p-2 rounded-full bg-default text-default-600 hover:bg-default-hover">
-                    {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-                  </button>
+                <span className="text-sm font-bold text-default-500 uppercase tracking-wider">Modo Oscuro</span>
+                <button onClick={toggleDarkMode} className="p-2 rounded-full bg-default text-default-600 hover:bg-default-hover">
+                  {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                </button>
               </div>
-              
+
               {navLinks.map((link) => {
                 const Icon = link.icon;
                 const isActive = window.location.pathname === link.href;
@@ -339,10 +339,10 @@ function NavbarContent() {
                     <button type="submit" className="w-full py-4 rounded-xl text-white font-extrabold text-lg shadow-lg" style={{ backgroundColor: "#b08968" }}>Iniciar sesión</button>
                   </form>
                   <div className="relative my-5"><div className="absolute inset-0 flex items-center"><span className="w-full border-t border-divider"></span></div><div className="relative flex justify-center text-xs uppercase"><span className="bg-background px-2 text-default-500 font-bold">O</span></div></div>
-                  
+
                   <button onClick={() => loginWithGoogle()} className="w-full flex items-center justify-center space-x-3 py-4 border-2 border-border rounded-xl font-bold text-foreground-700 hover:bg-default-hover transition-colors">
-                     <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-5 h-5 bg-white rounded-full p-0.5" alt="Google" />
-                     <span>Continuar con Google</span>
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-5 h-5 bg-white rounded-full p-0.5" alt="Google" />
+                    <span>Continuar con Google</span>
                   </button>
                   <div className="flex justify-between items-center text-sm pt-4 px-2">
                     <a href="/auth/register" className="font-extrabold" style={{ color: "#b08968" }}>Crear cuenta</a>
@@ -352,7 +352,7 @@ function NavbarContent() {
               ) : (
                 <div className="mt-6 pt-6 border-t border-divider space-y-4 px-2">
                   <div className="flex items-center space-x-4 p-4 bg-default rounded-2xl overflow-hidden">
-                    <img src={currentAvatar} alt="Avatar" className="w-12 h-12 object-cover rounded-full border-2 border-divider"/>
+                    <img src={currentAvatar} alt="Avatar" className="w-12 h-12 object-cover rounded-full border-2 border-divider" />
                     <div className="overflow-hidden">
                       <p className="font-extrabold text-foreground truncate text-lg">{profile?.username || "Usuario"}</p>
                       <p className="text-sm font-medium text-default-500 truncate w-48">{user?.email}</p>

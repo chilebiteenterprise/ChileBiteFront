@@ -12,12 +12,11 @@ const normalize = (s = "") =>
   s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
 // Pill component for macros display
-function MacroPill({ label, value, unit, color, icon }) {
+function MacroPill({ label, value, unit, color }) {
   return (
     <div
       className={`flex flex-col items-center justify-center p-4 rounded-2xl border ${color} gap-1 min-w-[110px] flex-1`}
     >
-      <span className="text-xl">{icon}</span>
       <span className="text-2xl font-black tabular-nums">
         {value.toFixed(1)}
         <span className="text-sm font-semibold ml-0.5">{unit}</span>
@@ -43,7 +42,7 @@ function IngredientSearch({ onAdd, allIngredients, loadingIngredients }) {
     const q = normalize(query.trim());
     if (!q || q.length < 2) return [];
     return allIngredients
-      .filter((ing) => normalize(ing.nombre_es || ing.nombre).includes(q))
+      .filter((ing) => normalize(ing.nombre).includes(q))
       .slice(0, 8);
   }, [query, allIngredients]);
 
@@ -138,7 +137,7 @@ function IngredientSearch({ onAdd, allIngredients, loadingIngredients }) {
           }}
           onFocus={() => suggestions.length > 0 && setIsOpen(true)}
           onKeyDown={handleKeyDown}
-          className="w-full pl-12 pr-4 py-4 bg-white dark:bg-[#1a1d24] border-2 border-gray-200 dark:border-gray-700 rounded-2xl focus:outline-none focus:border-[#A0522D] text-gray-900 dark:text-gray-100 placeholder-gray-400 transition-all font-medium text-base disabled:opacity-50 disabled:cursor-wait shadow-sm"
+          className="w-full pl-12 pr-4 py-4 bg-white dark:bg-[#1a1d24] border-2 border-gray-200 dark:border-gray-700 rounded-2xl outline-none focus:border-[#A0522D] text-gray-900 dark:text-gray-100 placeholder-gray-400 transition-all font-medium text-base disabled:opacity-50 disabled:cursor-wait shadow-sm"
         />
       </div>
 
@@ -151,7 +150,7 @@ function IngredientSearch({ onAdd, allIngredients, loadingIngredients }) {
           </div>
           <ul className="py-1 max-h-64 overflow-y-auto">
             {suggestions.map((ing, i) => {
-              const name = ing.nombre_es || ing.nombre;
+              const name = ing.nombre;
               return (
                 <li
                   key={ing.id || name}
@@ -166,43 +165,22 @@ function IngredientSearch({ onAdd, allIngredients, loadingIngredients }) {
                       : "hover:bg-gray-50 dark:hover:bg-gray-800/60"
                   }`}
                 >
-                  <span
-                    className={`shrink-0 w-8 h-8 flex items-center justify-center rounded-xl text-sm ${
-                      i === activeIdx
-                        ? "bg-[#A0522D]/15"
-                        : "bg-gray-100 dark:bg-gray-800"
-                    }`}
-                  >
-                    🥗
-                  </span>
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <p className="font-medium text-gray-800 dark:text-gray-200 truncate">
                       {highlight(name, query)}
                     </p>
-                    {ing.nombre && ing.nombre_es && ing.nombre !== ing.nombre_es && (
-                      <p className="text-xs text-gray-400 truncate">{ing.nombre}</p>
-                    )}
                   </div>
                   <div className="ml-auto shrink-0 text-right text-xs text-gray-400">
-                    {ing.calorias != null && (
-                      <span>{Math.round(ing.calorias)} kcal</span>
+                    {ing.calorias_por_100g != null && (
+                      <span className="bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400 px-2 py-0.5 rounded-full font-bold">
+                        {Math.round(ing.calorias_por_100g)} kcal
+                      </span>
                     )}
                   </div>
                 </li>
               );
             })}
           </ul>
-          <div className="px-4 py-2 border-t border-gray-100 dark:border-gray-800 flex items-center gap-3 text-[10px] text-gray-400">
-            <span>
-              <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded font-mono">↑↓</kbd> navegar
-            </span>
-            <span>
-              <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded font-mono">Enter</kbd> añadir
-            </span>
-            <span>
-              <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded font-mono">Esc</kbd> cerrar
-            </span>
-          </div>
         </div>
       )}
     </div>
@@ -213,53 +191,74 @@ function IngredientSearch({ onAdd, allIngredients, loadingIngredients }) {
 // Single ingredient row in the list
 // ─────────────────────────────────────────────────────────────────────────────
 function IngredientRow({ item, onUpdateGrams, onRemove }) {
-  const name = item.nombre_es || item.nombre;
+  const name = item.nombre;
   const factor = item.grams / 100;
 
-  return (
-    <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700/60 group transition-all hover:shadow-sm">
-      {/* Icon */}
-      <span className="text-lg shrink-0">🥗</span>
+  const handleAdjust = (val) => {
+    onUpdateGrams(item._uid, Math.max(1, item.grams + val));
+  };
 
+  return (
+    <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700/60 group transition-all hover:shadow-sm">
       {/* Name */}
       <div className="flex-1 min-w-0">
-        <p className="font-semibold text-gray-800 dark:text-gray-100 text-sm truncate">
+        <p className="font-bold text-gray-800 dark:text-gray-100 text-base truncate">
           {name}
         </p>
-        <p className="text-xs text-gray-400 mt-0.5">
-          {item.calorias != null &&
-            `${(item.calorias * factor).toFixed(0)} kcal · `}
-          {item.proteinas != null &&
-            `P: ${(item.proteinas * factor).toFixed(1)}g · `}
-          {item.carbohidratos != null &&
-            `C: ${(item.carbohidratos * factor).toFixed(1)}g · `}
-          {item.grasas != null && `G: ${(item.grasas * factor).toFixed(1)}g`}
-        </p>
+        <div className="flex flex-wrap gap-x-2 text-xs text-gray-400 mt-1">
+          <span className="font-medium text-[#A0522D]">{(item.calorias_por_100g * factor).toFixed(0)} kcal</span>
+          <span className="opacity-40">•</span>
+          <span>P: {(item.proteinas_por_100g * factor).toFixed(1)}g</span>
+          <span className="opacity-40">•</span>
+          <span>C: {(item.carbohidratos_por_100g * factor).toFixed(1)}g</span>
+          <span className="opacity-40">•</span>
+          <span>G: {(item.grasas_por_100g * factor).toFixed(1)}g</span>
+        </div>
       </div>
 
-      {/* Grams input */}
-      <div className="flex items-center gap-1 shrink-0">
-        <input
-          type="number"
-          min={1}
-          max={2000}
-          value={item.grams}
-          onChange={(e) => onUpdateGrams(item._uid, Math.max(1, Number(e.target.value)))}
-          className="w-16 text-center text-sm font-bold bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl py-1.5 focus:outline-none focus:border-[#A0522D] transition-colors"
-        />
-        <span className="text-xs text-gray-400 font-medium">g</span>
-      </div>
+      {/* Controller: Comfort Gram selection */}
+      <div className="flex items-center gap-3">
+        <div className="flex items-center bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-1 shadow-sm">
+          <button
+            onClick={() => handleAdjust(-10)}
+            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 transition-colors active:scale-90"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M20 12H4" />
+            </svg>
+          </button>
+          
+          <input
+            type="number"
+            min={1}
+            max={2000}
+            value={item.grams}
+            onChange={(e) => onUpdateGrams(item._uid, Math.max(1, Number(e.target.value)))}
+            className="w-14 text-center text-sm font-black bg-transparent border-none outline-none text-gray-900 dark:text-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          />
+          <span className="text-[10px] uppercase font-bold text-gray-400 pr-1">g</span>
 
-      {/* Remove */}
-      <button
-        onClick={() => onRemove(item._uid)}
-        className="shrink-0 w-8 h-8 flex items-center justify-center rounded-xl text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors opacity-0 group-hover:opacity-100"
-        aria-label="Eliminar ingrediente"
-      >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      </button>
+          <button
+            onClick={() => handleAdjust(10)}
+            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 transition-colors active:scale-90"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Remove */}
+        <button
+          onClick={() => onRemove(item._uid)}
+          className="w-10 h-10 flex items-center justify-center rounded-xl text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all active:scale-95"
+          aria-label="Eliminar ingrediente"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+        </button>
+      </div>
     </div>
   );
 }
@@ -281,10 +280,7 @@ export default function MacroCalculator() {
     fetch(`${API_URL}/api/ingredientes/`)
       .then((r) => r.json())
       .then((data) => {
-        const list = Array.isArray(data)
-          ? data
-          : data.results || [];
-        setAllIngredients(list);
+        setAllIngredients(Array.isArray(data) ? data : data.results || []);
       })
       .catch(console.error)
       .finally(() => setLoadingIngredients(false));
@@ -309,69 +305,57 @@ export default function MacroCalculator() {
 
   const handleClear = () => setSelectedItems([]);
 
-  // Totals (values in DB are per 100g)
+  // Totals Summation
   const totals = useMemo(() => {
     return selectedItems.reduce(
       (acc, item) => {
         const f = item.grams / 100;
         return {
-          calorias: acc.calorias + (item.calorias ?? 0) * f,
-          proteinas: acc.proteinas + (item.proteinas ?? 0) * f,
-          carbohidratos: acc.carbohidratos + (item.carbohidratos ?? 0) * f,
-          grasas: acc.grasas + (item.grasas ?? 0) * f,
-          fibra: acc.fibra + (item.fibra ?? 0) * f,
+          calorias: acc.calorias + (Number(item.calorias_por_100g) || 0) * f,
+          proteinas: acc.proteinas + (Number(item.proteinas_por_100g) || 0) * f,
+          carbohidratos: acc.carbohidratos + (Number(item.carbohidratos_por_100g) || 0) * f,
+          grasas: acc.grasas + (Number(item.grasas_por_100g) || 0) * f,
+          fibra: acc.fibra + (Number(item.fibra_por_100g) || 0) * f,
         };
       },
       { calorias: 0, proteinas: 0, carbohidratos: 0, grasas: 0, fibra: 0 }
     );
   }, [selectedItems]);
 
-  // Macros % for donut-like chart
+  // Macros % for donut chart (using energy contribution)
   const kcalFromP = totals.proteinas * 4;
   const kcalFromC = totals.carbohidratos * 4;
   const kcalFromF = totals.grasas * 9;
-  const totalKcalMacros = kcalFromP + kcalFromC + kcalFromF || 1;
+  const kcalFromFib = totals.fibra * 2; // Fiber approx 2kcal/g
+  const totalKcalMacros = kcalFromP + kcalFromC + kcalFromF + kcalFromFib || 1;
   const pctP = (kcalFromP / totalKcalMacros) * 100;
   const pctC = (kcalFromC / totalKcalMacros) * 100;
   const pctF = (kcalFromF / totalKcalMacros) * 100;
+  const pctFib = (kcalFromFib / totalKcalMacros) * 100;
 
-  // Segments for the ring chart
-  const CIRCUMFERENCE = 2 * Math.PI * 45; // r=45
-  const segP = (pctP / 100) * CIRCUMFERENCE;
-  const segC = (pctC / 100) * CIRCUMFERENCE;
-  const segF = (pctF / 100) * CIRCUMFERENCE;
+  const CIRCUMFERENCE = 2 * Math.PI * 45;
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* ── Header ── */}
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:grid-cols-8 lg:px-8 py-8">
+      {/* Header */}
       <div className="mb-10 text-center">
-        <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#A0522D]/10 text-[#A0522D] font-bold text-sm uppercase tracking-wider mb-4">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-              d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-            />
-          </svg>
-          Herramienta Beta
-        </span>
         <h1 className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white tracking-tight mb-3">
-          Calculadora de{" "}
-          <span className="text-[#A0522D]">Macronutrientes</span>
+          Calculadora de <span className="text-[#A0522D]">Macronutrientes</span>
         </h1>
-        <p className="text-gray-500 dark:text-gray-400 max-w-xl mx-auto leading-relaxed">
-          Agrega ingredientes libremente y calcula en tiempo real las calorías,
-          proteínas, carbohidratos y grasas de tu plato. Datos basados en el
-          dataset USDA normalizado.
+        <p className="text-gray-500 dark:text-gray-400 max-w-xl mx-auto leading-relaxed text-sm">
+          Añade ingredientes y calcula en tiempo real la nutrición de tu plato.
+          Datos basados en nuestro dataset normalizado.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        {/* ── LEFT: Search + Ingredient List ── */}
-        <div className="lg:col-span-3 flex flex-col gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+        {/* LEFT: Management */}
+        <div className="lg:col-span-3 flex flex-col gap-6">
           {/* Search */}
           <div className="bg-white dark:bg-[#0f1115] rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800 p-6">
             <h2 className="text-base font-bold text-gray-700 dark:text-gray-300 mb-4 flex items-center gap-2">
               <span className="w-6 h-6 bg-[#A0522D] rounded-lg flex items-center justify-center text-white text-xs font-black">1</span>
-              Busca un ingrediente
+              Busca y añade
             </h2>
             <IngredientSearch
               onAdd={handleAdd}
@@ -380,14 +364,14 @@ export default function MacroCalculator() {
             />
           </div>
 
-          {/* Ingredient list */}
-          <div className="bg-white dark:bg-[#0f1115] rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 flex flex-col gap-3 flex-1">
-            <div className="flex items-center justify-between mb-1">
+          {/* List */}
+          <div className="bg-white dark:bg-[#0f1115] rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 flex flex-col gap-3 min-h-[400px]">
+             <div className="flex items-center justify-between">
               <h2 className="text-base font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2">
                 <span className="w-6 h-6 bg-[#A0522D] rounded-lg flex items-center justify-center text-white text-xs font-black">2</span>
-                Ingredientes añadidos
+                Ingredientes en el plato
                 {selectedItems.length > 0 && (
-                  <span className="ml-1 bg-[#A0522D]/15 text-[#A0522D] text-xs font-bold px-2 py-0.5 rounded-full">
+                  <span className="bg-[#A0522D]/15 text-[#A0522D] text-xs font-bold px-2 py-0.5 rounded-full">
                     {selectedItems.length}
                   </span>
                 )}
@@ -395,25 +379,22 @@ export default function MacroCalculator() {
               {selectedItems.length > 0 && (
                 <button
                   onClick={handleClear}
-                  className="text-xs text-gray-400 hover:text-red-500 transition-colors font-medium"
+                  className="flex items-center gap-2 px-3 py-1.5 bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 text-xs font-bold rounded-xl hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors"
                 >
-                  Limpiar todo
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  Limpiar plato
                 </button>
               )}
             </div>
 
             {selectedItems.length === 0 ? (
-              <div className="flex-1 flex flex-col items-center justify-center py-12 text-center">
-                <div className="w-16 h-16 rounded-3xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4 text-3xl">
-                  🥗
-                </div>
-                <p className="text-gray-400 font-medium">No has añadido ingredientes aún</p>
-                <p className="text-sm text-gray-300 dark:text-gray-600 mt-1">
-                  Busca un ingrediente arriba para comenzar
-                </p>
+              <div className="flex-1 flex flex-col items-center justify-center py-10 opacity-30">
+                <p className="text-sm font-medium">El plato está vacío</p>
               </div>
             ) : (
-              <div className="flex flex-col gap-2 max-h-[400px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-700">
+              <div className="flex flex-col gap-3 mt-4 max-h-[500px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-800">
                 {selectedItems.map((item) => (
                   <IngredientRow
                     key={item._uid}
@@ -427,109 +408,95 @@ export default function MacroCalculator() {
           </div>
         </div>
 
-        {/* ── RIGHT: Results ── */}
-        <div className="lg:col-span-2 flex flex-col gap-4">
-          {/* Calorie hero card */}
-          <div className="bg-linear-to-br from-[#A0522D] to-[#7a3d20] text-white rounded-3xl p-6 shadow-xl shadow-[#A0522D]/20 flex flex-col items-center justify-center gap-2 min-h-[160px]">
-            <p className="text-sm font-semibold uppercase tracking-widest opacity-80">
-              Total de calorías
-            </p>
-            <p className="text-6xl font-black tabular-nums leading-none">
-              {Math.round(totals.calorias)}
-            </p>
-            <p className="text-sm font-semibold opacity-70">kcal</p>
+        {/* RIGHT: Results */}
+        <div className="lg:col-span-2 flex flex-col gap-6">
+          {/* Calorias */}
+          <div className="bg-linear-to-br from-[#A0522D] to-[#7a3d20] text-white rounded-[2rem] p-8 shadow-xl shadow-[#A0522D]/20 text-center">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] opacity-80 mb-2">Energía Total</p>
+            <div className="flex items-baseline justify-center gap-2">
+              <span className="text-7xl font-black tabular-nums tracking-tighter">
+                {Math.round(totals.calorias)}
+              </span>
+              <span className="text-xl font-bold opacity-60">kcal</span>
+            </div>
           </div>
 
-          {/* Macros breakdown */}
-          <div className="bg-white dark:bg-[#0f1115] rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800 p-6">
-            <h2 className="text-base font-bold text-gray-700 dark:text-gray-300 mb-4">
-              Distribución de macros
-            </h2>
+          {/* Breakdown */}
+          <div className="bg-white dark:bg-[#0f1115] rounded-[2rem] shadow-sm border border-gray-100 dark:border-gray-800 p-6">
+            <h2 className="text-base font-bold text-gray-700 dark:text-gray-300 mb-6 px-1 text-center">Distribución Nutricional</h2>
 
-            {/* Ring chart */}
             {selectedItems.length > 0 && (
-              <div className="flex justify-center mb-5">
-                <svg width="120" height="120" className="-rotate-90">
-                  <circle cx="60" cy="60" r="45" fill="none" stroke="#f3f4f6" strokeWidth="12" className="dark:stroke-gray-800" />
+              <div className="flex justify-center mb-8 relative">
+                 <svg width="160" height="160" className="-rotate-90">
+                  <circle cx="80" cy="80" r="45" fill="none" stroke="#f3f4f6" strokeWidth="18" className="dark:stroke-gray-800" />
                   {/* Carbs */}
                   <circle
-                    cx="60" cy="60" r="45" fill="none"
-                    stroke="#3b82f6" strokeWidth="12"
+                    cx="80" cy="80" r="45" fill="none"
+                    stroke="#3b82f6" strokeWidth="18"
                     strokeDasharray={`${(pctC / 100) * CIRCUMFERENCE} ${CIRCUMFERENCE}`}
                     strokeLinecap="round"
+                    className="transition-all duration-500"
                   />
                   {/* Protein */}
                   <circle
-                    cx="60" cy="60" r="45" fill="none"
-                    stroke="#10b981" strokeWidth="12"
+                    cx="80" cy="80" r="45" fill="none"
+                    stroke="#10b981" strokeWidth="18"
                     strokeDasharray={`${(pctP / 100) * CIRCUMFERENCE} ${CIRCUMFERENCE}`}
                     strokeDashoffset={-((pctC / 100) * CIRCUMFERENCE)}
                     strokeLinecap="round"
+                    className="transition-all duration-500"
                   />
                   {/* Fat */}
                   <circle
-                    cx="60" cy="60" r="45" fill="none"
-                    stroke="#f59e0b" strokeWidth="12"
+                    cx="80" cy="80" r="45" fill="none"
+                    stroke="#f59e0b" strokeWidth="18"
                     strokeDasharray={`${(pctF / 100) * CIRCUMFERENCE} ${CIRCUMFERENCE}`}
                     strokeDashoffset={-(((pctC + pctP) / 100) * CIRCUMFERENCE)}
                     strokeLinecap="round"
+                    className="transition-all duration-500"
+                  />
+                  {/* Fiber */}
+                  <circle
+                    cx="80" cy="80" r="45" fill="none"
+                    stroke="#8b5cf6" strokeWidth="18"
+                    strokeDasharray={`${(pctFib / 100) * CIRCUMFERENCE} ${CIRCUMFERENCE}`}
+                    strokeDashoffset={-(((pctC + pctP + pctF) / 100) * CIRCUMFERENCE)}
+                    strokeLinecap="round"
+                    className="transition-all duration-500"
                   />
                 </svg>
+                <div className="absolute inset-0 flex items-center justify-center flex-col pointer-events-none">
+                   <span className="text-xs font-bold text-gray-400 uppercase">Kcal</span>
+                   <span className="text-xl font-black text-gray-800 dark:text-white">
+                    {Math.round(totals.calorias)}
+                   </span>
+                </div>
               </div>
             )}
 
-            <div className="flex flex-wrap gap-2">
-              <MacroPill
-                label="Proteínas"
-                value={totals.proteinas}
-                unit="g"
-                icon="💪"
-                color="border-emerald-200 dark:border-emerald-900 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400"
-              />
-              <MacroPill
-                label="Carbohid."
-                value={totals.carbohidratos}
-                unit="g"
-                icon="🌾"
-                color="border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400"
-              />
-              <MacroPill
-                label="Grasas"
-                value={totals.grasas}
-                unit="g"
-                icon="🫒"
-                color="border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400"
-              />
-              <MacroPill
-                label="Fibra"
-                value={totals.fibra}
-                unit="g"
-                icon="🥦"
-                color="border-violet-200 dark:border-violet-900 bg-violet-50 dark:bg-violet-950/30 text-violet-700 dark:text-violet-400"
-              />
+            <div className="grid grid-cols-2 gap-3">
+              <MacroPill label="Proteínas" value={totals.proteinas} unit="g" color="border-emerald-100 dark:border-emerald-900/40 bg-emerald-50/50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400" />
+              <MacroPill label="Carbos" value={totals.carbohidratos} unit="g" color="border-blue-100 dark:border-blue-900/40 bg-blue-50/50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400" />
+              <MacroPill label="Grasas" value={totals.grasas} unit="g" color="border-amber-100 dark:border-amber-900/40 bg-amber-50/50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400" />
+              <MacroPill label="Fibra" value={totals.fibra} unit="g" color="border-violet-100 dark:border-violet-900/40 bg-violet-50/50 dark:bg-violet-950/20 text-violet-600 dark:text-violet-400" />
             </div>
 
-            {/* Legend */}
             {selectedItems.length > 0 && (
-              <div className="mt-4 flex gap-3 flex-wrap">
+              <div className="mt-8 flex justify-center flex-wrap gap-4 border-t border-gray-100 dark:border-gray-800 pt-6">
                 {[
-                  { color: "bg-blue-400", label: `Carbos ${pctC.toFixed(0)}%` },
-                  { color: "bg-emerald-400", label: `Proteínas ${pctP.toFixed(0)}%` },
-                  { color: "bg-amber-400", label: `Grasas ${pctF.toFixed(0)}%` },
+                  { color: "bg-blue-500", label: "C" },
+                  { color: "bg-emerald-500", label: "P" },
+                  { color: "bg-amber-500", label: "G" },
+                  { color: "bg-violet-500", label: "F" },
                 ].map((l) => (
-                  <span key={l.label} className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
-                    <span className={`w-2.5 h-2.5 rounded-full ${l.color}`} />
+                  <span key={l.label} className="flex items-center gap-1.5 text-[10px] font-black uppercase text-gray-400">
+                    <span className={`w-2 h-2 rounded-full ${l.color}`} />
                     {l.label}
                   </span>
                 ))}
               </div>
             )}
           </div>
-
-          {/* Disclaimer */}
-          <p className="text-xs text-gray-400 dark:text-gray-600 leading-relaxed px-1">
-            * Los valores nutricionales son aproximados y provienen de la base de datos USDA. Los datos pueden variar según la preparación y la fuente de los ingredientes.
-          </p>
         </div>
       </div>
     </div>
