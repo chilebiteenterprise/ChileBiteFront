@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Plus, Trash2 } from 'lucide-react';
+import { supabase } from '@/lib/supabaseClient';
 
 const IngredientSelector = ({ ingredientes_detalle = [], onChange }) => {
-  const rawApiUrl = import.meta.env.PUBLIC_API_URL || "https://chilebiteback.onrender.com";
-  const apiUrl = rawApiUrl?.startsWith("http") ? rawApiUrl : `https://${rawApiUrl}`;
   const [search, setSearch] = useState('');
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -20,9 +19,13 @@ const IngredientSelector = ({ ingredientes_detalle = [], onChange }) => {
     const fetchIngredientes = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`${apiUrl}/api/ingredientes/?search=${encodeURIComponent(search)}`);
-        const data = await res.json();
-        setResults(data);
+        const { data, error } = await supabase
+          .from('core_ingrediente')
+          .select('id, nombre, calorias_por_100g, proteinas_por_100g, carbohidratos_por_100g, grasas_por_100g, peso_por_unidad_gramos')
+          .ilike('nombre', `%${search}%`)
+          .limit(20);
+        if (error) throw error;
+        setResults(data || []);
       } catch (err) {
         console.error("Error buscando ingredientes", err);
       } finally {
@@ -31,7 +34,7 @@ const IngredientSelector = ({ ingredientes_detalle = [], onChange }) => {
     };
     const timer = setTimeout(fetchIngredientes, 300);
     return () => clearTimeout(timer);
-  }, [search]);
+  }, [search, selectedIngredient]);
 
   const handleAdd = () => {
     if (!selectedIngredient || !cantidad || Number(cantidad) <= 0) return;
@@ -77,6 +80,14 @@ const IngredientSelector = ({ ingredientes_detalle = [], onChange }) => {
               setSelectedIngredient(null);
             }}
           />
+          {loading && (
+            <div className="absolute inset-y-0 right-3 flex items-center">
+              <svg className="animate-spin h-4 w-4 text-[#b08969]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+              </svg>
+            </div>
+          )}
           {results.length > 0 && !selectedIngredient && (
             <ul className="absolute z-50 w-full mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl max-h-64 overflow-auto py-2">
               {results.map(ing => (
@@ -166,7 +177,7 @@ const IngredientSelector = ({ ingredientes_detalle = [], onChange }) => {
                   <span className="bg-[#b08969]/10 text-[#b08969] border border-[#b08969]/20 text-xs font-black px-2.5 py-1 rounded-lg">
                     {item.cantidad} {item.unidad}
                   </span> 
-                  {item.ingrediente.nombre}
+                  {item.ingrediente?.nombre || item.ingrediente}
                 </span>
                 <button type="button" onClick={() => handleRemove(idx)} className="text-red-400 hover:text-white p-2 rounded-lg hover:bg-red-500 opacity-60 group-hover:opacity-100 transition-all active:scale-90">
                   <Trash2 className="w-4 h-4" />

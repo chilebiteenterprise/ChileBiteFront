@@ -6,6 +6,7 @@ import RecipeSkeleton from "./RecipeSkeleton";
 import RecipeToolbar from "./RecipeToolbar";
 import AdminFloatingMenu from "./AdminFloatingMenu";
 import { Toast } from "@heroui/react";
+import { supabase } from "../../../lib/supabaseClient";
 
 const RecetarioContent = () => {
     const { profile } = useAuth();
@@ -55,16 +56,71 @@ const RecetarioContent = () => {
         const fetchRecipes = async () => {
             setLoading(true);
             try {
-                const rawApiUrl = import.meta.env.PUBLIC_API_URL || "https://chilebiteback.onrender.com";
-                const apiUrl = rawApiUrl?.startsWith("http") ? rawApiUrl : `https://${rawApiUrl}`;
-                const res = await fetch(`${apiUrl}/api/recetas/`);
-                if (!res.ok) throw new Error("Error al obtener recetas");
-                const data = await res.json();
+                const { data, error } = await supabase
+                    .from('core_receta')
+                    .select(`
+                        id, 
+                        nombre, 
+                        imagen_url, 
+                        descripcion_corta, 
+                        descripcion_larga, 
+                        tiempo_preparacion, 
+                        numero_porcion, 
+                        dificultad, 
+                        total_calorias, 
+                        total_proteinas, 
+                        total_carbohidratos, 
+                        total_grasas, 
+                        contador_likes,
+                        fecha_creacion,
+                        user_id,
+                        pais_id,
+                        core_tipoplato:tipo_plato_id ( nombre ),
+                        core_pais:pais_id ( nombre ),
+                        core_receta_estilos_vida ( core_estilovida ( nombre ) )
+                    `);
+
+                if (error) throw new Error(error.message);
+
+                // Enrich with profiles
+                const userIds = [...new Set(data.map(r => r.user_id))].filter(Boolean);
+                let profilesMap = {};
+                if (userIds.length > 0) {
+                    const { data: profilesData } = await supabase
+                        .from('profiles')
+                        .select('id, username')
+                        .in('id', userIds);
+                    if (profilesData) {
+                        profilesData.forEach(p => { profilesMap[p.id] = p; });
+                    }
+                }
                 
-                // Extraer los resultados si la API usa paginación (Django REST)
-                const recipesData = data.results ? data.results : (Array.isArray(data) ? data : []);
-                setRecipes(recipesData);
+                const formattedRecipes = data.map(r => {
+                    const profile = profilesMap[r.user_id] || {};
+                    return {
+                        ...r,
+                        portada: r.imagen_url,
+                        descripcion: r.descripcion_larga,
+                        descripcion_corta: r.descripcion_corta || r.descripcion_larga || '',
+                        tiempo_coccion: 0,
+                        porciones: r.numero_porcion,
+                        calorias: r.total_calorias,
+                        proteinas: r.total_proteinas,
+                        carbohidratos: r.total_carbohidratos,
+                        grasas: r.total_grasas,
+                        vistas: 0,
+                        likes: r.contador_likes,
+                        creado_en: r.fecha_creacion,
+                        pais_nombre: r.core_pais?.nombre || '',
+                        tipo_plato_detalle: r.core_tipoplato ? { nombre: r.core_tipoplato.nombre } : null,
+                        estilos_vida_detalle: r.core_receta_estilos_vida ? r.core_receta_estilos_vida.map(e => ({ nombre: e.core_estilovida?.nombre })) : [],
+                        usuario_nombre: profile.username || 'Chef'
+                    };
+                });
+                
+                setRecipes(formattedRecipes);
             } catch (err) {
+                console.error(err);
                 setError(err.message);
             } finally {
                 setLoading(false);
@@ -102,6 +158,7 @@ const RecetarioContent = () => {
     const filteredRecipes = useMemo(() => {
         let result = [...recipes];
 
+        // Filtro por Tipo de Plato y/o Estilo de Vida
         if (selectedCategories.length > 0) {
             result = result.filter((r) => {
                 const isTipoPlato = selectedCategories.includes(r.tipo_plato_detalle?.nombre);
@@ -109,13 +166,25 @@ const RecetarioContent = () => {
                 return isTipoPlato || isEstiloVida;
             });
         }
+
+        // Filtro por País
+        if (selectedCountry) {
+            result = result.filter((r) => r.pais_nombre === selectedCountry);
+        }
+
+        // Filtro por Dificultad
+        if (selectedDifficulty > 0) {
+            result = result.filter((r) => dificultadToNivel(r.dificultad) <= selectedDifficulty);
+        }
+
+        // Filtro por búsqueda de texto
         if (searchQuery.trim() !== "")
             result = result.filter((r) =>
                 r.nombre.toLowerCase().includes(searchQuery.toLowerCase())
             );
 
+        // Ordenamiento
         if (sortField) {
-            console.log("Sorting activated. Field:", sortField, "Order:", sortOrder, "First item:", result[0]?.nombre, result[0]?.[sortField]);
             result.sort((a, b) => {
                 const aValue =
                     sortField === "dificultad"
@@ -128,7 +197,6 @@ const RecetarioContent = () => {
 
                 return sortOrder === "asc" ? aValue - bValue : bValue - aValue;
             });
-            console.log("Sorted result. First item now:", result[0]?.nombre, result[0]?.[sortField]);
         }
 
         return result;

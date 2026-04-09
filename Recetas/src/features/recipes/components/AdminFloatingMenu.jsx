@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import { Tooltip, Modal, Button, useOverlayState } from "@heroui/react";
 import { useAuth } from '@/features/auth/context/AuthContext';
+import { supabase } from '@/lib/supabaseClient';
 
 export default function AdminFloatingMenu({ selectedRecipes = [], onDeleteSuccess, onClearSelection }) {
     const { session } = useAuth();
-    const rawApiUrl = import.meta.env.PUBLIC_API_URL || "https://chilebiteback.onrender.com";
-    const apiUrl = rawApiUrl?.startsWith("http") ? rawApiUrl : `https://${rawApiUrl}`;
     const state = useOverlayState();
     const [isDeleting, setIsDeleting] = useState(false);
 
@@ -15,15 +14,11 @@ export default function AdminFloatingMenu({ selectedRecipes = [], onDeleteSucces
     const handleDelete = async (onClose) => {
         setIsDeleting(true);
         try {
-            const token = session?.access_token || localStorage.getItem("access_token");
-            const headers = { "Authorization": `Bearer ${token}` };
-            
-            for (const id of selectedRecipes) {
-                await fetch(`${apiUrl}/api/recetas/${id}/`, {
-                    method: 'DELETE',
-                    headers
-                });
-            }
+            const { error } = await supabase
+                .from('core_receta')
+                .delete()
+                .in('id', selectedRecipes);
+            if (error) throw error;
             onDeleteSuccess && onDeleteSuccess(selectedRecipes);
             onClose();
         } catch (error) {

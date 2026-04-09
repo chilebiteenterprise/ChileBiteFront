@@ -1,9 +1,7 @@
 import React, { useState } from "react";
 import FireContainer from "./FireContainer";
 import { Button, Select, ListBox, Label, Tooltip } from "@heroui/react";
-
-
-
+import { supabase } from "../../../lib/supabaseClient";
 // Iconos premium, sólidos y limpios para el Mini-Sidebar
 const GlobeIcon = () => (
   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -52,12 +50,16 @@ const RecipeFilters = ({
   const [dietas, setDietas] = useState([]);
 
   React.useEffect(() => {
-    // Fetch initial data for filters
-    const rawApiUrl = import.meta.env.PUBLIC_API_URL || "https://chilebiteback.onrender.com";
-    const apiUrl = rawApiUrl?.startsWith("http") ? rawApiUrl : `https://${rawApiUrl}`;
-    fetch(`${apiUrl}/api/paises/`).then(r => r.json()).then(data => setPaises(data.map(d => d.nombre)));
-    fetch(`${apiUrl}/api/tipos-plato/`).then(r => r.json()).then(data => setTiposPlato(data.map(d => d.nombre)));
-    fetch(`${apiUrl}/api/estilos-vida/`).then(r => r.json()).then(data => setDietas(data.map(d => d.nombre)));
+    const fetchTaxonomies = async () => {
+      const { data: paisesData } = await supabase.from('core_pais').select('nombre');
+      const { data: tiposData } = await supabase.from('core_tipoplato').select('nombre');
+      const { data: dietasData } = await supabase.from('core_estilovida').select('nombre');
+
+      if (paisesData) setPaises(paisesData.map(d => d.nombre));
+      if (tiposData) setTiposPlato(tiposData.map(d => d.nombre));
+      if (dietasData) setDietas(dietasData.map(d => d.nombre));
+    };
+    fetchTaxonomies();
   }, []);
 
   const toggleCategory = (cat) => {

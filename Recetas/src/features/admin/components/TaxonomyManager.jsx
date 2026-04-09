@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth, AuthProvider } from '@/features/auth/context/AuthContext';
+import { supabase } from '@/lib/supabaseClient';
 
 function TaxonomiasAdminContent() {
     const { session, profile, loading } = useAuth();
@@ -12,9 +13,12 @@ function TaxonomiasAdminContent() {
     const [currentEntity, setCurrentEntity] = useState(''); // 'pais', 'tipoplato', 'estilovida'
     const [formData, setFormData] = useState({ id: null, nombre: '' });
 
-    // Define apiUrl at the component level
-    const rawApiUrl = import.meta.env.PUBLIC_API_URL || "https://chilebiteback.onrender.com";
-    const apiUrl = rawApiUrl.startsWith('http') ? rawApiUrl : `https://${rawApiUrl}`;
+    // Map entity name to Supabase table name
+    const entityTable = {
+        pais: 'core_pais',
+        tipoplato: 'core_tipoplato',
+        estilovida: 'core_estilovida'
+    };
 
     useEffect(() => {
         if (!loading && profile) {
@@ -25,50 +29,33 @@ function TaxonomiasAdminContent() {
         fetchData();
     }, [profile, session, loading]);
 
-    const fetchData = () => {
-        fetch(`${apiUrl}/api/paises/`).then(r => r.json()).then(setPaises);
-        fetch(`${apiUrl}/api/tipos-plato/`).then(r => r.json()).then(setTiposPlato);
-        fetch(`${apiUrl}/api/estilos-vida/`).then(r => r.json()).then(setEstilosVida);
+    const fetchData = async () => {
+        const [{ data: p }, { data: t }, { data: e }] = await Promise.all([
+            supabase.from('core_pais').select('id, nombre').order('nombre'),
+            supabase.from('core_tipoplato').select('id, nombre').order('nombre'),
+            supabase.from('core_estilovida').select('id, nombre').order('nombre'),
+        ]);
+        if (p) setPaises(p);
+        if (t) setTiposPlato(t);
+        if (e) setEstilosVida(e);
     };
 
     const handleSave = async () => {
-        if (!formData.nombre.trim()) return; // Prevent saving empty
-
-        const token = session?.access_token || localStorage.getItem('access_token');
-        let endpoint = '';
-        if (currentEntity === 'pais') endpoint = 'paises';
-        if (currentEntity === 'tipoplato') endpoint = 'tipos-plato';
-        if (currentEntity === 'estilovida') endpoint = 'estilos-vida';
-
-        const method = formData.id ? 'PUT' : 'POST';
-        const url = formData.id 
-            ? `${apiUrl}/api/${endpoint}/${formData.id}/` 
-            : `${apiUrl}/api/${endpoint}/`;
-
-        await fetch(url, {
-            method,
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ nombre: formData.nombre })
-        });
+        if (!formData.nombre.trim()) return;
+        const table = entityTable[currentEntity];
+        if (formData.id) {
+            await supabase.from(table).update({ nombre: formData.nombre }).eq('id', formData.id);
+        } else {
+            await supabase.from(table).insert({ nombre: formData.nombre });
+        }
         fetchData();
         setIsModalOpen(false);
     };
 
     const handleDelete = async (id, entity) => {
         if (!confirm('¿Estás seguro de eliminar este registro?')) return;
-        const token = session?.access_token || localStorage.getItem('access_token');
-        let endpoint = '';
-        if (entity === 'pais') endpoint = 'paises';
-        if (entity === 'tipoplato') endpoint = 'tipos-plato';
-        if (entity === 'estilovida') endpoint = 'estilos-vida';
-
-        await fetch(`${apiUrl}/api/${endpoint}/${id}/`, {
-            method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
+        const table = entityTable[entity];
+        await supabase.from(table).delete().eq('id', id);
         fetchData();
     };
 

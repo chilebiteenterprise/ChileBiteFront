@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth, AuthProvider } from '@/features/auth/context/AuthContext';
+import { supabase } from '@/lib/supabaseClient';
 
 const categoryStyles = {
     'vegetal': { icon: 'eco', bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-600 dark:text-green-400' },
@@ -72,9 +73,6 @@ function IngredientesAdminContent() {
         es_libre_de_gluten: false
     });
 
-    const rawApiUrl = import.meta.env.PUBLIC_API_URL || "https://chilebiteback.onrender.com";
-    const apiUrl = rawApiUrl.startsWith('http') ? rawApiUrl : `https://${rawApiUrl}`;
-
     useEffect(() => {
         if (!loading && profile) {
             if (profile.role !== 'admin' && profile.rol !== 'admin') window.location.href = '/';
@@ -86,46 +84,30 @@ function IngredientesAdminContent() {
 
     const fetchData = async () => {
         try {
-            let results = [];
-            let nextUrl = `${apiUrl}/api/ingredientes/`;
-            while (nextUrl) {
-                const res = await fetch(nextUrl);
-                if (!res.ok) throw new Error("Error fetching ingredientes");
-                const data = await res.json();
-                if (data.results) {
-                    results.push(...data.results);
-                    nextUrl = data.next;
-                } else if (Array.isArray(data)) {
-                    results.push(...data);
-                    nextUrl = null;
-                } else {
-                    nextUrl = null;
-                }
-            }
-            setIngredientes(results);
+            const { data, error } = await supabase
+                .from('core_ingrediente')
+                .select('id, nombre, categoria, calorias_por_100g, proteinas_por_100g, grasas_por_100g, carbohidratos_por_100g, fibra_por_100g, azucares_por_100g, sodio_mg_por_100g, peso_por_unidad_gramos, peso_por_taza_gramos, peso_por_cucharada_gramos, es_vegano, es_libre_de_gluten')
+                .order('nombre')
+                .limit(2000);
+            if (error) throw error;
+            setIngredientes(data || []);
         } catch (error) {
             console.error("Error al cargar ingredientes", error);
         }
     };
 
     const handleSave = async () => {
-        if (!formData.nombre.trim()) return; 
-
-        const token = session?.access_token || localStorage.getItem('access_token');
-        const method = formData.id ? 'PUT' : 'POST';
-        const url = formData.id 
-            ? `${apiUrl}/api/ingredientes/${formData.id}/` 
-            : `${apiUrl}/api/ingredientes/`;
-
+        if (!formData.nombre.trim()) return;
+        const payload = { ...formData };
+        delete payload.id; // Don't include id in upsert payload key
         try {
-            await fetch(url, {
-                method,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(formData)
-            });
+            if (formData.id) {
+                const { error } = await supabase.from('core_ingrediente').update(payload).eq('id', formData.id);
+                if (error) throw error;
+            } else {
+                const { error } = await supabase.from('core_ingrediente').insert(payload);
+                if (error) throw error;
+            }
             fetchData();
             setIsModalOpen(false);
         } catch (error) {
@@ -135,13 +117,9 @@ function IngredientesAdminContent() {
 
     const handleDelete = async (id) => {
         if (!confirm('¿Estás seguro de eliminar este ingrediente?')) return;
-        const token = session?.access_token || localStorage.getItem('access_token');
-
         try {
-            await fetch(`${apiUrl}/api/ingredientes/${id}/`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+            const { error } = await supabase.from('core_ingrediente').delete().eq('id', id);
+            if (error) throw error;
             fetchData();
         } catch (error) {
             console.error("Error eliminando ingrediente", error);

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth, AuthProvider } from '@/features/auth/context/AuthContext';
 import { toast, Skeleton } from "@heroui/react";
 import { ChefHat, Clock, Users, Heart, Share2, BookOpen, ListOrdered, Video, Bookmark, Minus, Plus, Flame, Beef, Wheat, Droplet } from 'lucide-react';
+import { supabase } from '@/lib/supabaseClient';
 
 const COLOR_PRINCIPAL = '#b08968';
 
@@ -12,8 +13,6 @@ const parseTextToList = (text) => {
 
 function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false, usuario }) {
   const { session } = useAuth();
-  const rawApiUrl = import.meta.env.PUBLIC_API_URL || "https://chilebiteback.onrender.com";
-  const apiUrl = rawApiUrl?.startsWith("http") ? rawApiUrl : `https://${rawApiUrl}`;
   const [receta, setReceta] = useState(recetaProp || null);
   const [currentPage, setCurrentPage] = useState(1);
   const [mediaTab, setMediaTab] = useState('steps');
@@ -46,13 +45,71 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
 
     const fetchReceta = async () => {
       try {
-        const token = session?.access_token || localStorage.getItem("access_token");
-        const headers = token ? { "Authorization": `Bearer ${token}` } : {};
+        const { data, error: fetchErr } = await supabase
+          .from('core_receta')
+          .select(`
+            *,
+            core_tipoplato:tipo_plato_id ( nombre ),
+            core_pais:pais_id ( nombre ),
+            ingredientes_detalle:core_recetaingrediente ( 
+              cantidad, 
+              unidad, 
+              ingrediente:core_ingrediente ( nombre ) 
+            )
+          `)
+          .eq('id', idReceta)
+          .single();
 
-        const response = await fetch(`${apiUrl}/api/recetas/${idReceta}/`, { headers });
-        if (!response.ok) throw new Error(`Error ${response.status}`);
+        if (fetchErr) throw new Error(fetchErr.message);
+
+        let userName = 'Chef Anónimo';
+        if (data.user_id) {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('username')
+            .eq('id', data.user_id)
+            .single();
+          
+          if (profileData && profileData.username) {
+            userName = profileData.username;
+          }
+        }
+
+        // Map data to match expected frontend structure
+        data.usuario_nombre = userName;
         
-        const data = await response.json();
+        let liked = false;
+        let guardada = false;
+
+        // Fetch user specific state (liked / saved)
+        if (session?.user?.id) {
+          const [{ count: likeCount }, { count: saveCount }] = await Promise.all([
+            supabase
+              .from('core_recetalike')
+              .select('*', { count: 'exact', head: true })
+              .eq('receta_id', idReceta)
+              .eq('user_id', session.user.id),
+            supabase
+              .from('core_recetaguardada')
+              .select('*', { count: 'exact', head: true })
+              .eq('receta_id', idReceta)
+              .eq('user_id', session.user.id)
+          ]);
+          liked = likeCount > 0;
+          guardada = saveCount > 0;
+        }
+
+        // Fix column naming mappings derived from old API outputs vs raw Supabase schema
+        data.portada = data.imagen_url || '';
+        data.descripcion = data.descripcion_larga || '';
+        data.descripcion_corta = data.descripcion_corta || data.descripcion_larga || '';
+        data.calorias = data.total_calorias || 0;
+        data.proteinas = data.total_proteinas || 0;
+        data.carbohidratos = data.total_carbohidratos || 0;
+        data.grasas = data.total_grasas || 0;
+        data.porciones = data.numero_porcion || 1;
+        data.likes = data.contador_likes || 0;
+
         setReceta(data);
 
         const instruccionesArray = parseTextToList(data.preparacion);
@@ -64,8 +121,8 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
           setIngredientsState(arr.map((text, i) => ({ id: i, text, checked: false, isDetailed: false })));
         }
         setPorcionesDeseadas(data.numero_porcion || 1);
-        setIsFavorite(data.liked || false);
-        setIsSaved(data.is_guardada || false);
+        setIsFavorite(liked);
+        setIsSaved(guardada);
       } catch (err) {
         console.error(err);
         setError('No se pudo cargar la receta.');
@@ -98,24 +155,27 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
   };
 
   const handleFavorite = async () => {
+    if (!session?.user?.id) return toast.danger("Acceso Denegado", { description: "Debes estar logueado para marcar como favorito" });
     try {
-      const token = session?.access_token || localStorage.getItem('access_token');
-      const headers = { 'Content-Type': 'application/json' };
-      if (token) headers['Authorization'] = `Bearer ${token}`;
-
-      if (!token) return toast.danger("Acceso Denegado", { description: "Debes estar logueado para marcar como favorito" });
-      await fetch(`${apiUrl}/api/recetas/${idReceta}/like/`, { method: 'POST', headers });
+      if (isFavorite) {
+         await supabase.from('core_recetalike').delete().eq('receta_id', idReceta).eq('user_id', session.user.id);
+         setReceta(prev => ({ ...prev, contador_likes: Math.max(0, (prev.contador_likes || 0) - 1) }));
+      } else {
+         await supabase.from('core_recetalike').insert([{ receta_id: idReceta, user_id: session.user.id }]);
+         setReceta(prev => ({ ...prev, contador_likes: (prev.contador_likes || 0) + 1 }));
+      }
       setIsFavorite(prev => !prev);
     } catch (err) { console.error(err); }
   };
 
   const handleSave = async () => {
-    const token = session?.access_token || localStorage.getItem("access_token");
-    if (!token) return toast.danger("Acceso Denegado", { description: "Debes estar logueado para guardar" });
+    if (!session?.user?.id) return toast.danger("Acceso Denegado", { description: "Debes estar logueado para guardar" });
     try {
-      const headers = { 'Content-Type': 'application/json' };
-      if (token) headers['Authorization'] = `Bearer ${token}`;
-      await fetch(`${apiUrl}/api/recetas/${idReceta}/guardar/`, { method: 'POST', headers });
+      if (isSaved) {
+         await supabase.from('core_recetaguardada').delete().eq('receta_id', idReceta).eq('user_id', session.user.id);
+      } else {
+         await supabase.from('core_recetaguardada').insert([{ receta_id: idReceta, user_id: session.user.id }]);
+      }
       setIsSaved(prev => !prev);
     } catch (err) { console.error(err); }
   };
@@ -215,11 +275,13 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
                 </div>
               </div>
               {imageUrl && (
-                <div className="w-full md:w-1/3 flex-shrink-0">
-                  <div className="relative h-64 w-full rounded-[2rem] overflow-hidden shadow-2xl border border-slate-200 dark:border-zinc-700">
-                    <img src={imageUrl} alt={receta.nombre} className="absolute inset-0 w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 dark:from-zinc-950/80 to-transparent"></div>
-                  </div>
+                <div className="w-full h-80 sm:h-96 md:h-120 relative">
+                  <img
+                    src={receta.portada}
+                    alt={receta.nombre}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40 to-transparent"></div>
                 </div>
               )}
             </div>

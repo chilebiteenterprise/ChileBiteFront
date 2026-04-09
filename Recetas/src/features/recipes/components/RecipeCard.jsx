@@ -3,56 +3,61 @@ import FireContainer from "./FireContainer.jsx";
 import { Heart, Bookmark, Check, Eye, MapPin } from "lucide-react";
 import { toast } from "@heroui/react";
 import { useAuth } from '@/features/auth/context/AuthContext';
+import { supabase } from '@/lib/supabaseClient';
 
 export default function RecipeCard({ receta, usuarioEsAdmin = false, isSelected = false, onToggleSelect }) {
   const { session } = useAuth();
   const [liked, setLiked] = useState(false);
-  const [likes, setLikes] = useState(0);
+  const [likes, setLikes] = useState(receta.likes || 0);
   const [guardado, setGuardado] = useState(false);
 
   const idToUse = receta.id_receta || receta.id;
-  const rawApiUrl = import.meta.env.PUBLIC_API_URL || "https://chilebiteback.onrender.com";
-  const apiUrl = rawApiUrl?.startsWith("http") ? rawApiUrl : `https://${rawApiUrl}`;
 
-  // === CARGA INICIAL: sincroniza con backend ===
+  // === CARGA INICIAL: sincroniza estado de corazon y guardado para este usuario ===
   useEffect(() => {
-    if (!idToUse) return;
+    // Si viene en receta (cuando renderiza un contexto con likes), priorizamos, sino fetch del usuario
+    setLikes(receta.likes || 0);
+
+    if (!idToUse || !session?.user?.id) return;
     
     const fetchEstado = async () => {
       try {
-        const token = session?.access_token;
-        const headers = token ? { "Authorization": `Bearer ${token}` } : {};
-
-        const response = await fetch(`${apiUrl}/api/recetas/${idToUse}/`, { headers });
-        if (!response.ok) throw new Error("Error al obtener la receta");
-        const data = await response.json();
-
-        setLiked(data.liked || false);
-        setLikes(data.contador_likes || 0);
-        setGuardado(data.is_guardada || false);
+        const [{ count: likeCount }, { count: saveCount }] = await Promise.all([
+          supabase
+            .from('core_recetalike')
+            .select('*', { count: 'exact', head: true })
+            .eq('receta_id', idToUse)
+            .eq('user_id', session.user.id),
+          supabase
+            .from('core_recetaguardada')
+            .select('*', { count: 'exact', head: true })
+            .eq('receta_id', idToUse)
+            .eq('user_id', session.user.id)
+        ]);
+        setLiked(likeCount > 0);
+        setGuardado(saveCount > 0);
       } catch (err) {
         console.error("Error al obtener estado de receta:", err);
       }
     };
     fetchEstado();
-  }, [idToUse]);
+  }, [idToUse, session, receta]);
 
   // === LIKE ===
   const handleFavorite = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    const token = session?.access_token;
-    if (!token) return toast.danger("Acceso Denegado", { description: "Debes estar logueado para marcar como favorito" });
+    if (!session?.user?.id) return toast.danger("Acceso Denegado", { description: "Debes estar logueado para marcar como favorito" });
 
     try {
-      const response = await fetch(`${apiUrl}/api/recetas/${idToUse}/like/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-      });
-      if (!response.ok) throw new Error("No se pudo actualizar favorito");
-      const data = await response.json();
-      setLiked(data.is_liked ?? !liked);
-      setLikes(data.total_likes ?? (liked ? likes - 1 : likes + 1));
+      if (liked) {
+         await supabase.from('core_recetalike').delete().eq('receta_id', idToUse).eq('user_id', session.user.id);
+         setLikes(Math.max(0, likes - 1));
+      } else {
+         await supabase.from('core_recetalike').insert([{ receta_id: idToUse, user_id: session.user.id }]);
+         setLikes(likes + 1);
+      }
+      setLiked(!liked);
     } catch (err) {
       console.error(err);
     }
@@ -62,17 +67,15 @@ export default function RecipeCard({ receta, usuarioEsAdmin = false, isSelected 
   const handleSave = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    const token = session?.access_token;
-    if (!token) return toast.danger("Acceso Denegado", { description: "Debes estar logueado para guardar" });
+    if (!session?.user?.id) return toast.danger("Acceso Denegado", { description: "Debes estar logueado para guardar" });
 
     try {
-      const response = await fetch(`${apiUrl}/api/recetas/${idToUse}/guardar/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-      });
-      if (!response.ok) throw new Error("No se pudo guardar la receta");
-      const data = await response.json();
-      setGuardado(data.is_guardada ?? !guardado);
+      if (guardado) {
+         await supabase.from('core_recetaguardada').delete().eq('receta_id', idToUse).eq('user_id', session.user.id);
+      } else {
+         await supabase.from('core_recetaguardada').insert([{ receta_id: idToUse, user_id: session.user.id }]);
+      }
+      setGuardado(!guardado);
     } catch (err) {
       console.error(err);
     }
@@ -132,7 +135,7 @@ export default function RecipeCard({ receta, usuarioEsAdmin = false, isSelected 
         <div className="absolute bottom-3 left-3 z-30" data-receta-ignore="true">
           <span className="px-3 py-1.5 rounded-full flex items-center gap-1.5 backdrop-blur-md transition-colors border shadow-md bg-black/40 text-white border-white/20 text-[10px] font-bold tracking-widest uppercase">
             <MapPin className="w-3.5 h-3.5" />
-            {receta.pais_detalle ? receta.pais_detalle.nombre : receta.pais}
+            {receta.pais_nombre || receta.pais_detalle?.nombre || receta.pais || '—'}
           </span>
         </div>
 

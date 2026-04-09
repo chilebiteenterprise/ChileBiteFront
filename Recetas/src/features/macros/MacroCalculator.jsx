@@ -1,12 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Constants & helpers
-// ─────────────────────────────────────────────────────────────────────────────
-const API_URL =
-  (import.meta.env.PUBLIC_API_URL || "https://chilebiteback.onrender.com")
-    ?.replace(/^(?!https?)/, "https://")
-    .replace(/\/$/, "");
+import { supabase } from '@/lib/supabaseClient';
 
 const normalize = (s = "") =>
   s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -274,13 +267,16 @@ export default function MacroCalculator() {
   const [loadingIngredients, setLoadingIngredients] = useState(true);
   const [selectedItems, setSelectedItems] = useState([]);
 
-  // Load ingredient catalogue
+  // Load ingredient catalogue from Supabase
   useEffect(() => {
     setLoadingIngredients(true);
-    fetch(`${API_URL}/api/ingredientes/`)
-      .then((r) => r.json())
-      .then((data) => {
-        setAllIngredients(Array.isArray(data) ? data : data.results || []);
+    supabase
+      .from('core_ingrediente')
+      .select('id, nombre, calorias_por_100g, proteinas_por_100g, carbohidratos_por_100g, grasas_por_100g, fibra_por_100g, peso_por_unidad_gramos')
+      .order('nombre')
+      .limit(1000)
+      .then(({ data, error }) => {
+        if (!error && data) setAllIngredients(data);
       })
       .catch(console.error)
       .finally(() => setLoadingIngredients(false));

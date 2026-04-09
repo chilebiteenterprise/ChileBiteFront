@@ -370,10 +370,6 @@ function CommentSectionContent({ recipeId }) {
     const { isRateLimited, executeWithLimit } = useRateLimit(3000);
     
     const topCommentInputRef = useRef(null); 
-    const rawApiUrl = import.meta.env.PUBLIC_API_URL || "https://chilebiteback.onrender.com";
-    const apiUrl = rawApiUrl?.startsWith("http") ? rawApiUrl : `https://${rawApiUrl}`;
-    const API_BASE = `${apiUrl}/api/recetas/${recipeId}/comments/`;
-
     const { session, profile } = useAuth();
     const getToken = () => session?.access_token || localStorage.getItem("access_token");
     
@@ -400,12 +396,26 @@ function CommentSectionContent({ recipeId }) {
     const loadComments = useCallback(async () => {
         setIsLoading(true);
         try {
-            const headers = token ? { Authorization: `Bearer ${token}` } : {};
-            const res = await fetch(API_BASE, { headers });
-            if (!res.ok) throw new Error("Error al cargar comentarios");
-            const data = await res.json();
+            const { data: commentsData, error: commentsErr } = await supabase
+                .from('core_comentarioreceta')
+                .select('*')
+                .eq('receta_id', recipeId);
+                
+            if (commentsErr) throw new Error(commentsErr.message);
+
+            const data = commentsData || [];
             
-            // Enrich with Supabase profiles
+            // Enrich with Supabase profiles and likes
+            const currentUserUUID = currentUser?.id;
+            let userLikesMap = {};
+            
+            if (currentUserUUID && data.length > 0) {
+               const { data: likesData } = await supabase.from('core_comentariolike').select('comentario_id').eq('user_id', currentUserUUID);
+               if (likesData) {
+                   likesData.forEach(l => { userLikesMap[l.comentario_id] = true });
+               }
+            }
+
             const userIds = [...new Set(data.map(c => c.user_id))].filter(Boolean);
             let profilesMap = {};
             if (userIds.length > 0) {
@@ -422,11 +432,12 @@ function CommentSectionContent({ recipeId }) {
                 const profile = profilesMap[c.user_id] || {};
                 return {
                     ...c,
+                    comentario_padre: c.comentario_padre_id, // Map standard db back to component logic
                     usuario_nombre: profile.username || 'Usuario',
                     usuario_avatar: profile.avatar_url || null,
                     rol: profile.role || 'normal', 
                     likes: c.contador_likes !== undefined ? c.contador_likes : 0, 
-                    userLiked: c.usuario_le_dio_like || false
+                    userLiked: userLikesMap[c.id] || false
                 };
             });
 
@@ -437,19 +448,17 @@ function CommentSectionContent({ recipeId }) {
         } finally {
             setIsLoading(false);
         }
-    }, [recipeId, token]); 
+    }, [recipeId, currentUser?.id]); 
 
     useEffect(() => {
         loadComments();
     }, [loadComments]);
 
     const handleLikeComment = async (commentId) => {
-        if (!currentUser) {
+        if (!currentUser?.id) {
             toast.error("Debes iniciar sesión para dar me gusta");
             return;
         }
-        const token = getToken();
-        if (!token) return;
 
         const originalComment = comments.find(c => c.id === commentId);
         if (!originalComment) return;
@@ -470,15 +479,13 @@ function CommentSectionContent({ recipeId }) {
         );
 
         try {
-            const res = await fetch(`${apiUrl}/api/comments/${commentId}/like/`, {
-                method: 'POST', 
-                headers: { 
-                    Authorization: `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (!res.ok) throw new Error("Fallo al alternar el like.");
+            if (isLiking) {
+                const { error } = await supabase.from('core_comentariolike').insert([{ user_id: currentUser.id, comentario_id: commentId }]);
+                if (error) throw new Error(error.message);
+            } else {
+                const { error } = await supabase.from('core_comentariolike').delete().eq('user_id', currentUser.id).eq('comentario_id', commentId);
+                if (error) throw new Error(error.message);
+            }
         } catch (err) {
             console.error("Error al dar like:", err);
             setComments(prevComments => 
@@ -491,56 +498,43 @@ function CommentSectionContent({ recipeId }) {
     const handleSubmitComment = () => {
         if (!newComment.trim()) return;
         
-        if (!currentUser) {
+        if (!currentUser?.id) {
             toast.error("Debes iniciar sesión para comentar");
             return;
         }
-
-        const token = getToken(); 
-        if (!token) return;
 
         executeWithLimit(async () => {
             // Resolve parent comment root for single level nesting view
             let finalParent = replyingTo;
             if (replyingTo) {
                 const parentComment = comments.find(c => c.id === replyingTo);
-                if (parentComment && parentComment.comentario_padre) {
-                    finalParent = parentComment.comentario_padre; // Attach to root
+                if (parentComment && (parentComment.comentario_padre || parentComment.comentario_padre_id)) {
+                    finalParent = parentComment.comentario_padre || parentComment.comentario_padre_id; // Attach to root
                 }
             }
 
             const rawText = finalParent !== replyingTo && replyingTo ? `@${comments.find(c=>c.id===replyingTo)?.usuario_nombre} ${newComment.trim()}` : newComment.trim();
 
             const payload = {
+                receta_id: recipeId,
+                user_id: currentUser.id,
                 texto: DOMPurify.sanitize(rawText),
-                comentario_padre: finalParent, 
+                comentario_padre_id: finalParent || null,
+                estado: 'visible'
             };
             
             setIsSubmitting(true);
 
             try {
-                const res = await fetch(API_BASE, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`,
-                    },
-                    body: JSON.stringify(payload),
-                });
+                const { error } = await supabase.from('core_comentarioreceta').insert([payload]);
 
-                if (res.status === 403) {
-                    toast.error("Tu cuenta ha sido suspendida para comentar.");
-                    return;
-                }
-
-                if (!res.ok) throw new Error("Error creando comentario");
+                if (error) throw new Error(error.message);
 
                 toast.success("Comentario publicado!"); 
                 setNewComment('');
                 setReplyingTo(null);
                 loadComments(); 
                 setVisibleCommentCount(INITIAL_LOAD); 
-
             } catch (err) {
                 console.error(err);
                 toast.error("No se pudo publicar el comentario");
@@ -551,19 +545,14 @@ function CommentSectionContent({ recipeId }) {
     };
 
     const handleEditComment = async (commentId, newContent, estadoStr = 'visible') => {
-        const token = getToken(); 
-        if (!token) return;
-
+        if (!currentUser?.id) return;
         try {
-            const res = await fetch(`${apiUrl}/api/comments/${commentId}/`, {
-                method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({ texto: DOMPurify.sanitize(newContent), estado: estadoStr }),
-            });
-            if (!res.ok) throw new Error("Error editando comentario");
+            const { error } = await supabase
+                .from('core_comentarioreceta')
+                .update({ texto: DOMPurify.sanitize(newContent), estado: estadoStr })
+                .eq('id', commentId);
+
+            if (error) throw new Error(error.message);
             toast.success("Comentario actualizado");
             loadComments();
         } catch (err) {
@@ -577,15 +566,15 @@ function CommentSectionContent({ recipeId }) {
     };
 
     const confirmDelete = async (commentId) => {
-        const token = getToken(); 
-        if (!token) return;
+        if (!currentUser?.id) return;
         
         try {
-            const res = await fetch(`${apiUrl}/api/comments/${commentId}/`, {
-                method: "DELETE",
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            if (!res.ok) throw new Error("Error eliminando comentario");
+            const { error } = await supabase
+                .from('core_comentarioreceta')
+                .delete()
+                .eq('id', commentId);
+                
+            if (error) throw new Error(error.message);
             toast.success("Comentario eliminado");
             loadComments();
         } catch (err) {

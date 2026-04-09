@@ -6,6 +6,7 @@ import IngredientSelector from './IngredientSelector';
 import { addToast, ToastProvider } from "@heroui/toast";
 import DOMPurify from 'dompurify';
 import { useRateLimit } from '@/hooks/useRateLimit';
+import { supabase } from '@/lib/supabaseClient';
 
 const DIFICULTADES = ['Muy Fácil', 'Fácil', 'Media', 'Difícil', 'Muy Difícil'];
 
@@ -49,11 +50,17 @@ const RecetaFormContent = () => {
   const { isRateLimited, executeWithLimit } = useRateLimit(3000);
 
   useEffect(() => {
-    const rawApiUrl = import.meta.env.PUBLIC_API_URL || "https://chilebiteback.onrender.com";
-    const apiUrl = rawApiUrl?.startsWith("http") ? rawApiUrl : `https://${rawApiUrl}`;
-    fetch(`${apiUrl}/api/paises/`).then(r => r.json()).then(data => setPaises(data));
-    fetch(`${apiUrl}/api/tipos-plato/`).then(r => r.json()).then(data => setTiposPlato(data));
-    fetch(`${apiUrl}/api/estilos-vida/`).then(r => r.json()).then(data => setEstilosVida(data));
+    const fetchTaxonomias = async () => {
+      const [{ data: paisesData }, { data: tiposData }, { data: estilosData }] = await Promise.all([
+        supabase.from('core_pais').select('id, nombre').order('nombre'),
+        supabase.from('core_tipoplato').select('id, nombre').order('nombre'),
+        supabase.from('core_estilovida').select('id, nombre').order('nombre'),
+      ]);
+      if (paisesData) setPaises(paisesData);
+      if (tiposData) setTiposPlato(tiposData);
+      if (estilosData) setEstilosVida(estilosData);
+    };
+    fetchTaxonomias();
   }, []);
 
   useEffect(() => {
@@ -97,12 +104,45 @@ const RecetaFormContent = () => {
   const fetchRecipeDetails = async (currentId) => {
     setLoading(true);
     try {
-      const rawApiUrl = import.meta.env.PUBLIC_API_URL || "https://chilebiteback.onrender.com";
-      const apiUrl = rawApiUrl?.startsWith("http") ? rawApiUrl : `https://${rawApiUrl}`;
-      const res = await fetch(`${apiUrl}/api/recetas/${currentId}/`);
-      if (!res.ok) throw new Error("Error al cargar la receta para editar.");
-      const data = await res.json();
-      setRecetaData({ ...initialRecipeState, ...data, id: data.id || currentId });
+      const { data, error } = await supabase
+        .from('core_receta')
+        .select(`
+          *,
+          ingredientes_detalle:core_recetaingrediente (
+            cantidad,
+            unidad,
+            ingrediente:core_ingrediente ( id, nombre, calorias_por_100g, proteinas_por_100g, carbohidratos_por_100g, grasas_por_100g, peso_por_unidad_gramos )
+          ),
+          core_receta_estilos_vida ( estilovida_id )
+        `)
+        .eq('id', currentId)
+        .single();
+
+      if (error) throw new Error(error.message);
+
+      // Map DB columns to form state fields
+      setRecetaData({
+        ...initialRecipeState,
+        id: data.id,
+        nombre: data.nombre || '',
+        descripcion_corta: data.descripcion_corta || '',
+        descripcion_larga: data.descripcion_larga || '',
+        preparacion: data.preparacion || '',
+        dificultad: data.dificultad || 'Media',
+        pais: data.pais_id || '',
+        tipo_plato: data.tipo_plato_id || '',
+        estilos_vida: (data.core_receta_estilos_vida || []).map(e => e.estilovida_id),
+        tiempo_preparacion: data.tiempo_preparacion || '',
+        sugerencias: data.sugerencias || '',
+        numero_porcion: data.numero_porcion || 1,
+        imagen_url: data.imagen_url || '',
+        video_url: data.video_url || '',
+        ingredientes_detalle: (data.ingredientes_detalle || []).map(item => ({
+          ingrediente: item.ingrediente,
+          cantidad: item.cantidad,
+          unidad: item.unidad
+        }))
+      });
     } catch (error) {
       console.error("Error al obtener detalles:", error);
       addToast({
@@ -176,9 +216,8 @@ const RecetaFormContent = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     executeWithLimit(async () => {
-      const token = getAuthToken();
-      if (!token) {
-          addToast({ title: "Acceso Denegado", description: "Token de administrador no encontrado.", color: "danger" });
+      if (!session?.user?.id) {
+          addToast({ title: "Acceso Denegado", description: "Debes iniciar sesión como administrador.", color: "danger" });
           return;
       }
       if (isEditing && !id) {
@@ -186,54 +225,87 @@ const RecetaFormContent = () => {
           return;
       }
 
-      const rawApiUrl = import.meta.env.PUBLIC_API_URL || "https://chilebiteback.onrender.com";
-      const apiUrl = rawApiUrl?.startsWith("http") ? rawApiUrl : `https://${rawApiUrl}`;
-      const method = isEditing ? 'PUT' : 'POST';
-      const url = isEditing
-        ? `${apiUrl}/api/recetas/${id}/`
-        : `${apiUrl}/api/recetas/`;
+      // Sanitizar datos contra XSS
+      const preparacionFinal = DOMPurify.sanitize(pasos.filter(p => p.trim() !== '').join('\n\n'));
 
-      const formattedIngredientes = (recetaData.ingredientes_detalle || []).map(item => ({
-        ingrediente_id: item.ingrediente?.id,
-        cantidad: item.cantidad,
-        unidad: item.unidad
-      }));
+      // Calcular macros totales desde ingredientes
+      const totalCal = parseFloat(macrosLive.cal) || 0;
+      const totalProt = parseFloat(macrosLive.prot) || 0;
+      const totalCarb = parseFloat(macrosLive.carb) || 0;
+      const totalGras = parseFloat(macrosLive.gras) || 0;
 
-      // Sanitizar datos contra XSS antes de enviar al backend
-      const finalData = { 
-          ...recetaData, 
-          nombre: DOMPurify.sanitize(recetaData.nombre || ''),
-          descripcion_corta: DOMPurify.sanitize(recetaData.descripcion_corta || ''),
-          descripcion_larga: DOMPurify.sanitize(recetaData.descripcion_larga || ''),
-          sugerencias: DOMPurify.sanitize(recetaData.sugerencias || ''),
-          preparacion: DOMPurify.sanitize(pasos.filter(p => p.trim() !== '').join('\n\n')),
-          ingredientes_detalle: formattedIngredientes
+      const recetaPayload = {
+        nombre: DOMPurify.sanitize(recetaData.nombre || ''),
+        descripcion_corta: DOMPurify.sanitize(recetaData.descripcion_corta || ''),
+        descripcion_larga: DOMPurify.sanitize(recetaData.descripcion_larga || ''),
+        preparacion: preparacionFinal,
+        sugerencias: DOMPurify.sanitize(recetaData.sugerencias || ''),
+        dificultad: recetaData.dificultad,
+        pais_id: recetaData.pais || null,
+        tipo_plato_id: recetaData.tipo_plato || null,
+        tiempo_preparacion: recetaData.tiempo_preparacion || null,
+        numero_porcion: recetaData.numero_porcion || 1,
+        imagen_url: recetaData.imagen_url || null,
+        video_url: recetaData.video_url || null,
+        total_calorias: totalCal,
+        total_proteinas: totalProt,
+        total_carbohidratos: totalCarb,
+        total_grasas: totalGras,
+        user_id: session.user.id,
       };
-      if (!isEditing) finalData.contador_likes = 0;
 
       try {
-        const response = await fetch(url, {
-          method,
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify(finalData),
-        });
+        let recetaId = id;
 
-        let data;
-        try { data = await response.json(); } catch { data = null; }
-
-        if (response.ok) {
-          addToast({
-              title: `Receta ${isEditing ? 'modificada' : 'creada'} con éxito`,
-              description: "Redirigiendo al recetario...",
-              color: "success",
-              timeout: 3000,
-              className: "bg-white dark:bg-[#0f1115] text-[#17c964] border-2 border-[#17c964]/30 font-bold",
-          });
-          setTimeout(() => window.location.href='/recipes', 3000);
+        if (isEditing) {
+          const { error } = await supabase
+            .from('core_receta')
+            .update(recetaPayload)
+            .eq('id', id);
+          if (error) throw new Error(error.message);
         } else {
-          const errorMsg = data?.detail || data || `Fallo al guardar (Código: ${response.status})`;
-          throw new Error(typeof errorMsg === 'string' ? errorMsg : JSON.stringify(errorMsg));
+          recetaPayload.contador_likes = 0;
+          const { data: nuevaReceta, error } = await supabase
+            .from('core_receta')
+            .insert(recetaPayload)
+            .select('id')
+            .single();
+          if (error) throw new Error(error.message);
+          recetaId = nuevaReceta.id;
         }
+
+        // Sync ingredientes: borrar los viejos e insertar los nuevos
+        await supabase.from('core_recetaingrediente').delete().eq('receta_id', recetaId);
+        const ingredientesRows = (recetaData.ingredientes_detalle || []).map(item => ({
+          receta_id: recetaId,
+          ingrediente_id: item.ingrediente?.id,
+          cantidad: item.cantidad,
+          unidad: item.unidad
+        })).filter(r => r.ingrediente_id);
+        if (ingredientesRows.length > 0) {
+          const { error: ingError } = await supabase.from('core_recetaingrediente').insert(ingredientesRows);
+          if (ingError) throw new Error(ingError.message);
+        }
+
+        // Sync estilos de vida
+        await supabase.from('core_receta_estilos_vida').delete().eq('receta_id', recetaId);
+        const estilosRows = (recetaData.estilos_vida || []).map(estiloId => ({
+          receta_id: recetaId,
+          estilovida_id: estiloId
+        }));
+        if (estilosRows.length > 0) {
+          await supabase.from('core_receta_estilos_vida').insert(estilosRows);
+        }
+
+        addToast({
+            title: `Receta ${isEditing ? 'modificada' : 'creada'} con éxito`,
+            description: "Redirigiendo al recetario...",
+            color: "success",
+            timeout: 3000,
+            className: "bg-white dark:bg-[#0f1115] text-[#17c964] border-2 border-[#17c964]/30 font-bold",
+        });
+        setTimeout(() => window.location.href='/recipes', 3000);
+
       } catch (error) {
         console.error("Error al enviar la receta:", error);
         addToast({
