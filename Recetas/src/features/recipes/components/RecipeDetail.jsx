@@ -3,6 +3,7 @@ import { useAuth, AuthProvider } from '@/features/auth/context/AuthContext';
 import { toast, Skeleton } from "@heroui/react";
 import { ChefHat, Clock, Users, Heart, Share2, BookOpen, ListOrdered, Video, Bookmark, Minus, Plus, Flame, Beef, Wheat, Droplet } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
+import AdSenseBanner from '@/shared/ui/AdSenseBanner';
 
 const COLOR_PRINCIPAL = '#b08968';
 
@@ -266,24 +267,43 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
       case 1:
         return (
           <div className="animate-fade-in space-y-8 z-10 relative">
-            <div className="flex flex-col md:flex-row gap-8 items-start">
-              <div className="flex-1">
-                <h1 className="text-5xl md:text-6xl font-serif font-bold mb-2 text-slate-800 dark:text-orange-200">{receta.nombre}</h1>
-                <p className="text-slate-500 dark:text-orange-100 text-base italic mb-6">Por: <span className="text-slate-700 dark:text-zinc-200 font-medium">{receta.usuario_nombre || receta.usuario || "Chef Anónimo"}</span></p>
-                <div className="text-slate-700 dark:text-zinc-200 text-lg leading-relaxed premium-glass-panel p-6 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-lg">
-                  {receta.descripcion_larga || receta.descripcion_corta}
-                </div>
-              </div>
-              {imageUrl && (
-                <div className="w-full h-80 sm:h-96 md:h-120 relative">
-                  <img
-                    src={receta.portada}
-                    alt={receta.nombre}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40 to-transparent"></div>
-                </div>
-              )}
+            {/* Header Limpio Estilo Editorial */}
+            <div className="border-b border-slate-200/60 dark:border-white/10 pb-6 mb-8">
+               <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#b08968] mb-2 block">
+                  Libro de Recetas Pro
+               </span>
+               <h1 className="text-4xl md:text-5xl font-serif font-black text-slate-900 dark:text-white leading-none mb-4">
+                {receta.nombre}
+               </h1>
+               <div className="flex items-center gap-2">
+                  <p className="text-slate-500 dark:text-orange-100/40 text-sm italic">
+                    Publicado por: <span className="text-slate-800 dark:text-zinc-200 font-bold not-italic underline decoration-1 underline-offset-4">{receta.usuario_nombre || receta.usuario || "Chef Anónimo"}</span>
+                  </p>
+               </div>
+            </div>
+
+            {/* Contenedor de Texto con Infobox Flotante */}
+            <div className="relative">
+               {/* Infobox Imagen (Pura y Ordenada) */}
+               {imageUrl && (
+                 <div className="float-none md:float-right md:ml-8 md:mb-6 w-full md:w-[320px] xl:w-[380px] bg-slate-50 dark:bg-white/[0.03] p-1.5 rounded-xl border border-slate-200 dark:border-white/10 shadow-sm">
+                    <div className="aspect-[4/3] rounded-lg overflow-hidden">
+                       <img
+                         src={imageUrl}
+                         alt={receta.nombre}
+                         className="w-full h-full object-cover"
+                       />
+                    </div>
+                 </div>
+               )}
+
+               {/* Cuerpo de la Descripción (Inicio Directo) */}
+               <div className="text-slate-600 dark:text-zinc-300 text-lg leading-[1.8] text-justify space-y-6">
+                 {receta.descripcion_larga || receta.descripcion_corta}
+               </div>
+
+               {/* Clearfix para layout Wikipedia */}
+               <div className="clear-both"></div>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -396,6 +416,8 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
                 })}
               </ul>
             </div>
+
+
           </div>
         );
       case 3:
@@ -437,6 +459,8 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
                   <p className="text-orange-900/80 dark:text-orange-100 italic leading-relaxed">{receta.sugerencias}</p>
                </div>
             )}
+
+
           </div>
         );
       default:
@@ -451,11 +475,14 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
           
           <div className="lg:w-[320px] xl:w-[380px] p-8 relative flex flex-col justify-between premium-glass-panel border-r border-slate-200 dark:border-zinc-800 z-10">
             <div>
-              <div className="flex items-center gap-3 mb-10">
-                <div className="p-3 bg-[#b08968]/10 dark:bg-[#b08968]/20 rounded-xl">
-                  <BookOpen className="w-8 h-8 text-[#b08968] dark:text-orange-200" />
+              <div className="flex items-center gap-4 mb-12 border-b border-slate-200/50 dark:border-zinc-800 pb-8">
+                <div className="w-14 h-14 bg-gradient-to-br from-[#b08968] to-[#967259] rounded-2xl flex items-center justify-center shadow-lg shadow-[#b08968]/30">
+                  <BookOpen className="w-7 h-7 text-white" />
                 </div>
-                <h2 className="text-2xl font-serif font-extrabold text-slate-800 dark:text-zinc-200 tracking-widest uppercase">El Libro</h2>
+                <div>
+                  <h2 className="text-2xl font-serif font-black text-slate-900 dark:text-white tracking-widest uppercase mb-1">El Libro</h2>
+                  <p className="text-[10px] text-slate-500 dark:text-[#b08968] font-bold tracking-[0.2em] uppercase">Recetas Pro</p>
+                </div>
               </div>
               <div className="space-y-4">
                 {tabs.map(tab => {
@@ -488,6 +515,13 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
           <div className="flex-1 p-8 md:p-12 xl:p-16 overflow-y-auto relative bg-transparent custom-scrollbar">
             <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#b08968] opacity-[0.015] dark:opacity-[0.03] rounded-full blur-[100px] pointer-events-none"></div>
             <PageContent />
+
+            {/* ── Google AdSense banner ── */}
+            <AdSenseBanner
+              slot="REEMPLAZA_CON_TU_SLOT"
+              format="auto"
+              className="mt-10 rounded-2xl"
+            />
           </div>
 
         </div>

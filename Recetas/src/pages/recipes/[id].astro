@@ -4,6 +4,7 @@ import Footer from '@/shared/layout/Footer';
 import Navbar from '@/shared/layout/Navbar';
 import RecetaDetalle from '@/features/recipes/components/RecipeDetail';
 import CommentSection from '@/features/comments/components/CommentSection';
+import AffiliateCarousel from '@/shared/ui/AffiliateCarousel';
 
 import { supabase } from '@/lib/supabaseClient';
 
@@ -35,7 +36,14 @@ const { id } = Astro.params;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Detalle de Receta</title>
+    
+    <!-- ── Favicon ── -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="shortcut icon" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+    <meta name="theme-color" content="#b08968" />
+
+    <title>ChileBite – Detalle de Receta</title>
     <!-- Evitar FOUC en modo oscuro -->
     <script is:inline>
       const theme = (() => {
@@ -63,6 +71,9 @@ const { id } = Astro.params;
     <!-- Wrapper normal debajo del navbar -->
     <main class="mt-20 flex-1 relative z-10 w-full">
         <RecetaDetalle idReceta={id} client:only="react" />
+        <div className="max-w-[1400px] mx-auto w-full px-4 lg:px-8">
+            <AffiliateCarousel client:only="react" />
+        </div>
         <div class="max-w-[1400px] mx-auto w-full px-4 lg:px-8 pb-16">
             <CommentSection recipeId={id} client:only="react" />
         </div>

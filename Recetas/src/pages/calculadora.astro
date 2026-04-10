@@ -3,17 +3,51 @@ import "@/styles/global.css";
 import Footer from "@/shared/layout/Footer";
 import Navbar from "@/shared/layout/Navbar";
 import MacroCalculator from "@/features/macros/MacroCalculator";
+import AffiliateCarousel from "@/shared/ui/AffiliateCarousel";
+import AdSenseBanner from "@/shared/ui/AdSenseBanner";
 ---
 
 <html lang="es">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- ── Favicon ── -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="shortcut icon" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+
+    <!-- ── SEO primario ── -->
     <title>Calculadora de Macros – ChileBite</title>
     <meta
       name="description"
       content="Calcula los macronutrientes de tu plato combinando ingredientes de nuestra base de datos normalizada USDA. Proteínas, carbohidratos, grasas y calorías en tiempo real."
     />
+    <meta name="keywords" content="calculadora macros, macronutrientes recetas, calorías, proteínas, carbohidratos, grasas, ChileBite" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://chilebite.vercel.app/calculadora" />
+
+    <!-- ── Open Graph ── -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="ChileBite" />
+    <meta property="og:url" content="https://chilebite.vercel.app/calculadora" />
+    <meta property="og:title" content="Calculadora de Macros – ChileBite" />
+    <meta property="og:description" content="Calcula proteínas, carbohidratos, grasas y calorías de tus platos en tiempo real con ingredientes de la base USDA." />
+    <meta property="og:image" content="https://chilebite.vercel.app/images/Titulo.webp" />
+    <meta property="og:locale" content="es_CL" />
+
+    <!-- ── Twitter Card ── -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Calculadora de Macros – ChileBite" />
+    <meta name="twitter:description" content="Calcula los macros de tu plato en segundos." />
+    <meta name="twitter:image" content="https://chilebite.vercel.app/images/Titulo.webp" />
+
+    <!-- ── Theme ── -->
+    <meta name="theme-color" content="#b08968" />
+
+    <!-- ── Google AdSense ── -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4855312501819907" crossorigin="anonymous"></script>
+
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
@@ -42,6 +76,19 @@ import MacroCalculator from "@/features/macros/MacroCalculator";
 
     <div class="pt-20 pb-12 min-h-screen">
       <MacroCalculator client:load />
+
+      <!-- ── Monetización: Carrusel Premium ── -->
+      <AffiliateCarousel client:load />
+      
+      <div class="max-w-4xl mx-auto px-4 mt-8">
+        <div className="flex justify-center">
+          <AdSenseBanner 
+            client:load 
+            slot="REEMPLAZA_CON_TU_SLOT_CALCULADORA" 
+            className="w-full max-w-2xl"
+          />
+        </div>
+      </div>
     </div>
 
     <Footer client:visible />
