@@ -14,6 +14,12 @@ import Navbar from "@/shared/layout/Navbar";
     <link rel="shortcut icon" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/favicon.svg" />
 
+    <!-- ── Sitewide Verification ── -->
+    <meta
+      name="google-site-verification"
+      content="9hqIfhGSU9xP42_IWeiyHyFOGAiClu1e_t6JAOJcZWk"
+    />
+
     <!-- ── SEO primario ── -->
     <title>ChileBite – Descubre, Aprende y Comparte</title>
     <meta
@@ -67,7 +73,10 @@ import Navbar from "@/shared/layout/Navbar";
     <meta name="theme-color" content="#b08968" />
 
     <!-- ── Google AdSense ── -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4855312501819907" crossorigin="anonymous"></script>
+    <script
+      async
+      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4855312501819907"
+      crossorigin="anonymous"></script>
 
     <link
       rel="stylesheet"
@@ -106,46 +115,120 @@ import Navbar from "@/shared/layout/Navbar";
         overflow-x: hidden;
       }
 
-      /* Scroll Animations Base */
-      .scroll-reveal {
+      /* Advanced Scroll Animations (Premium Assembly) */
+      .reveal {
         opacity: 0;
-        transform: translateY(40px);
-        transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
-      }
-      .scroll-reveal.visible {
-        opacity: 1;
-        transform: translateY(0);
+        transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+        will-change: transform, opacity;
       }
 
-      .scroll-fade-in {
-        opacity: 0;
-        transition: opacity 1s ease;
+      .reveal-up {
+        transform: translateY(60px);
       }
-      .scroll-fade-in.visible {
+      .reveal-down {
+        transform: translateY(-60px);
+      }
+      .reveal-left {
+        transform: translateX(-100px);
+      }
+      .reveal-right {
+        transform: translateX(100px);
+      }
+      .reveal-scale {
+        transform: scale(0.85);
+        opacity: 0;
+      }
+
+      /* Child Animation (Anti-Jitter Pattern) */
+      .reveal-child-right {
+        opacity: 0;
+        transform: translateX(100px);
+        transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+        will-change: transform, opacity;
+      }
+      .reveal.visible .reveal-child-right {
         opacity: 1;
+        transform: translate(0) scale(1);
+      }
+
+      .reveal.visible {
+        opacity: 1;
+        transform: translate(0) scale(1);
+      }
+
+      /* Stagger logic via data-delay */
+      .reveal.visible[data-delay="100"] {
+        transition-delay: 0.1s;
+      }
+      .reveal.visible[data-delay="200"] {
+        transition-delay: 0.2s;
+      }
+      .reveal.visible[data-delay="300"] {
+        transition-delay: 0.3s;
+      }
+      .reveal.visible[data-delay="400"] {
+        transition-delay: 0.4s;
+      }
+      .reveal.visible[data-delay="500"] {
+        transition-delay: 0.5s;
       }
 
       .parallax-bg {
         background-attachment: fixed;
       }
+
+      .scroll-indicator {
+        transition: opacity 0.5s ease;
+      }
+      .scroll-indicator.hidden-scroll {
+        opacity: 0;
+        pointer-events: none;
+      }
     </style>
 
-    <script>
-      // Intersection Observer for scroll animations
-      const observer = new IntersectionObserver(
-        (entries) => {
+    <script is:inline>
+      document.addEventListener("DOMContentLoaded", () => {
+        // Intersection Observer for scroll animations (Assembly System)
+        const observerOptions = {
+          threshold: 0.2,
+          rootMargin: "0px 0px -15% 0px",
+        };
+
+        const observer = new IntersectionObserver((entries) => {
           entries.forEach((entry) => {
             if (entry.isIntersecting) {
               entry.target.classList.add("visible");
+            } else {
+              entry.target.classList.remove("visible");
             }
           });
-        },
-        { threshold: 0.15, rootMargin: "0px 0px -50px 0px" },
-      );
+        }, observerOptions);
 
-      document
-        .querySelectorAll(".scroll-reveal, .scroll-fade-in")
-        .forEach((el) => observer.observe(el));
+        // Select all elements with reveal classes
+        const revealElements = document.querySelectorAll(
+          ".reveal, .reveal-up, .reveal-down, .reveal-left, .reveal-right, .reveal-scale",
+        );
+
+        revealElements.forEach((el) => {
+          // Add the base reveal class if not present
+          if (!el.classList.contains("reveal")) {
+            el.classList.add("reveal");
+          }
+          observer.observe(el);
+        });
+
+        // Scroll indicator logic
+        const scrollIndicator = document.querySelector(".scroll-indicator");
+        if (scrollIndicator) {
+          window.addEventListener("scroll", () => {
+            if (window.scrollY > 100) {
+              scrollIndicator.classList.add("hidden-scroll");
+            } else {
+              scrollIndicator.classList.remove("hidden-scroll");
+            }
+          });
+        }
+      });
     </script>
   </head><body
     class="bg-stone-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-300"
@@ -161,10 +244,13 @@ import Navbar from "@/shared/layout/Navbar";
           class="absolute inset-0 bg-[url('/images/Titulo.webp')] bg-cover bg-center parallax-bg"
         >
         </div>
-        <div class="absolute inset-x-0 bottom-0 h-40 bg-linear-to-b from-transparent to-white/90 dark:to-zinc-950/90 pointer-events-none"></div>
+        <div
+          class="absolute inset-x-0 bottom-0 h-40 bg-linear-to-b from-transparent to-white/90 dark:to-zinc-950/90 pointer-events-none"
+        >
+        </div>
 
         <div
-          class="relative z-10 w-full max-w-4xl text-center scroll-reveal visible"
+          class="relative z-10 w-full max-w-4xl text-center reveal-scale visible"
         >
           <div
             class="inline-block mb-6 px-4 py-1.5 rounded-full bg-black/30 backdrop-blur-md border border-white/20 text-white text-sm font-semibold tracking-wide uppercase"
@@ -184,12 +270,24 @@ import Navbar from "@/shared/layout/Navbar";
             locales cerca de ti.
           </p>
         </div>
+
+        <!-- Scroll Indicator -->
+        <div
+          class="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce scroll-indicator z-20 cursor-pointer"
+          onclick="window.scrollBy({top: window.innerHeight, behavior: 'smooth'})"
+        >
+          <i
+            class="fa-solid fa-chevron-down text-white/50 text-4xl hover:text-white/80 transition-colors"
+          ></i>
+        </div>
       </section>
 
       <!-- Propuesta de Valor -->
-      <section class="py-24 px-4 bg-gray-900 relative">
-        <div class="max-w-7xl mx-auto">
-          <div class="text-center mb-16 scroll-reveal">
+      <section
+        class="min-h-screen flex flex-col justify-center py-24 px-4 bg-gray-900 relative"
+      >
+        <div class="max-w-7xl mx-auto w-full">
+          <div class="text-center mb-16 reveal-up">
             <h2 class="text-3xl md:text-5xl font-extrabold text-white mb-6">
               ¿Qué te ofrecemos?
             </h2>
@@ -201,7 +299,8 @@ import Navbar from "@/shared/layout/Navbar";
 
           <div class="grid md:grid-cols-2 gap-8">
             <div
-              class="p-10 rounded-[2.5rem] bg-gray-800 border-gray-700 scroll-reveal hover:-translate-y-2 transition-transform duration-300"
+              class="p-10 rounded-[2.5rem] bg-gray-800 border-gray-700 reveal-left hover:-translate-y-2 transition-transform duration-300"
+              data-delay="100"
             >
               <div
                 class="w-16 h-16 rounded-2xl bg-[#b08968]/20 flex items-center justify-center mb-6"
@@ -219,7 +318,8 @@ import Navbar from "@/shared/layout/Navbar";
             </div>
 
             <div
-              class="p-10 rounded-[2.5rem] bg-gray-800 border-gray-700 scroll-reveal hover:-translate-y-2 transition-transform duration-300"
+              class="p-10 rounded-[2.5rem] bg-gray-800 border-gray-700 reveal-right hover:-translate-y-2 transition-transform duration-300"
+              data-delay="300"
             >
               <div
                 class="w-16 h-16 rounded-2xl bg-[#b08968]/20 flex items-center justify-center mb-6"
@@ -241,10 +341,12 @@ import Navbar from "@/shared/layout/Navbar";
 
       <!-- Feature Split -->
       <section
-        class="py-24 px-4 bg-gradient-to-b from-gray-900 to-gray-800 overflow-hidden"
+        class="min-h-screen flex flex-col justify-center py-24 px-4 bg-gradient-to-b from-gray-900 to-gray-800 overflow-hidden"
       >
-        <div class="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center">
-          <div class="scroll-reveal pr-0 md:pr-10">
+        <div
+          class="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center w-full"
+        >
+          <div class="reveal-left pr-0 md:pr-10">
             <h2 class="text-4xl md:text-5xl font-extrabold text-white mb-6">
               Una galería hecha <span class="text-[#b08968]">a tu medida</span>
             </h2>
@@ -262,21 +364,31 @@ import Navbar from "@/shared/layout/Navbar";
               <i class="fa-solid fa-arrow-right"></i>
             </a>
           </div>
-          <div class="scroll-reveal relative">
-            <div class="p-12 rounded-[3.5rem] bg-linear-to-tr from-[#b08968]/20 via-[#b08968]/5 to-transparent border border-[#b08968]/20 backdrop-blur-sm relative overflow-hidden group">
+          <div class="reveal w-full relative flex items-center justify-center">
+            <!-- Animated Inner Content -->
+            <div
+              class="reveal-child-right w-full flex items-center justify-center group relative"
+            >
+              <!-- Fixed Background Decoration -->
+              <div
+                class="absolute -inset-10 rounded-[3.5rem] bg-linear-to-tr from-[#b08968]/30 via-[#b08968]/10 to-transparent border border-[#b08968]/20 backdrop-blur-md -z-10 animate-pulse"
+              >
+              </div>
+              <img
+                src="/images/Sitio.png"
+                alt="Interfaz Galería"
+                class="relative rounded-3xl shadow-2xl border border-gray-700 mx-auto w-full max-w-lg object-cover transition-transform duration-500 group-hover:scale-105"
+              />
             </div>
-            <img
-              src="/images/Sitio.png"
-              alt="Interfaz Galería"
-              class="relative rounded-3xl shadow-2xl border border-gray-700 mx-auto w-full max-w-lg object-cover"
-            />
           </div>
         </div>
       </section>
 
       <!-- Comunidad -->
-      <section class="py-24 px-4 bg-gray-900">
-        <div class="max-w-4xl mx-auto text-center scroll-reveal">
+      <section
+        class="min-h-screen flex flex-col justify-center py-24 px-4 bg-gradient-to-b from-gray-800 to-black"
+      >
+        <div class="max-w-4xl mx-auto text-center reveal-up w-full">
           <div
             class="inline-block mb-6 px-4 py-1.5 rounded-full bg-gray-800 text-[#b08968] font-bold tracking-wide uppercase text-sm"
           >
@@ -290,23 +402,34 @@ import Navbar from "@/shared/layout/Navbar";
             guarda tus recetas predilectas, y da 'me gusta' para ayudar a
             posicionar los mejores platos en la comunidad.
           </p>
-          <img
-            src="/images/Carta.png"
-            alt="Carta de recetas"
-            class="rounded-3xl shadow-2xl mx-auto w-full max-w-xl object-contain border border-gray-800"
-          />
+          <div class="reveal-scale">
+            <img
+              src="/images/Carta.png"
+              alt="Carta de recetas"
+              class="rounded-3xl shadow-2xl mx-auto w-full max-w-xl object-contain border border-gray-800"
+            />
+          </div>
         </div>
       </section>
 
       <!-- Negocios CTA -->
-      <section class="py-24 px-4 bg-black text-white relative overflow-hidden">
+      <section
+        class="min-h-screen flex flex-col justify-center py-24 px-4 bg-black text-white relative overflow-hidden"
+      >
+        <!-- Textura de fondo -->
         <div
           class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/food.png')]"
         >
         </div>
-        <div class="absolute -top-80 -right-80 w-160 h-160 bg-[#b08968] opacity-10 rounded-full blur-[120px] group-hover:opacity-15 transition-opacity duration-700"></div>
+        
+        <!-- Overlay degradado para fundir el borde superior sin lineas rectas -->
+        <div class="absolute top-0 inset-x-0 h-48 bg-gradient-to-b from-black via-black/80 to-transparent pointer-events-none"></div>
+        <div
+          class="absolute -top-80 -right-80 w-160 h-160 bg-[#b08968] opacity-10 rounded-full blur-[120px] group-hover:opacity-15 transition-opacity duration-700"
+        >
+        </div>
 
-        <div class="max-w-4xl mx-auto text-center relative z-10 scroll-reveal">
+        <div class="max-w-4xl mx-auto text-center relative z-10 reveal-up">
           <h2 class="text-4xl md:text-5xl font-extrabold mb-6">
             ¿Deseas llegar a más clientes?
           </h2>
