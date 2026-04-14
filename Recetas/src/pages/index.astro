@@ -135,8 +135,9 @@ import Navbar from "@/shared/layout/Navbar";
         transform: translateX(100px);
       }
       .reveal-scale {
-        transform: scale(0.85);
+        transform: scale(0.96) translateZ(0);
         opacity: 0;
+        will-change: transform, opacity;
       }
 
       /* Child Animation (Anti-Jitter Pattern) */
@@ -245,7 +246,7 @@ import Navbar from "@/shared/layout/Navbar";
         >
         </div>
         <div
-          class="absolute inset-x-0 bottom-0 h-40 bg-linear-to-b from-transparent to-white/90 dark:to-zinc-950/90 pointer-events-none"
+          class="absolute inset-x-0 bottom-0 h-40 bg-linear-to-b from-transparent to-zinc-950/90 pointer-events-none"
         >
         </div>
 
@@ -253,7 +254,7 @@ import Navbar from "@/shared/layout/Navbar";
           class="relative z-10 w-full max-w-4xl text-center reveal-scale visible"
         >
           <div
-            class="inline-block mb-6 px-4 py-1.5 rounded-full bg-black/30 backdrop-blur-md border border-white/20 text-white text-sm font-semibold tracking-wide uppercase"
+            class="inline-block mb-6 px-4 py-1.5 rounded-full bg-black/80 backdrop-blur-md border border-white/20 text-white text-sm font-semibold tracking-wide uppercase"
           >
             Una experiencia gastronómica
           </div>
@@ -263,7 +264,7 @@ import Navbar from "@/shared/layout/Navbar";
             Bienvenido a <span class="text-[#b08968]">ChileBite</span>
           </h1>
           <p
-            class="text-lg md:text-xl text-gray-200 font-medium leading-relaxed max-w-3xl mx-auto backdrop-blur-sm bg-black/20 p-6 rounded-3xl border border-white/10"
+            class="text-lg md:text-xl text-gray-200 font-medium leading-relaxed max-w-3xl mx-auto backdrop-blur-sm bg-black/70 p-6 rounded-3xl border border-white/10"
           >
             Somos Chrystopher Silva y Miguel Escobar. Creamos esta plataforma
             para que descubras, compartas y disfrutes las mejores recetas y
@@ -407,7 +408,8 @@ import Navbar from "@/shared/layout/Navbar";
               src="/images/Carta.png"
               alt="Carta de recetas"
               class="rounded-3xl shadow-2xl mx-auto w-full max-w-xl object-contain border border-gray-800"
-            />
+            
+              />
           </div>
         </div>
       </section>
