@@ -40,12 +40,8 @@ export default function AdSenseBanner({
     }
   }, []);
 
-  // No renderizar en modo desarrollo (localhost) para no generar impresiones inválidas
-  if (
-    typeof window !== 'undefined' &&
-    (window.location.hostname === 'localhost' ||
-      window.location.hostname === '127.0.0.1')
-  ) {
+  // No renderizar en modo desarrollo para no generar impresiones inválidas
+  if (import.meta.env.DEV) {
     return (
       <div
         className={`flex items-center justify-center rounded-2xl border-2 border-dashed border-[#b08968]/30 bg-[#b08968]/5 text-[#b08968]/50 text-xs font-semibold py-4 ${className}`}

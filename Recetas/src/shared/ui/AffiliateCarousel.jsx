@@ -11,80 +11,60 @@ const PRODUCTOS = [
   {
     id: 1,
     title: "Set 3 Sartenes Hierro",
-    category: "MENAJE",
-    price: "Oferta",
     image: "https://http2.mlstatic.com/D_NQ_NP_2X_679298-MLA100481655052_122025-F.webp",
     link: "https://meli.la/1Ctdssr"
   },
   {
     id: 2,
     title: "Bateria Smart Crema",
-    category: "SET COCINA",
-    price: "Premium",
     image: "https://http2.mlstatic.com/D_NQ_NP_2X_834457-MLA99495459316_112025-F.webp",
     link: "https://meli.la/2FKeizR"
   },
   {
     id: 3,
     title: "Afilador Manual 4en1",
-    category: "UTENSILIOS",
-    price: "Profesional",
     image: "https://http2.mlstatic.com/D_NQ_NP_2X_684314-CBT105126405578_012026-F.webp",
     link: "https://meli.la/1f6rAcS"
   },
   {
     id: 4,
     title: "Secaplatos EOLAND",
-    category: "ORGANIZACIÓN",
-    price: "Esencial",
     image: "https://http2.mlstatic.com/D_NQ_NP_2X_657284-MLA99855650081_112025-F.webp",
     link: "https://meli.la/337Dp5R"
   },
   {
     id: 5,
     title: "Cocinar Es Fácil",
-    category: "LIBROS",
-    price: "Recomendado",
     image: "https://http2.mlstatic.com/D_NQ_NP_2X_656345-MLC94964003449_102025-F.webp",
     link: "https://meli.la/2ykmSsM"
   },
   {
     id: 6,
     title: "Mortero Marmol",
-    category: "PREPARACIÓN",
-    price: "Artesanal",
     image: "https://http2.mlstatic.com/D_NQ_NP_2X_890314-MLA107681270852_032026-F.webp",
     link: "https://meli.la/1iY3cyJ"
   },
   {
     id: 7,
     title: "Delantal Parrilla",
-    category: "ACCESORIOS",
-    price: "Personalizado",
     image: "https://http2.mlstatic.com/D_NQ_NP_2X_742565-MLC51449136045_092022-F-delantal-para-parrilla-cocina-personalizado-sublimado.webp",
     link: "https://meli.la/1VyxLoN"
   },
   {
     id: 8,
     title: "Recetario 200 Pag",
-    category: "ORGANIZACIÓN",
-    price: "Colección",
     image: "https://http2.mlstatic.com/D_NQ_NP_2X_871449-MLA95167566226_102025-F.webp",
     link: "https://meli.la/1pZ21L2"
   },
   {
     id: 9,
     title: "6 Cucharas Medida",
-    category: "REPOSTERÍA",
-    price: "Precisión",
     image: "https://http2.mlstatic.com/D_NQ_NP_2X_664439-MLC79691479420_102024-F.webp",
     link: "https://meli.la/15Z3fkt"
   },
   {
     id: 10,
     title: "Balanza Digital",
-    category: "ELECTRO",
-    price: "Digital",
     image: "https://http2.mlstatic.com/D_NQ_NP_2X_852646-MLA95248085013_102025-F.webp",
     link: "https://meli.la/1pb4srW"
   }
@@ -97,8 +77,6 @@ const GAP = 12;
 const TOTAL_WIDTH_SINGLE = PRODUCTOS.length * (CARD_WIDTH + GAP);
 
 const ProductCard = ({ item }) => {
-  const [isLoaded, setIsLoaded] = useState(false);
-
   return (
     <div className="min-w-[180px] h-full snap-center select-none">
       <a
@@ -112,14 +90,10 @@ const ProductCard = ({ item }) => {
 
         {/* Imagen Wrapper */}
         <div className="h-28 overflow-hidden relative bg-white flex items-center justify-center p-3 z-10">
-          {!isLoaded && (
-            <Skeleton className="absolute inset-4 rounded-xl bg-zinc-100 dark:bg-zinc-800" />
-          )}
           <img
             src={item.image}
             alt={item.title}
-            onLoad={() => setIsLoaded(true)}
-            className={`max-w-full max-h-full object-contain group-hover/card:scale-105 transition-transform duration-500 ease-out ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+            className="max-w-full max-h-full object-contain group-hover/card:scale-105 transition-transform duration-500 ease-out"
           />
           
           <div className="absolute top-2 right-2 translate-y-2 opacity-0 group-hover/card:translate-y-0 group-hover/card:opacity-100 transition-all duration-300">
@@ -131,16 +105,6 @@ const ProductCard = ({ item }) => {
 
         {/* Info Area */}
         <div className="p-3 z-10 relative">
-          <div className="flex items-center gap-1.5 mb-1.5">
-             <span className="text-[8px] font-black text-[#b08968] dark:text-[#c4a48c] uppercase tracking-wider">
-              {item.category}
-            </span>
-            <span className="w-1 h-1 bg-gray-200 dark:bg-zinc-700 rounded-full"></span>
-            <span className="text-[8px] font-bold text-gray-400 dark:text-gray-500">
-              {item.price}
-            </span>
-          </div>
-
           <h4 className="text-xs font-bold text-gray-900 dark:text-zinc-100 leading-tight mb-2 min-h-[2rem] group-hover/card:text-[#b08968] transition-colors duration-300 line-clamp-2">
             {item.title}
           </h4>
