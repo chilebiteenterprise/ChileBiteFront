@@ -518,7 +518,7 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
 
             {/* ── Google AdSense banner ── */}
             <AdSenseBanner
-              slot="REEMPLAZA_CON_TU_SLOT"
+              slot="9961213164"
               format="auto"
               className="mt-10 rounded-2xl"
             />
