@@ -3,44 +3,12 @@ import "@/styles/global.css";
 import Footer from "@/shared/layout/Footer";
 import Navbar from "@/shared/layout/Navbar";
 import RecipeGrid from "@/features/recipes/components/RecipeGrid";
+import BaseHead from "@/shared/layout/BaseHead.astro";
 ---
 
 <html lang="es">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-    <!-- ── Favicon ── -->
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="shortcut icon" href="/favicon.svg" />
-    <link rel="apple-touch-icon" href="/favicon.svg" />
-
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    />
-    <!-- Evitar FOUC en modo oscuro -->
-    <script is:inline>
-      const theme = (() => {
-        if (
-          typeof localStorage !== "undefined" &&
-          localStorage.getItem("theme")
-        ) {
-          return localStorage.getItem("theme");
-        }
-        if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-          return "dark";
-        }
-        return "light";
-      })();
-      if (theme === "dark") {
-        document.documentElement.classList.add("dark");
-      } else {
-        document.documentElement.classList.remove("dark");
-      }
-    </script>
-  
-    <meta name="google-adsense-account" content="ca-pub-4855312501819907" />
+    <BaseHead title="Explorar Recetas - ChileBite" description="Descubre las mejores recetas chilenas e internacionales en ChileBite." />
   </head>
 
   <body

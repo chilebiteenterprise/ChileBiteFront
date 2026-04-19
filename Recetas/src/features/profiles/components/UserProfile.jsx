@@ -5,7 +5,9 @@ import {
   Loader, UserCircle2, Pencil, Save, X, Settings
 } from "lucide-react";
 import { Button, Skeleton, toast } from "@heroui/react";
-import { updateProfile, uploadAvatar } from '@/lib/profileService';
+import { updateProfile } from '@/lib/profileService';
+import { getUserCollections, createCollection } from '@/lib/collectionService';
+import { Check } from "lucide-react";
 
 const BRAND = "#b08968";
 
@@ -50,16 +52,18 @@ function Field({ label, value, onChange, placeholder, multiline = false }) {
 ────────────────────────────────────────────────────────────── */
 function ProfileContent() {
   const { user, profile, loading: authLoading, refreshProfile } = useAuth();
-  const fileInputRef = useRef(null);
+  const [editData, setEditData] = useState({
+    nombres: "", apellido_paterno: "", apellido_materno: "",
+    username: "", bio: ""
+  });
 
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
-
-  const [editData, setEditData] = useState({
-    nombres: "", apellido_paterno: "", apellido_materno: "",
-    username: "", bio: "", avatar_url: ""
-  });
+  const [collections, setCollections] = useState([]);
+  const [loadingCollections, setLoadingCollections] = useState(true);
+  const [isCreatingCollection, setIsCreatingCollection] = useState(false);
+  const [newCollectionName, setNewCollectionName] = useState("");
+  const [savingCollection, setSavingCollection] = useState(false);
 
   useEffect(() => {
     if (profile) {
@@ -68,11 +72,19 @@ function ProfileContent() {
         apellido_paterno: profile.apellido_paterno || "",
         apellido_materno: profile.apellido_materno || "",
         username: profile.username || "",
-        bio: profile.bio || "",
-        avatar_url: profile.avatar_url || ""
+        bio: profile.bio || ""
       });
     }
   }, [profile]);
+
+  useEffect(() => {
+    if (user?.id) {
+      getUserCollections(user.id)
+        .then(setCollections)
+        .catch(err => console.error(err))
+        .finally(() => setLoadingCollections(false));
+    }
+  }, [user?.id]);
 
   if (authLoading) return <ProfileSkeleton />;
 
@@ -91,19 +103,9 @@ function ProfileContent() {
 
   const joinedDate = new Date(profile.created_at || user?.created_at).toLocaleDateString("es-ES", { month: "long", year: "numeric" });
   const fullName = [profile.nombres, profile.apellido_paterno, profile.apellido_materno].filter(Boolean).join(" ") || "Usuario ChileBite";
-  const currentAvatar = editData.avatar_url || profile.avatar_url;
-
-  const handleAvatarChange = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file || !user?.id) return;
-    if (file.size > 2 * 1024 * 1024) { toast.error("La imagen debe pesar menos de 2 MB"); return; }
-    setIsUploading(true);
-    try {
-      const url = await uploadAvatar(user.id, file);
-      setEditData(p => ({ ...p, avatar_url: url }));
-    } catch { toast.error("Error al subir la imagen"); }
-    finally { setIsUploading(false); }
-  };
+  
+  // Priorizar foto de Google, luego fallback a inicial
+  const currentAvatar = user?.user_metadata?.avatar_url || user?.user_metadata?.picture || profile.avatar_url;
 
   const handleSave = async () => {
     if (!editData.nombres.trim()) { toast.error("El nombre es obligatorio"); return; }
@@ -121,14 +123,30 @@ function ProfileContent() {
     }
   };
 
+  const handleCreateCollection = async () => {
+    if (!newCollectionName.trim() || !user?.id) return;
+    setSavingCollection(true);
+    try {
+      const newCol = await createCollection(user.id, newCollectionName);
+      // Actualizamos listado
+      setCollections(prev => [{ ...newCol, portadas: [], total_recetas: 0 }, ...prev]);
+      setNewCollectionName("");
+      setIsCreatingCollection(false);
+      toast.success("Colección creada satisfactoriamente");
+    } catch (err) {
+      toast.error("Error al crear la colección");
+    } finally {
+      setSavingCollection(false);
+    }
+  };
+
   const handleCancel = () => {
     setEditData({
       nombres: profile.nombres || "",
       apellido_paterno: profile.apellido_paterno || "",
       apellido_materno: profile.apellido_materno || "",
       username: profile.username || "",
-      bio: profile.bio || "",
-      avatar_url: profile.avatar_url || ""
+      bio: profile.bio || ""
     });
     setIsEditing(false);
   };
@@ -147,22 +165,12 @@ function ProfileContent() {
             <div className="relative shrink-0 self-start">
               <div className="w-28 h-28 rounded-full overflow-hidden border-4 bg-default flex items-center justify-center shadow-md"
                 style={{ borderColor: BRAND }}>
-                {isUploading ? (
-                  <Loader className="w-8 h-8 animate-spin" style={{ color: BRAND }} />
-                ) : currentAvatar ? (
+                {currentAvatar ? (
                   <img src={currentAvatar} alt={fullName} className="w-full h-full object-cover" />
                 ) : (
                   <span className="text-4xl font-black text-default-400">{(profile.nombres || "?").charAt(0).toUpperCase()}</span>
                 )}
               </div>
-              {isEditing && (
-                <button onClick={() => fileInputRef.current?.click()}
-                  className="absolute -bottom-1 -right-1 w-9 h-9 rounded-full text-white shadow-lg flex items-center justify-center hover:scale-110 transition-transform"
-                  style={{ backgroundColor: BRAND }}>
-                  <Camera className="w-4 h-4" />
-                </button>
-              )}
-              <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
             </div>
 
             {/* Info or Edit fields */}
@@ -245,11 +253,11 @@ function ProfileContent() {
           {!isEditing && (
             <div className="flex gap-8 mt-8 pt-6 border-t border-divider">
               <div>
-                <p className="text-2xl font-black text-foreground">{profile.recetas_favoritas?.length || 0}</p>
+                <p className="text-2xl font-black text-foreground">{collections.reduce((acc, col) => acc + col.total_recetas, 0)}</p>
                 <p className="text-[10px] uppercase tracking-widest font-bold text-default-500 mt-0.5">Guardadas</p>
               </div>
               <div>
-                <p className="text-2xl font-black text-foreground">0</p>
+                <p className="text-2xl font-black text-foreground">{collections.length}</p>
                 <p className="text-[10px] uppercase tracking-widest font-bold text-default-500 mt-0.5">Colecciones</p>
               </div>
             </div>
@@ -264,19 +272,81 @@ function ProfileContent() {
             <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ backgroundColor: BRAND + "1a" }}>
               <Bookmark className="w-4 h-4" style={{ color: BRAND }} />
             </div>
-            <h2 className="text-lg font-black text-foreground">Recetas Guardadas</h2>
+            <h2 className="text-lg font-black text-foreground">Mis Colecciones</h2>
+            <span className="text-xs text-default-500 font-semibold bg-default px-3 py-1 rounded-full">
+              {collections.length}
+            </span>
           </div>
-          <span className="text-xs text-default-500 font-semibold bg-default px-3 py-1 rounded-full">
-            {profile.recetas_favoritas?.length || 0}
-          </span>
+          {isCreatingCollection ? (
+            <div className="flex items-center gap-2 animate-in fade-in slide-in-from-right-3 duration-300">
+              <input 
+                autoFocus
+                className="px-4 py-2 rounded-xl text-sm border-2 border-[#b08968]/30 bg-white dark:bg-gray-800 focus:outline-none focus:border-[#b08968] focus:ring-4 focus:ring-[#b08968]/10 transition-all w-48 shadow-sm"
+                placeholder="Nombre de colección..."
+                value={newCollectionName}
+                onChange={(e) => setNewCollectionName(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleCreateCollection()}
+              />
+              <button 
+                disabled={savingCollection} 
+                onClick={handleCreateCollection} 
+                className="size-10 flex items-center justify-center rounded-xl text-white bg-[#b08968] hover:bg-[#977353] transition-all shadow-md active:scale-95 disabled:opacity-50"
+                title="Crear"
+              >
+                {savingCollection ? <Loader className="w-5 h-5 animate-spin" /> : <Check className="w-5 h-5 stroke-[3px]" />}
+              </button>
+              <button 
+                onClick={() => setIsCreatingCollection(false)} 
+                className="size-10 flex items-center justify-center rounded-xl text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all active:scale-95"
+                title="Cancelar"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          ) : (
+            <button 
+              onClick={() => setIsCreatingCollection(true)} 
+              className="group flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-[#b08968] bg-[#b08968]/5 hover:bg-[#b08968] hover:text-white transition-all duration-300 border border-[#b08968]/20 shadow-sm active:scale-95"
+            >
+              <div className="size-5 rounded-full bg-[#b08968]/10 group-hover:bg-white/20 flex items-center justify-center transition-colors">
+                <svg className="w-3.5 h-3.5 stroke-[3px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+              </div>
+              Nueva Colección
+            </button>
+          )}
         </div>
 
-        {profile.recetas_favoritas?.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            {profile.recetas_favoritas.map((id, i) => (
-              <div key={id || i}
-                className="aspect-square bg-surface border border-border rounded-2xl flex items-center justify-center cursor-pointer group shadow-sm hover:border-[#b08968]/40 hover:shadow-md transition-all">
-                <Bookmark className="w-6 h-6 group-hover:scale-110 transition-transform" style={{ color: BRAND }} />
+        {loadingCollections ? (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map(i => <Skeleton key={i} className="aspect-square rounded-2xl" />)}
+          </div>
+        ) : collections.length > 0 ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+            {collections.map((col) => (
+              <div 
+                key={col.id} 
+                onClick={() => window.location.href = `/profile/collection?id=${col.id}&name=${encodeURIComponent(col.nombre)}`}
+                className="flex flex-col gap-2 cursor-pointer group"
+              >
+                <div className="aspect-square bg-surface border border-border rounded-xl flex flex-wrap shadow-sm overflow-hidden group-hover:border-[#b08968]/50 group-hover:shadow-md transition-all">
+                   {col.portadas && col.portadas.length > 0 ? (
+                     col.portadas.map((img, i) => (
+                       <div key={i} className={`h-1/2 w-1/2 bg-gray-100 border-b border-r border-[#b08968]/20 ${col.portadas.length === 1 ? 'h-full w-full' : ''}`}>
+                         <img src={img} alt="Miniatura" className="w-full h-full object-cover" />
+                       </div>
+                     ))
+                   ) : (
+                     <div className="w-full h-full flex items-center justify-center bg-gray-50 dark:bg-gray-800">
+                       <Bookmark className="w-8 h-8 opacity-20" />
+                     </div>
+                   )}
+                </div>
+                <div>
+                   <h3 className="text-sm font-bold text-foreground leading-tight">{col.nombre}</h3>
+                   <p className="text-[11px] text-default-500 font-medium mt-0.5">{col.total_recetas} recetas</p>
+                </div>
               </div>
             ))}
           </div>
@@ -285,9 +355,9 @@ function ProfileContent() {
             <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: BRAND + "1a" }}>
               <Bookmark className="w-7 h-7" style={{ color: BRAND }} />
             </div>
-            <h3 className="text-base font-bold text-foreground mb-1">Sin recetas guardadas</h3>
+            <h3 className="text-base font-bold text-foreground mb-1">Aún no tienes colecciones</h3>
             <p className="text-sm text-default-500 max-w-xs mx-auto">
-              Aquí aparecerán las recetas que guardes desde el catálogo de ChileBite.
+              Guarda tus recetas favoritas en colecciones para organizarlas mejor.
             </p>
           </div>
         )}

@@ -1,0 +1,25 @@
+---
+import "@/styles/global.css";
+import BaseHead from '../../shared/layout/BaseHead.astro';
+import Navbar from '../../shared/layout/Navbar.jsx';
+import Footer from '../../shared/layout/Footer.jsx';
+import CollectionDetail from '../../features/profiles/components/CollectionDetail.jsx';
+---
+
+<html lang="es">
+<head>
+    <BaseHead 
+        title="Colección de Recetas | ChileBite" 
+        description="Explora tus recetas guardadas en esta colección." 
+    />
+</head>
+<body class="bg-stone-50 text-gray-800 dark:bg-gray-900 dark:text-gray-200 transition-colors duration-300 min-h-screen">
+    <Navbar client:only="react" />
+
+    <div class="pt-20 pb-12">
+        <CollectionDetail client:only="react" />
+    </div>
+
+    <Footer client:visible />
+</body>
+</html>

@@ -2,6 +2,7 @@
 import "@/styles/global.css";
 import Footer from '@/shared/layout/Footer';
 import Navbar from '@/shared/layout/Navbar';
+import BaseHead from '@/shared/layout/BaseHead.astro';
 import RecetaDetalle from '@/features/recipes/components/RecipeDetail';
 import CommentSection from '@/features/comments/components/CommentSection';
 import AffiliateCarousel from '@/shared/ui/AffiliateCarousel';
@@ -12,61 +13,34 @@ export async function getStaticPaths() {
   try {
     const { data: recetas, error } = await supabase
       .from('core_receta')
-      .select('id');
+      .select('id, nombre');
       
     if (error) throw new Error(error.message);
 
     if (!recetas || recetas.length === 0) {
-      return [{ params: { id: "1" } }]; // Fallback por seguridad
+      return [{ params: { id: "1" }, props: { nombre: "Detalle de Receta" } }]; 
     }
     
     return recetas.map((receta) => ({
       params: { id: receta.id.toString() },
+      props: { nombre: receta.nombre },
     }));
   } catch (err) {
     console.error("Error obteniendo rutas estáticas (getStaticPaths) desde Supabase:", err);
-    return [{ params: { id: "1" } }];
+    return [{ params: { id: "1" }, props: { nombre: "Detalle de Receta" } }];
   }
 }
 
 const { id } = Astro.params;
+const { nombre } = Astro.props;
 ---
 
 <html lang="es">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    
-    <!-- ── Favicon ── -->
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="shortcut icon" href="/favicon.svg" />
-    <link rel="apple-touch-icon" href="/favicon.svg" />
-    <meta name="theme-color" content="#b08968" />
-
-    <title>ChileBite – Detalle de Receta</title>
-    <!-- Evitar FOUC en modo oscuro -->
-    <script is:inline>
-      const theme = (() => {
-        if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
-          return localStorage.getItem('theme');
-        }
-        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-          return 'dark';
-        }
-        return 'light';
-      })();
-      if (theme === 'dark') {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
-    </script>
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    <BaseHead 
+      title={`${nombre} – ChileBite`} 
+      description={`Aprende a preparar ${nombre} paso a paso con nuestra receta detallada.`}
     />
-  
-    <meta name="google-adsense-account" content="ca-pub-4855312501819907" />
   </head>
 <Navbar client:only="react" />
   <body class="bg-[#f7f7f6] dark:bg-[#0f1115] font-['Inter'] transition-colors duration-300 antialiased min-h-screen">

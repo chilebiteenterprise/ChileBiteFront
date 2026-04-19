@@ -5,72 +5,15 @@ import Navbar from "@/shared/layout/Navbar";
 import MacroCalculator from "@/features/macros/MacroCalculator";
 import AffiliateCarousel from "@/shared/ui/AffiliateCarousel";
 import AdSenseBanner from "@/shared/ui/AdSenseBanner";
+import BaseHead from "@/shared/layout/BaseHead.astro";
 ---
 
 <html lang="es">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-    <!-- ── Favicon ── -->
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="shortcut icon" href="/favicon.svg" />
-    <link rel="apple-touch-icon" href="/favicon.svg" />
-
-    <!-- ── SEO primario ── -->
-    <title>Calculadora de Macros – ChileBite</title>
-    <meta
-      name="description"
-      content="Calcula los macronutrientes de tu plato combinando ingredientes de nuestra base de datos normalizada USDA. Proteínas, carbohidratos, grasas y calorías en tiempo real."
+    <BaseHead 
+      title="Calculadora de Macros – ChileBite" 
+      description="Calcula los macronutrientes de tu plato combinando ingredientes de nuestra base de datos normalizada USDA. Proteínas, carbohidratos, grasas y calorías en tiempo real."
     />
-    <meta name="keywords" content="calculadora macros, macronutrientes recetas, calorías, proteínas, carbohidratos, grasas, ChileBite" />
-    <meta name="robots" content="index, follow" />
-    <link rel="canonical" href="https://chilebite.cl/calculadora" />
-
-    <!-- ── Open Graph ── -->
-    <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="ChileBite" />
-    <meta property="og:url" content="https://chilebite.cl/calculadora" />
-    <meta property="og:title" content="Calculadora de Macros – ChileBite" />
-    <meta property="og:description" content="Calcula proteínas, carbohidratos, grasas y calorías de tus platos en tiempo real con ingredientes de la base USDA." />
-    <meta property="og:image" content="https://chilebite.cl/images/Titulo.webp" />
-    <meta property="og:locale" content="es_CL" />
-
-    <!-- ── Twitter Card ── -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Calculadora de Macros – ChileBite" />
-    <meta name="twitter:description" content="Calcula los macros de tu plato en segundos." />
-    <meta name="twitter:image" content="https://chilebite.cl/images/Titulo.webp" />
-
-    <!-- ── Theme ── -->
-    <meta name="theme-color" content="#b08968" />
-
-    <!-- ── Google AdSense ── -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4855312501819907" crossorigin="anonymous"></script>
-
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    />
-    <!-- Dark mode FOUC prevention -->
-    <script is:inline>
-      const theme = (() => {
-        if (typeof localStorage !== "undefined" && localStorage.getItem("theme")) {
-          return localStorage.getItem("theme");
-        }
-        if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-          return "dark";
-        }
-        return "light";
-      })();
-      if (theme === "dark") {
-        document.documentElement.classList.add("dark");
-      } else {
-        document.documentElement.classList.remove("dark");
-      }
-    </script>
-  
-    <meta name="google-adsense-account" content="ca-pub-4855312501819907" />
   </head>
 
   <body class="bg-stone-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-300">

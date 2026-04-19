@@ -3,34 +3,13 @@ import "@/styles/global.css";
 import Footer from '@/shared/layout/Footer';
 import Navbar from '@/shared/layout/Navbar';
 import SettingsPage from '@/features/settings/components/SettingsPage';
+import BaseHead from '@/shared/layout/BaseHead.astro';
 ---
 
 <html lang="es">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Ajustes de Cuenta - ChileBite</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <!-- FOUC prevention -->
-    <script is:inline>
-      const theme = (() => {
-        if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
-          return localStorage.getItem('theme');
-        }
-        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-          return 'dark';
-        }
-        return 'light';
-      })();
-      if (theme === 'dark') {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
-    </script>
-
-    <meta name="google-adsense-account" content="ca-pub-4855312501819907" />
-  </head>
+    <BaseHead title="Ajustes de Cuenta - ChileBite" description="Modifica tus ajustes de cuenta y preferencias en ChileBite." />
+</head>
 <body class="bg-stone-50 text-gray-800 dark:bg-gray-950 dark:text-gray-200 transition-colors duration-300 min-h-screen flex flex-col">
     <Navbar client:only="react" />
     <main class="flex-grow">

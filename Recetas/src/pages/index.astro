@@ -2,107 +2,15 @@
 import "@/styles/global.css";
 import Footer from "@/shared/layout/Footer";
 import Navbar from "@/shared/layout/Navbar";
+import BaseHead from "@/shared/layout/BaseHead.astro";
 ---
 
 <html lang="es">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <BaseHead />
+  </head>
 
-    <!-- ── Favicon ── -->
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="shortcut icon" href="/favicon.svg" />
-    <link rel="apple-touch-icon" href="/favicon.svg" />
 
-    <!-- ── Sitewide Verification ── -->
-    <meta
-      name="google-site-verification"
-      content="9hqIfhGSU9xP42_IWeiyHyFOGAiClu1e_t6JAOJcZWk"
-    />
-
-    <!-- ── SEO primario ── -->
-    <title>ChileBite – Descubre, Aprende y Comparte</title>
-    <meta
-      name="description"
-      content="ChileBite es la plataforma gastronómica chilena para explorar recetas paso a paso, calcular macronutrientes, descubrir restaurantes y conectar con una comunidad apasionada por la cocina."
-    />
-    <meta
-      name="keywords"
-      content="recetas chilenas, cocina chilena, gastronomía Chile, recetas paso a paso, macros cocina, restaurantes Chile, ChileBite"
-    />
-    <meta name="author" content="Chrystopher Silva, Miguel Escobar" />
-    <meta name="robots" content="index, follow" />
-    <link rel="canonical" href="https://chilebite.cl/" />
-
-    <!-- ── Open Graph (Facebook / LinkedIn / WhatsApp) ── -->
-    <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="ChileBite" />
-    <meta property="og:url" content="https://chilebite.cl/" />
-    <meta
-      property="og:title"
-      content="ChileBite – Descubre, Aprende y Comparte las Mejores Recetas Chilenas"
-    />
-    <meta
-      property="og:description"
-      content="Explora cientos de recetas chilenas, calcula macronutrientes y descubre los mejores restaurantes cerca de ti. ¡Únete a la comunidad ChileBite!"
-    />
-    <meta
-      property="og:image"
-      content="https://chilebite.cl/images/Titulo.webp"
-    />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta property="og:locale" content="es_CL" />
-
-    <!-- ── Twitter Card ── -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta
-      name="twitter:title"
-      content="ChileBite – Recetas y Gastronomía Chilena"
-    />
-    <meta
-      name="twitter:description"
-      content="Descubre recetas paso a paso, calcula macros y encuentra los mejores locales gastronómicos de Chile."
-    />
-    <meta
-      name="twitter:image"
-      content="https://chilebite.cl/images/Titulo.webp"
-    />
-
-    <!-- ── Theme & PWA hints ── -->
-    <meta name="theme-color" content="#b08968" />
-
-    <!-- ── Google AdSense ── -->
-    <meta name="google-adsense-account" content="ca-pub-4855312501819907" />
-    <script
-      async
-      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4855312501819907"
-      crossorigin="anonymous"></script>
-
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    />
-    <!-- Evitar FOUC en modo oscuro: inicializar tema antes del render -->
-    <script is:inline>
-      const theme = (() => {
-        if (
-          typeof localStorage !== "undefined" &&
-          localStorage.getItem("theme")
-        ) {
-          return localStorage.getItem("theme");
-        }
-        if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-          return "dark";
-        }
-        return "light";
-      })();
-      if (theme === "dark") {
-        document.documentElement.classList.add("dark");
-      } else {
-        document.documentElement.classList.remove("dark");
-      }
-    </script>
 
     <style is:global>
       body {

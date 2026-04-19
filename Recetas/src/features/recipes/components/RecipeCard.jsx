@@ -4,38 +4,59 @@ import { Heart, Bookmark, Check, Eye, MapPin } from "lucide-react";
 import { toast } from "@heroui/react";
 import { useAuth } from '@/features/auth/context/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
+import CollectionPickerModal from "./CollectionPickerModal.jsx";
 
 export default function RecipeCard({ receta, usuarioEsAdmin = false, isSelected = false, onToggleSelect }) {
   const { session } = useAuth();
   const [liked, setLiked] = useState(false);
-  const [likes, setLikes] = useState(receta.likes || 0);
+  const [likes, setLikes] = useState(receta.likes ?? receta.contador_likes ?? 0);
   const [guardado, setGuardado] = useState(false);
+  const [isCollectionModalOpen, setIsCollectionModalOpen] = useState(false);
 
   const idToUse = receta.id_receta || receta.id;
 
   // === CARGA INICIAL: sincroniza estado de corazon y guardado para este usuario ===
   useEffect(() => {
     // Si viene en receta (cuando renderiza un contexto con likes), priorizamos, sino fetch del usuario
-    setLikes(receta.likes || 0);
+    setLikes(receta.likes ?? receta.contador_likes ?? 0);
 
     if (!idToUse || !session?.user?.id) return;
     
     const fetchEstado = async () => {
       try {
-        const [{ count: likeCount }, { count: saveCount }] = await Promise.all([
+        const [
+          { count: likeCount }, 
+          { count: globalLikes },
+          { data: colecciones }
+        ] = await Promise.all([
           supabase
             .from('core_recetalike')
             .select('*', { count: 'exact', head: true })
             .eq('receta_id', idToUse)
             .eq('user_id', session.user.id),
           supabase
-            .from('core_recetaguardada')
+            .from('core_recetalike')
             .select('*', { count: 'exact', head: true })
-            .eq('receta_id', idToUse)
+            .eq('receta_id', idToUse),
+          supabase
+            .from('core_coleccion')
+            .select('id')
             .eq('user_id', session.user.id)
         ]);
+        
+        let saveCount = 0;
+        if (colecciones && colecciones.length > 0) {
+          const { count } = await supabase
+            .from('core_coleccion_receta')
+            .select('*', { count: 'exact', head: true })
+            .eq('receta_id', idToUse)
+            .in('coleccion_id', colecciones.map(c => c.id));
+          saveCount = count || 0;
+        }
+
         setLiked(likeCount > 0);
         setGuardado(saveCount > 0);
+        setLikes(globalLikes || 0); // Override with accurate DB count
       } catch (err) {
         console.error("Error al obtener estado de receta:", err);
       }
@@ -47,15 +68,22 @@ export default function RecipeCard({ receta, usuarioEsAdmin = false, isSelected 
   const handleFavorite = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!session?.user?.id) return toast.danger("Acceso Denegado", { description: "Debes estar logueado para marcar como favorito" });
+    if (!session?.user?.id) return toast.error("Debes estar logueado para marcar como favorito");
 
     try {
       if (liked) {
          await supabase.from('core_recetalike').delete().eq('receta_id', idToUse).eq('user_id', session.user.id);
          setLikes(Math.max(0, likes - 1));
+         toast.success("Ya no te gusta esta receta");
       } else {
          await supabase.from('core_recetalike').insert([{ receta_id: idToUse, user_id: session.user.id }]);
          setLikes(likes + 1);
+         toast.success((
+             <div className="flex flex-col">
+                 <span className="font-bold">¡Genial!</span>
+                 <span className="text-sm">Agregado a tus me gusta</span>
+             </div>
+         ));
       }
       setLiked(!liked);
     } catch (err) {
@@ -67,18 +95,22 @@ export default function RecipeCard({ receta, usuarioEsAdmin = false, isSelected 
   const handleSave = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!session?.user?.id) return toast.danger("Acceso Denegado", { description: "Debes estar logueado para guardar" });
+    if (!session?.user?.id) return toast.error("Debes estar logueado para guardar");
+    setIsCollectionModalOpen(true);
+  };
 
+  const handleCollectionSaveComplete = async () => {
+    // Al cerrar o guardar, re-evaluamos si la receta quedó en alguna colección
+    if (!session?.user?.id) return;
     try {
-      if (guardado) {
-         await supabase.from('core_recetaguardada').delete().eq('receta_id', idToUse).eq('user_id', session.user.id);
-      } else {
-         await supabase.from('core_recetaguardada').insert([{ receta_id: idToUse, user_id: session.user.id }]);
-      }
-      setGuardado(!guardado);
-    } catch (err) {
-      console.error(err);
-    }
+        const { data: colecciones } = await supabase.from('core_coleccion').select('id').eq('user_id', session.user.id);
+        if (colecciones && colecciones.length > 0) {
+          const { count } = await supabase.from('core_coleccion_receta').select('*', { count: 'exact', head: true }).eq('receta_id', idToUse).in('coleccion_id', colecciones.map(c => c.id));
+          setGuardado((count || 0) > 0);
+        } else {
+          setGuardado(false);
+        }
+    } catch(err) {}
   };
 
   const dificultadMap = {
@@ -197,6 +229,13 @@ export default function RecipeCard({ receta, usuarioEsAdmin = false, isSelected 
           </button>
         </div>
       </div>
+
+      <CollectionPickerModal 
+        isOpen={isCollectionModalOpen} 
+        onOpenChange={setIsCollectionModalOpen} 
+        recetaId={idToUse}
+        onSaveComplete={handleCollectionSaveComplete}
+      />
     </div>
   );
 }

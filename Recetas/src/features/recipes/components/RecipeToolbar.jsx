@@ -222,6 +222,9 @@ export default function RecipeToolbar({
     sortOrder,
     setSortOrder,
     allRecipeNames = [],
+    filterSaved,
+    setFilterSaved,
+    hideFavoritesToggle = false,
 }) {
     return (
         <div className="bg-white dark:bg-[#0f1115] w-full border-b border-gray-100 dark:border-gray-800/80 p-5 mt-2 mb-6 rounded-[1.5rem] shadow-sm flex flex-col lg:flex-row lg:items-center gap-6 transition-colors">
@@ -284,6 +287,18 @@ export default function RecipeToolbar({
                             d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
                     </svg>
                 </button>
+
+                {!hideFavoritesToggle && (
+                    <button
+                        onClick={() => setFilterSaved(!filterSaved)}
+                        className={`h-12 w-12 flex items-center justify-center border rounded-2xl transition-all shadow-sm ${filterSaved ? 'bg-[#A0522D]/10 border-[#A0522D] text-[#A0522D] shadow-[#A0522D]/20' : 'bg-gray-50 dark:bg-[#1a1d24] border-gray-200 dark:border-gray-800 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'}`}
+                        title={filterSaved ? "Mostrar Todas" : "Mis Favoritos"}
+                    >
+                        <svg className={`w-5 h-5 ${filterSaved ? 'fill-current' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                        </svg>
+                    </button>
+                )}
             </div>
         </div>
     );

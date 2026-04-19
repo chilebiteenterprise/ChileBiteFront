@@ -11,8 +11,7 @@ export default function EditProfileModal({ isOpen, onOpenChange, user, profile, 
     nombre: "",
     username: "",
     bio: "",
-    ubicacion: "",
-    avatar_url: ""
+    ubicacion: ""
   });
   const fileInputRef = useRef(null);
 
@@ -22,33 +21,11 @@ export default function EditProfileModal({ isOpen, onOpenChange, user, profile, 
         nombre: profile.nombre || "",
         username: profile.username || "",
         bio: profile.bio || "",
-        ubicacion: profile.ubicacion || "",
-        avatar_url: profile.avatar_url || ""
+        ubicacion: profile.ubicacion || ""
       });
     }
   }, [profile, isOpen]);
 
-  const handleAvatarChange = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file || !user?.id) return;
-
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error("La imagen debe pesar menos de 2MB");
-      return;
-    }
-
-    setIsUploading(true);
-    try {
-      const publicUrl = await uploadAvatar(user.id, file);
-      setTempData(prev => ({ ...prev, avatar_url: publicUrl }));
-      toast.success("Foto subida correctamente");
-    } catch (error) {
-      toast.error("Error al subir la imagen");
-      console.error(error);
-    } finally {
-      setIsUploading(false);
-    }
-  };
 
   const handleSave = async (onClose) => {
     if (!user?.id) return;
@@ -92,41 +69,6 @@ export default function EditProfileModal({ isOpen, onOpenChange, user, profile, 
             </Modal.Header>
             <Modal.Body className="px-6 py-6 pb-8">
               <div className="flex flex-col md:flex-row gap-8">
-                {/* Avatar Section */}
-                <div className="flex flex-col items-center gap-4">
-                  <div className="relative group">
-                    <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-800 border-4 border-white dark:border-gray-900 shadow-xl">
-                      {isUploading ? (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <Loader className="w-8 h-8 animate-spin text-primary" />
-                        </div>
-                      ) : tempData.avatar_url ? (
-                        <img src={tempData.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-4xl font-bold text-gray-300 dark:text-gray-600 bg-gray-200 dark:bg-gray-800">
-                          {tempData.nombre?.charAt(0)?.toUpperCase() || '?'}
-                        </div>
-                      )}
-                    </div>
-                    <button
-                      onClick={() => fileInputRef.current?.click()}
-                      className="absolute bottom-0 right-0 p-3 bg-violet-500 hover:bg-violet-600 rounded-full text-white shadow-lg transition-transform hover:scale-105 active:scale-95"
-                      disabled={isUploading}
-                    >
-                      <Camera className="w-5 h-5" />
-                    </button>
-                    <input
-                      type="file"
-                      ref={fileInputRef}
-                      onChange={handleAvatarChange}
-                      accept="image/*"
-                      className="hidden"
-                    />
-                  </div>
-                  <p className="text-xs text-center text-gray-500 max-w-[140px]">
-                    Sube una foto <br /> (JPG o PNG, máx 2MB)
-                  </p>
-                </div>
 
                 {/* Form fields */}
                 <div className="flex-1 space-y-4">

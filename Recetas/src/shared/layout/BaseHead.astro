@@ -1,0 +1,79 @@
+---
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  canonicalURL?: string;
+}
+
+const {
+  title = "ChileBite – Descubre, Aprende y Comparte",
+  description = "ChileBite es la plataforma gastronómica chilena para explorar recetas paso a paso, calcular macronutrientes, descubrir restaurantes y conectar con una comunidad apasionada por la cocina.",
+  image = "https://chilebite.cl/images/Titulo.webp",
+  canonicalURL = "https://chilebite.cl/",
+} = Astro.props;
+---
+
+<!-- ── Caracteres & Viewport ── -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<!-- ── Favicon ── -->
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="shortcut icon" href="/favicon.svg" />
+<link rel="apple-touch-icon" href="/favicon.svg" />
+
+<!-- ── SEO Primario ── -->
+<title>{title}</title>
+<meta name="title" content={title} />
+<meta name="description" content={description} />
+<meta name="author" content="Chrystopher Silva, Miguel Escobar" />
+<meta name="robots" content="index, follow" />
+<link rel="canonical" href={canonicalURL} />
+
+<!-- ── Open Graph / Facebook ── -->
+<meta property="og:type" content="website" />
+<meta property="og:url" content={Astro.url} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:image" content={image} />
+<meta property="og:site_name" content="ChileBite" />
+<meta property="og:locale" content="es_CL" />
+
+<!-- ── Twitter ── -->
+<meta property="twitter:card" content="summary_large_image" />
+<meta property="twitter:url" content={Astro.url} />
+<meta property="twitter:title" content={title} />
+<meta property="twitter:description" content={description} />
+<meta property="twitter:image" content={image} />
+
+<!-- ── Estilos & Fuentes Externas ── -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+<!-- ── Theme & PWA hints ── -->
+<meta name="theme-color" content="#b08968" />
+
+<!-- ── Google AdSense ── -->
+<meta name="google-adsense-account" content="ca-pub-4855312501819907" />
+<script
+  async
+  src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4855312501819907"
+  crossorigin="anonymous"></script>
+
+<!-- ── FOUC (Flash of Unstyled Content) Prevention ── -->
+<script is:inline>
+  const theme = (() => {
+    if (typeof localStorage !== "undefined" && localStorage.getItem("theme")) {
+      return localStorage.getItem("theme");
+    }
+    if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+      return "dark";
+    }
+    return "light";
+  })();
+  if (theme === "dark") {
+    document.documentElement.classList.add("dark");
+  } else {
+    document.documentElement.classList.remove("dark");
+  }
+</script>

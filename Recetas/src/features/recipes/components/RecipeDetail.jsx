@@ -4,6 +4,7 @@ import { toast, Skeleton } from "@heroui/react";
 import { ChefHat, Clock, Users, Heart, Share2, BookOpen, ListOrdered, Video, Bookmark, Minus, Plus, Flame, Beef, Wheat, Droplet } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import AdSenseBanner from '@/shared/ui/AdSenseBanner';
+import CollectionPickerModal from './CollectionPickerModal.jsx';
 
 const COLOR_PRINCIPAL = '#b08968';
 
@@ -24,6 +25,7 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
   const [porcionesDeseadas, setPorcionesDeseadas] = useState(1);
   const [loading, setLoading] = useState(!modoLocal);
   const [error, setError] = useState(null);
+  const [isCollectionModalOpen, setIsCollectionModalOpen] = useState(false);
 
   useEffect(() => {
     if (modoLocal && recetaProp) {
@@ -41,7 +43,7 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
       setIsSaved(recetaProp.is_guardada || false);
       return;
     }
-    
+
     if (!idReceta) return;
 
     const fetchReceta = async () => {
@@ -70,7 +72,7 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
             .select('username')
             .eq('id', data.user_id)
             .single();
-          
+
           if (profileData && profileData.username) {
             userName = profileData.username;
           }
@@ -78,24 +80,40 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
 
         // Map data to match expected frontend structure
         data.usuario_nombre = userName;
-        
+
         let liked = false;
         let guardada = false;
+        let accurateLikes = data.contador_likes || 0;
+
+        try {
+          const { count } = await supabase.from('core_recetalike').select('*', { count: 'exact', head: true }).eq('receta_id', idReceta);
+          accurateLikes = count || 0;
+        } catch(e) {}
 
         // Fetch user specific state (liked / saved)
         if (session?.user?.id) {
-          const [{ count: likeCount }, { count: saveCount }] = await Promise.all([
+          const [{ count: likeCount }, { data: colecciones }] = await Promise.all([
             supabase
               .from('core_recetalike')
               .select('*', { count: 'exact', head: true })
               .eq('receta_id', idReceta)
               .eq('user_id', session.user.id),
             supabase
-              .from('core_recetaguardada')
-              .select('*', { count: 'exact', head: true })
-              .eq('receta_id', idReceta)
+              .from('core_coleccion')
+              .select('id')
               .eq('user_id', session.user.id)
           ]);
+          
+          let saveCount = 0;
+          if (colecciones && colecciones.length > 0) {
+            const { count } = await supabase
+              .from('core_coleccion_receta')
+              .select('*', { count: 'exact', head: true })
+              .eq('receta_id', idReceta)
+              .in('coleccion_id', colecciones.map(c => c.id));
+            saveCount = count || 0;
+          }
+
           liked = likeCount > 0;
           guardada = saveCount > 0;
         }
@@ -109,7 +127,8 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
         data.carbohidratos = data.total_carbohidratos || 0;
         data.grasas = data.total_grasas || 0;
         data.porciones = data.numero_porcion || 1;
-        data.likes = data.contador_likes || 0;
+        data.likes = accurateLikes;
+        data.contador_likes = accurateLikes;
 
         setReceta(data);
 
@@ -156,29 +175,42 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
   };
 
   const handleFavorite = async () => {
-    if (!session?.user?.id) return toast.danger("Acceso Denegado", { description: "Debes estar logueado para marcar como favorito" });
+    if (!session?.user?.id) return toast.error("Debes estar logueado para marcar como favorito");
     try {
       if (isFavorite) {
-         await supabase.from('core_recetalike').delete().eq('receta_id', idReceta).eq('user_id', session.user.id);
-         setReceta(prev => ({ ...prev, contador_likes: Math.max(0, (prev.contador_likes || 0) - 1) }));
+        await supabase.from('core_recetalike').delete().eq('receta_id', idReceta).eq('user_id', session.user.id);
+        setReceta(prev => ({ ...prev, contador_likes: Math.max(0, (prev.contador_likes || 0) - 1) }));
+        toast.success("Ya no te gusta esta receta");
       } else {
-         await supabase.from('core_recetalike').insert([{ receta_id: idReceta, user_id: session.user.id }]);
-         setReceta(prev => ({ ...prev, contador_likes: (prev.contador_likes || 0) + 1 }));
+        await supabase.from('core_recetalike').insert([{ receta_id: idReceta, user_id: session.user.id }]);
+        setReceta(prev => ({ ...prev, contador_likes: (prev.contador_likes || 0) + 1 }));
+        toast.success((
+          <div className="flex flex-col">
+            <span className="font-bold">¡Genial!</span>
+            <span className="text-sm">Agregado a tus me gusta</span>
+          </div>
+        ));
       }
       setIsFavorite(prev => !prev);
     } catch (err) { console.error(err); }
   };
 
   const handleSave = async () => {
-    if (!session?.user?.id) return toast.danger("Acceso Denegado", { description: "Debes estar logueado para guardar" });
+    if (!session?.user?.id) return toast.error("Debes estar logueado para guardar");
+    setIsCollectionModalOpen(true);
+  };
+
+  const handleCollectionSaveComplete = async () => {
+    if (!session?.user?.id) return;
     try {
-      if (isSaved) {
-         await supabase.from('core_recetaguardada').delete().eq('receta_id', idReceta).eq('user_id', session.user.id);
+      const { data: colecciones } = await supabase.from('core_coleccion').select('id').eq('user_id', session.user.id);
+      if (colecciones && colecciones.length > 0) {
+        const { count } = await supabase.from('core_coleccion_receta').select('*', { count: 'exact', head: true }).eq('receta_id', idReceta).in('coleccion_id', colecciones.map(c => c.id));
+        setIsSaved((count || 0) > 0);
       } else {
-         await supabase.from('core_recetaguardada').insert([{ receta_id: idReceta, user_id: session.user.id }]);
+        setIsSaved(false);
       }
-      setIsSaved(prev => !prev);
-    } catch (err) { console.error(err); }
+    } catch(err) {}
   };
 
   const handleShare = () => {
@@ -197,7 +229,7 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
     <div className="min-h-screen flex flex-col pt-12 pb-12 transition-colors duration-500">
       <div className="max-w-[1400px] mx-auto w-full px-4 lg:px-8">
         <div className="premium-glass-wrapper rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col lg:flex-row min-h-[850px] border border-slate-200 dark:border-zinc-800 relative">
-          
+
           <div className="lg:w-[320px] xl:w-[380px] p-8 relative flex flex-col justify-between premium-glass-panel border-r border-slate-200 dark:border-zinc-800 z-10">
             <div>
               <div className="flex items-center gap-3 mb-10">
@@ -210,7 +242,7 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
                 ))}
               </div>
             </div>
-            
+
             <div className="pt-8 mt-12 border-t border-slate-200 dark:border-zinc-700">
               <div className="flex justify-center gap-6">
                 {[1, 2, 3].map(i => (
@@ -232,7 +264,7 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
                   <Skeleton className="h-64 w-full rounded-[2rem]" />
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Skeleton className="h-24 w-full rounded-2xl" />
                 <Skeleton className="h-24 w-full rounded-2xl" />
@@ -269,43 +301,41 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
           <div className="animate-fade-in space-y-8 z-10 relative">
             {/* Header Limpio Estilo Editorial */}
             <div className="border-b border-slate-200/60 dark:border-white/10 pb-6 mb-8">
-               <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#b08968] mb-2 block">
-                  Libro de Recetas Pro
-               </span>
-               <h1 className="text-4xl md:text-5xl font-serif font-black text-slate-900 dark:text-white leading-none mb-4">
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#b08968] mb-2 block">
+                Libro de Recetas
+              </span>
+              <h1 className="text-4xl md:text-5xl font-serif font-black text-slate-900 dark:text-white leading-none mb-4">
                 {receta.nombre}
-               </h1>
-               <div className="flex items-center gap-2">
-                  <p className="text-slate-500 dark:text-orange-100/40 text-sm italic">
-                    Publicado por: <span className="text-slate-800 dark:text-zinc-200 font-bold not-italic underline decoration-1 underline-offset-4">{receta.usuario_nombre || receta.usuario || "Chef Anónimo"}</span>
-                  </p>
-               </div>
+              </h1>
+              <div className="flex items-center gap-2">
+
+              </div>
             </div>
 
             {/* Contenedor de Texto con Infobox Flotante */}
             <div className="relative">
-               {/* Infobox Imagen (Pura y Ordenada) */}
-               {imageUrl && (
-                 <div className="float-none md:float-right md:ml-8 md:mb-6 w-full md:w-[320px] xl:w-[380px] bg-slate-50 dark:bg-white/[0.03] p-1.5 rounded-xl border border-slate-200 dark:border-white/10 shadow-sm">
-                    <div className="aspect-[4/3] rounded-lg overflow-hidden">
-                       <img
-                         src={imageUrl}
-                         alt={receta.nombre}
-                         className="w-full h-full object-cover"
-                       />
-                    </div>
-                 </div>
-               )}
+              {/* Infobox Imagen (Pura y Ordenada) */}
+              {imageUrl && (
+                <div className="float-none md:float-right md:ml-8 md:mb-6 w-full md:w-[320px] xl:w-[380px] bg-slate-50 dark:bg-white/[0.03] p-1.5 rounded-xl border border-slate-200 dark:border-white/10 shadow-sm">
+                  <div className="aspect-[4/3] rounded-lg overflow-hidden">
+                    <img
+                      src={imageUrl}
+                      alt={receta.nombre}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                </div>
+              )}
 
-               {/* Cuerpo de la Descripción (Inicio Directo) */}
-               <div className="text-slate-600 dark:text-zinc-300 text-lg leading-[1.8] text-justify space-y-6">
-                 {receta.descripcion_larga || receta.descripcion_corta}
-               </div>
+              {/* Cuerpo de la Descripción (Inicio Directo) */}
+              <div className="text-slate-600 dark:text-zinc-300 text-lg leading-[1.8] text-justify space-y-6">
+                {receta.descripcion_larga || receta.descripcion_corta}
+              </div>
 
-               {/* Clearfix para layout Wikipedia */}
-               <div className="clear-both"></div>
+              {/* Clearfix para layout Wikipedia */}
+              <div className="clear-both"></div>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="premium-glass-panel rounded-2xl p-6 flex items-center justify-between border border-slate-200 dark:border-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-900/80 transition shadow-sm">
                 <div className="flex items-center gap-4">
@@ -374,7 +404,7 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
         return (
           <div className="animate-fade-in z-10 relative">
             <div className="premium-glass-panel rounded-[2rem] p-6 md:p-8 flex flex-col md:flex-row items-center justify-between border border-slate-200 dark:border-[#b08968]/30 mb-8 shadow-sm dark:shadow-xl relative overflow-hidden">
-               <div className="absolute top-0 left-0 w-32 h-32 bg-[#b08968] opacity-[0.05] dark:opacity-10 rounded-full blur-2xl -ml-16 -mt-16 pointer-events-none"></div>
+              <div className="absolute top-0 left-0 w-32 h-32 bg-[#b08968] opacity-[0.05] dark:opacity-10 rounded-full blur-2xl -ml-16 -mt-16 pointer-events-none"></div>
               <div className="flex items-center gap-5 mb-6 md:mb-0 relative z-10">
                 <div className="p-4 bg-gradient-to-br from-[#b08968]/20 to-[#b08968]/5 dark:from-[#b08968]/30 dark:to-[#b08968]/10 rounded-2xl border border-slate-200 dark:border-[#b08968]/20 shadow-inner">
                   <Users className="w-7 h-7 text-[#b08968] dark:text-orange-200" />
@@ -389,7 +419,7 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
                   <Minus className="w-5 h-5" />
                 </button>
                 <div className="flex flex-col items-center justify-center w-12">
-                   <span className="font-extrabold text-3xl text-[#b08968] dark:text-orange-200 leading-none">{porcionesDeseadas}</span>
+                  <span className="font-extrabold text-3xl text-[#b08968] dark:text-orange-200 leading-none">{porcionesDeseadas}</span>
                 </div>
                 <button onClick={() => setPorcionesDeseadas(p => Math.min(20, p + 1))} className="p-3 rounded-full bg-slate-100 dark:bg-zinc-800 hover:bg-[#b08968] dark:hover:bg-[#b08968] text-slate-700 dark:text-zinc-200 hover:text-white dark:hover:text-zinc-950 transition-all duration-300 focus:ring-4 focus:ring-[#b08968]/30 focus:outline-none shadow-sm dark:shadow-md border border-slate-200 dark:border-none">
                   <Plus className="w-5 h-5" />
@@ -425,39 +455,39 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
           <div className="animate-fade-in z-10 relative">
             {receta.video_url && (
               <div className="flex gap-4 mb-8 justify-center">
-                  <button onClick={() => setMediaTab('steps')} className={`px-6 py-2 rounded-full font-bold transition-all shadow-sm ${mediaTab === 'steps' ? 'bg-[#b08968] text-white' : 'bg-slate-200 dark:bg-zinc-900 text-slate-500 hover:text-slate-800 dark:hover:text-zinc-200'}`}>Pasos a Seguir</button>
-                  <button onClick={() => setMediaTab('video')} className={`px-6 py-2 rounded-full font-bold transition-all shadow-sm ${mediaTab === 'video' ? 'bg-[#b08968] text-white' : 'bg-slate-200 dark:bg-zinc-900 text-slate-500 hover:text-slate-800 dark:hover:text-zinc-200'}`}>Video Tutorial</button>
+                <button onClick={() => setMediaTab('steps')} className={`px-6 py-2 rounded-full font-bold transition-all shadow-sm ${mediaTab === 'steps' ? 'bg-[#b08968] text-white' : 'bg-slate-200 dark:bg-zinc-900 text-slate-500 hover:text-slate-800 dark:hover:text-zinc-200'}`}>Pasos a Seguir</button>
+                <button onClick={() => setMediaTab('video')} className={`px-6 py-2 rounded-full font-bold transition-all shadow-sm ${mediaTab === 'video' ? 'bg-[#b08968] text-white' : 'bg-slate-200 dark:bg-zinc-900 text-slate-500 hover:text-slate-800 dark:hover:text-zinc-200'}`}>Video Tutorial</button>
               </div>
             )}
-            
+
             <div className="bg-slate-50 dark:bg-zinc-900 p-8 rounded-[2rem] border border-slate-200 dark:border-zinc-700 shadow-sm mb-8">
               {mediaTab === 'steps' || !receta.video_url ? (
-                  <>
-                    <h2 className="text-3xl font-serif font-bold mb-6 text-slate-800 dark:text-orange-200 border-b border-slate-200 dark:border-zinc-700 pb-4">Preparación</h2>
-                    <ul className="list-inside space-y-6 max-h-[60vh] overflow-y-auto pr-4 custom-scrollbar">
-                  {stepsState.map(step => (
-                        <li key={step.id} onClick={() => toggleCheck("steps", step.id)} className={`p-4 border-l-4 cursor-pointer transition-all rounded-r-xl ${step.checked ? "border-slate-300 dark:border-orange-900/40 text-slate-400 dark:text-orange-200/60 line-through opacity-50 bg-slate-100 dark:bg-zinc-900" : "border-[#b08968] text-slate-700 dark:text-zinc-200 bg-white dark:bg-zinc-800 hover:bg-slate-100 dark:hover:bg-zinc-700 shadow-sm dark:shadow-none"}`}>
-                          <span className="font-bold text-lg text-[#b08968] dark:text-orange-200 block mb-2">Paso {step.id + 1}</span> 
-                          <p className="leading-relaxed">{step.text}</p>
-                        </li>
-                      ))}
-                    </ul>
-                  </>
+                <>
+                  <h2 className="text-3xl font-serif font-bold mb-6 text-slate-800 dark:text-orange-200 border-b border-slate-200 dark:border-zinc-700 pb-4">Preparación</h2>
+                  <ul className="list-inside space-y-6 max-h-[60vh] overflow-y-auto pr-4 custom-scrollbar">
+                    {stepsState.map(step => (
+                      <li key={step.id} onClick={() => toggleCheck("steps", step.id)} className={`p-4 border-l-4 cursor-pointer transition-all rounded-r-xl ${step.checked ? "border-slate-300 dark:border-orange-900/40 text-slate-400 dark:text-orange-200/60 line-through opacity-50 bg-slate-100 dark:bg-zinc-900" : "border-[#b08968] text-slate-700 dark:text-zinc-200 bg-white dark:bg-zinc-800 hover:bg-slate-100 dark:hover:bg-zinc-700 shadow-sm dark:shadow-none"}`}>
+                        <span className="font-bold text-lg text-[#b08968] dark:text-orange-200 block mb-2">Paso {step.id + 1}</span>
+                        <p className="leading-relaxed">{step.text}</p>
+                      </li>
+                    ))}
+                  </ul>
+                </>
               ) : (
-                  <>
-                    <h2 className="text-3xl font-serif font-bold mb-6 text-slate-800 dark:text-orange-200">Video Tutorial</h2>
-                    <div className="relative h-0 pb-[56.25%] rounded-2xl overflow-hidden shadow-2xl border border-slate-200 dark:border-zinc-700">
-                      <iframe src={receta.video_url} frameBorder="0" allowFullScreen className="absolute top-0 left-0 w-full h-full"></iframe>
-                    </div>
-                  </>
+                <>
+                  <h2 className="text-3xl font-serif font-bold mb-6 text-slate-800 dark:text-orange-200">Video Tutorial</h2>
+                  <div className="relative h-0 pb-[56.25%] rounded-2xl overflow-hidden shadow-2xl border border-slate-200 dark:border-zinc-700">
+                    <iframe src={receta.video_url} frameBorder="0" allowFullScreen className="absolute top-0 left-0 w-full h-full"></iframe>
+                  </div>
+                </>
               )}
             </div>
 
             {receta.sugerencias && (
-               <div className="bg-orange-50 dark:bg-[#b08968]/10 p-6 rounded-2xl border border-orange-200 dark:border-[#b08968]/30 shadow-sm">
-                  <h3 className="font-bold text-orange-800 dark:text-orange-200 mb-2 flex items-center gap-2"><ChefHat className="w-5 h-5"/> Sugerencia del Chef</h3>
-                  <p className="text-orange-900/80 dark:text-orange-100 italic leading-relaxed">{receta.sugerencias}</p>
-               </div>
+              <div className="bg-orange-50 dark:bg-[#b08968]/10 p-6 rounded-2xl border border-orange-200 dark:border-[#b08968]/30 shadow-sm">
+                <h3 className="font-bold text-orange-800 dark:text-orange-200 mb-2 flex items-center gap-2"><ChefHat className="w-5 h-5" /> Sugerencia del Chef</h3>
+                <p className="text-orange-900/80 dark:text-orange-100 italic leading-relaxed">{receta.sugerencias}</p>
+              </div>
             )}
 
 
@@ -472,7 +502,7 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
     <div className="min-h-screen flex flex-col pt-12 pb-12 transition-colors duration-500">
       <div className="max-w-[1400px] mx-auto w-full px-4 lg:px-8">
         <div className="premium-glass-wrapper rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col lg:flex-row min-h-[850px] border border-slate-200 dark:border-zinc-800 relative">
-          
+
           <div className="lg:w-[320px] xl:w-[380px] p-8 relative flex flex-col justify-between premium-glass-panel border-r border-slate-200 dark:border-zinc-800 z-10">
             <div>
               <div className="flex items-center gap-4 mb-12 border-b border-slate-200/50 dark:border-zinc-800 pb-8">
@@ -481,7 +511,6 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
                 </div>
                 <div>
                   <h2 className="text-2xl font-serif font-black text-slate-900 dark:text-white tracking-widest uppercase mb-1">El Libro</h2>
-                  <p className="text-[10px] text-slate-500 dark:text-[#b08968] font-bold tracking-[0.2em] uppercase">Recetas Pro</p>
                 </div>
               </div>
               <div className="space-y-4">
@@ -496,13 +525,13 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
                 })}
               </div>
             </div>
-            
+
             <div className="pt-8 mt-12 border-t border-slate-200 dark:border-zinc-700">
               <div className="flex justify-center gap-6">
-                <button onClick={handleFavorite} className={`p-4 rounded-full shadow-lg transition-all duration-300 hover:-translate-y-1 ${isFavorite ? 'bg-red-500 text-white shadow-red-500/20' : 'bg-slate-100 dark:bg-zinc-900 text-slate-400 dark:text-orange-200/60 hover:bg-slate-200 dark:hover:bg-zinc-800 hover:text-red-500 dark:hover:text-red-400 border border-slate-200 dark:border-zinc-700'}`} title="Like">
+                <button onClick={handleFavorite} className={`p-4 rounded-full shadow-lg transition-all duration-300 hover:-translate-y-1 ${isFavorite ? 'bg-red-500 text-white shadow-red-500/20' : 'bg-slate-100 dark:bg-zinc-900 text-slate-400 dark:text-orange-200/60 hover:bg-slate-200 dark:hover:bg-zinc-800 hover:text-red-500 dark:hover:text-red-400 border border-slate-200 dark:border-zinc-700'}`} title={isFavorite ? "Ya no me gusta" : "Me gusta"}>
                   <Heart className={`w-6 h-6 ${isFavorite ? 'fill-current' : ''}`} />
                 </button>
-                <button onClick={handleSave} className={`p-4 rounded-full shadow-lg transition-all duration-300 hover:-translate-y-1 ${isSaved ? 'bg-yellow-500 text-white dark:text-zinc-950 shadow-yellow-500/20' : 'bg-slate-100 dark:bg-zinc-900 text-slate-400 dark:text-orange-200/60 hover:bg-slate-200 dark:hover:bg-zinc-800 hover:text-yellow-500 border border-slate-200 dark:border-zinc-700'}`} title="Guardar">
+                <button onClick={handleSave} className={`p-4 rounded-full shadow-lg transition-all duration-300 hover:-translate-y-1 ${isSaved ? 'bg-yellow-500 text-white dark:text-zinc-950 shadow-yellow-500/20' : 'bg-slate-100 dark:bg-zinc-900 text-slate-400 dark:text-orange-200/60 hover:bg-slate-200 dark:hover:bg-zinc-800 hover:text-yellow-500 border border-slate-200 dark:border-zinc-700'}`} title={isSaved ? "Quitar de Guardados" : "Guardar Receta"}>
                   <Bookmark className={`w-6 h-6 ${isSaved ? 'fill-current' : ''}`} />
                 </button>
                 <button onClick={handleShare} className="p-4 rounded-full bg-slate-100 dark:bg-zinc-900 text-slate-400 dark:text-orange-200/60 shadow-lg hover:bg-slate-200 dark:hover:bg-zinc-800 hover:text-slate-800 dark:hover:text-zinc-200 transition-all duration-300 hover:-translate-y-1 border border-slate-200 dark:border-zinc-700" title="Compartir">
@@ -521,6 +550,13 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
               slot="9961213164"
               format="auto"
               className="mt-10 rounded-2xl"
+            />
+            
+            <CollectionPickerModal 
+              isOpen={isCollectionModalOpen} 
+              onOpenChange={setIsCollectionModalOpen} 
+              recetaId={idReceta}
+              onSaveComplete={handleCollectionSaveComplete}
             />
           </div>
 

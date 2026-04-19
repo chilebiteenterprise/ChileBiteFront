@@ -116,16 +116,16 @@ export default function AdminFloatingMenu({ selectedRecipes = [], onDeleteSucces
                     </span>
                 </div>
 
-                {/* Dinamic Icons */}
                 {adminActions.map((item) => (
                     <Tooltip key={item.id} content={item.label} placement="top" className="font-semibold text-xs rounded-xl shadow-lg border border-gray-100 dark:border-gray-800 mt-1">
-                        <button
-                            onClick={item.action}
-                            className={`w-11 h-11 flex items-center justify-center rounded-full transition-all duration-300 ${item.color} ${item.bg} ${item.bgHover} shadow-md hover:scale-105 hover:-translate-y-1 active:scale-95`}
+                        <Button
+                            isIconOnly
+                            onPress={item.action}
+                            className={`flex items-center justify-center rounded-full transition-all duration-300 ${item.color} ${item.bg} ${item.bgHover} shadow-md hover:scale-105 hover:-translate-y-1 active:scale-95`}
                             aria-label={item.label}
                         >
                             {item.icon}
-                        </button>
+                        </Button>
                     </Tooltip>
                 ))}
             </div>
@@ -134,7 +134,6 @@ export default function AdminFloatingMenu({ selectedRecipes = [], onDeleteSucces
                 <Modal.Backdrop isOpen={state.isOpen} onOpenChange={state.setOpen}>
                     <Modal.Container>
                         <Modal.Dialog>
-                            <Modal.CloseTrigger />
                             <Modal.Header>
                                 <Modal.Heading className="text-red-600">Confirmar Eliminación</Modal.Heading>
                             </Modal.Header>

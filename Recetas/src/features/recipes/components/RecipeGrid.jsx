@@ -5,14 +5,15 @@ import RecipeCard from "./RecipeCard";
 import RecipeSkeleton from "./RecipeSkeleton";
 import RecipeToolbar from "./RecipeToolbar";
 import AdminFloatingMenu from "./AdminFloatingMenu";
-import { Toast } from "@heroui/react";
 import { supabase } from "../../../lib/supabaseClient";
-
-const RecetarioContent = () => {
-    const { profile } = useAuth();
+const RecetarioContent = ({ collectionId, collectionTitle }) => {
+    const { profile, user } = useAuth();
     // === LÓGICA DE ADMINISTRADOR: ESTADOS INICIALES ===
     const [recipes, setRecipes] = useState([]); 
     const [loading, setLoading] = useState(true);
+
+    const [filterSaved, setFilterSaved] = useState(false);
+    const [savedRecipeIds, setSavedRecipeIds] = useState(new Set());
 
     const [selectedRecipes, setSelectedRecipes] = useState([]);
 
@@ -38,7 +39,22 @@ const RecetarioContent = () => {
     // Reiniciar paginación al filtrar o ordenar
     useEffect(() => {
         setCurrentPage(1);
-    }, [selectedCategories, selectedPortions, selectedCountry, selectedDifficulty, searchQuery, sortField, sortOrder]);
+    }, [selectedCategories, selectedPortions, selectedCountry, selectedDifficulty, searchQuery, sortField, sortOrder, filterSaved]);
+
+    useEffect(() => {
+        if (!user?.id) {
+             setSavedRecipeIds(new Set());
+             return;
+        }
+        const fetchSavedIds = async () => {
+             const { data: cols } = await supabase.from('core_coleccion').select('id').eq('user_id', user.id);
+             if (cols && cols.length > 0) {
+                 const { data: recs } = await supabase.from('core_coleccion_receta').select('receta_id').in('coleccion_id', cols.map(c => c.id));
+                 if (recs) setSavedRecipeIds(new Set(recs.map(r => r.receta_id)));
+             }
+        };
+        fetchSavedIds();
+    }, [user?.id]);
 
     // === LÓGICA DE ADMINISTRADOR: EFECTOS ===
 
@@ -82,8 +98,26 @@ const RecetarioContent = () => {
 
                 if (error) throw new Error(error.message);
 
+                let filteredData = data;
+                
+                // Si estamos en modo Colección, filtramos las recetas usando core_coleccion_receta
+                if (collectionId) {
+                    const { data: cols } = await supabase
+                        .from('core_coleccion_receta')
+                        .select('receta_id')
+                        .eq('coleccion_id', collectionId);
+                        
+                    if (!cols || cols.length === 0) {
+                        setRecipes([]);
+                        setLoading(false);
+                        return;
+                    }
+                    const validIds = new Set(cols.map(c => c.receta_id));
+                    filteredData = filteredData.filter(r => validIds.has(r.id) || validIds.has(Number(r.id)));
+                }
+
                 // Enrich with profiles
-                const userIds = [...new Set(data.map(r => r.user_id))].filter(Boolean);
+                const userIds = [...new Set(filteredData.map(r => r.user_id))].filter(Boolean);
                 let profilesMap = {};
                 if (userIds.length > 0) {
                     const { data: profilesData } = await supabase
@@ -95,10 +129,22 @@ const RecetarioContent = () => {
                     }
                 }
                 
-                const formattedRecipes = data.map(r => {
+                // OBTENER CONTEO REAL DE LIKES PARA SALVAR EL CONTADOR ROTO DE LA BD
+                let likesMap = {};
+                const { data: likesData } = await supabase.from('core_recetalike').select('receta_id');
+                if (likesData) {
+                    likesData.forEach(l => {
+                        likesMap[l.receta_id] = (likesMap[l.receta_id] || 0) + 1;
+                    });
+                }
+                
+                const formattedRecipes = filteredData.map(r => {
                     const profile = profilesMap[r.user_id] || {};
+                    const trueLikes = likesMap[r.id] || 0;
+                    
                     return {
                         ...r,
+                        contador_likes: trueLikes, // OVERRIDE BROKEN DB COLUMN
                         portada: r.imagen_url,
                         descripcion: r.descripcion_larga,
                         descripcion_corta: r.descripcion_corta || r.descripcion_larga || '',
@@ -109,7 +155,7 @@ const RecetarioContent = () => {
                         carbohidratos: r.total_carbohidratos,
                         grasas: r.total_grasas,
                         vistas: 0,
-                        likes: r.contador_likes,
+                        likes: trueLikes,
                         creado_en: r.fecha_creacion,
                         pais_nombre: r.core_pais?.nombre || '',
                         tipo_plato_detalle: r.core_tipoplato ? { nombre: r.core_tipoplato.nombre } : null,
@@ -157,6 +203,11 @@ const RecetarioContent = () => {
     // useMemo filteredRecipes aquí...
     const filteredRecipes = useMemo(() => {
         let result = [...recipes];
+
+        // Filtro Mis Favoritas
+        if (filterSaved) {
+            result = result.filter(r => savedRecipeIds.has(r.id) || savedRecipeIds.has(Number(r.id)));
+        }
 
         // Filtro por Tipo de Plato y/o Estilo de Vida
         if (selectedCategories.length > 0) {
@@ -209,6 +260,8 @@ const RecetarioContent = () => {
         searchQuery,
         sortField,
         sortOrder,
+        filterSaved,
+        savedRecipeIds
     ]);
     // ---------------------------------------------------------------------------------------------------
 
@@ -262,6 +315,12 @@ const RecetarioContent = () => {
             />
 
             <main className="flex-1 overflow-y-auto px-4 lg:px-6 relative min-h-0 pb-6 rounded-l-2xl">
+                {collectionTitle && (
+                    <div className="mb-6 pt-2">
+                        <h1 className="text-3xl font-black text-foreground">{collectionTitle}</h1>
+                        <p className="text-sm text-default-500 mt-1">Explorando las recetas de tu colección</p>
+                    </div>
+                )}
                 <RecipeToolbar 
                     searchQuery={searchQuery}
                     setSearchQuery={setSearchQuery}
@@ -270,6 +329,9 @@ const RecetarioContent = () => {
                     sortOrder={sortOrder}
                     setSortOrder={setSortOrder}
                     allRecipeNames={recipes.map(r => r.nombre)}
+                    filterSaved={filterSaved}
+                    setFilterSaved={setFilterSaved}
+                    hideFavoritesToggle={!!collectionId}
                 />
 
                 {/* Grid de recetas */}
@@ -351,8 +413,8 @@ const RecetarioContent = () => {
                     </div>
                 )}
                 
-                {/* ADMIN DOCK */}
-                {usuarioEsAdmin && (
+                {/* ADMIN DOCK - Solo mostrar en el recetario global, no en colecciones */}
+                {usuarioEsAdmin && !collectionId && (
                     <AdminFloatingMenu 
                         selectedRecipes={selectedRecipes}
                         onDeleteSuccess={handleRecipeDelete}
@@ -364,10 +426,10 @@ const RecetarioContent = () => {
     );
 };
 
-export default function RecipeGrid() {
+export default function RecipeGrid({ collectionId, collectionTitle }) {
     return (
         <AuthProvider>
-            <RecetarioContent />
+            <RecetarioContent collectionId={collectionId} collectionTitle={collectionTitle} />
         </AuthProvider>
     );
 }

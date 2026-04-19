@@ -3,47 +3,17 @@ import "@/styles/global.css";
 import Navbar from '@/shared/layout/Navbar';
 import Footer from '@/shared/layout/Footer';
 import RegisterForm from '@/features/auth/components/Login';
-
-// Función que será pasada al formulario para abrir login
-let abrirLoginNavbar;
+import BaseHead from '@/shared/layout/BaseHead.astro';
 ---
 
 <html lang="es">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Registro - ChileBite</title>
-    <!-- Evitar FOUC en modo oscuro -->
-    <script is:inline>
-      const theme = (() => {
-        if (
-          typeof localStorage !== "undefined" &&
-          localStorage.getItem("theme")
-        ) {
-          return localStorage.getItem("theme");
-        }
-        if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-          return "dark";
-        }
-        return "light";
-      })();
-
-      if (theme === "light") {
-        document.documentElement.classList.remove("dark");
-      } else {
-        document.documentElement.classList.add("dark");
-      }
-    </script>
-  
-    <meta name="google-adsense-account" content="ca-pub-4855312501819907" />
+    <BaseHead title="Registro - ChileBite" description="Únete a la comunidad ChileBite y empieza a compartir tus recetas." />
   </head>
   <body
     class="bg-stone-50 text-gray-800 dark:bg-gray-900 dark:text-gray-200 transition-colors duration-300 min-h-screen flex flex-col"
   >
-    <Navbar
-      client:only="react"
-      on:setAbrirLogin={(e) => (abrirLoginNavbar = e.detail)}
-    />
+    <Navbar client:only="react" />
 
     <main
       class="flex-grow pt-20 flex items-center justify-center px-4 pb-12 relative overflow-hidden bg-[url('https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=1920&auto=format&fit=crop')] bg-cover bg-center bg-fixed"
@@ -65,10 +35,7 @@ let abrirLoginNavbar;
       </div>
 
       <div class="relative z-10 w-full flex justify-center">
-        <RegisterForm
-          client:only="react"
-          abrirLogin={() => abrirLoginNavbar && abrirLoginNavbar()}
-        />
+        <RegisterForm client:only="react" />
       </div>
     </main>
 
