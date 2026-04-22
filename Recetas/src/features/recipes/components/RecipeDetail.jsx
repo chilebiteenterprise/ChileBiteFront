@@ -13,7 +13,7 @@ const parseTextToList = (text) => {
   return text.split('\n').map(item => item.trim()).filter(item => item.length > 0);
 };
 
-function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false, usuario }) {
+function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false, usuario, isPreview = false }) {
   const { session } = useAuth();
   const [receta, setReceta] = useState(recetaProp || null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -88,7 +88,7 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
         try {
           const { count } = await supabase.from('core_recetalike').select('*', { count: 'exact', head: true }).eq('receta_id', idReceta);
           accurateLikes = count || 0;
-        } catch(e) {}
+        } catch (e) { }
 
         // Fetch user specific state (liked / saved)
         if (session?.user?.id) {
@@ -103,7 +103,7 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
               .select('id')
               .eq('user_id', session.user.id)
           ]);
-          
+
           let saveCount = 0;
           if (colecciones && colecciones.length > 0) {
             const { count } = await supabase
@@ -210,7 +210,7 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
       } else {
         setIsSaved(false);
       }
-    } catch(err) {}
+    } catch (err) { }
   };
 
   const handleShare = () => {
@@ -304,7 +304,7 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
               <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#b08968] mb-2 block">
                 Libro de Recetas
               </span>
-              <h1 className="text-4xl md:text-5xl font-serif font-black text-slate-900 dark:text-white leading-none mb-4">
+              <h1 className="text-4xl md:text-5xl font-serif font-black text-slate-900 dark:text-white leading-tight mb-4">
                 {receta.nombre}
               </h1>
               <div className="flex items-center gap-2">
@@ -361,7 +361,7 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
               </div>
             </div>
 
-            {receta.total_calorias != null && parseFloat(receta.total_calorias) > 0 && (
+            {(isPreview || (receta.total_calorias != null && parseFloat(receta.total_calorias) > 0)) && (
               <div className="premium-glass-panel rounded-[2rem] p-8 border border-slate-200 dark:border-zinc-800 relative overflow-hidden shadow-sm">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-[#b08968] opacity-[0.05] dark:opacity-5 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 relative z-10 gap-4">
@@ -499,26 +499,26 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
   };
 
   return (
-    <div className="min-h-screen flex flex-col pt-12 pb-12 transition-colors duration-500">
-      <div className="max-w-[1400px] mx-auto w-full px-4 lg:px-8">
-        <div className="premium-glass-wrapper rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col lg:flex-row min-h-[850px] border border-slate-200 dark:border-zinc-800 relative">
+    <div className={`flex flex-col transition-colors duration-500 w-full ${isPreview ? 'p-0 pt-16 md:pt-20' : 'min-h-screen pt-12 pb-12'}`}>
+      <div className={`w-full ${isPreview ? 'px-0' : 'max-w-[1400px] mx-auto px-4 lg:px-8'}`}>
+        <div className={`premium-glass-wrapper w-full shadow-2xl overflow-hidden flex flex-col lg:flex-row border border-slate-200 dark:border-zinc-800 relative ${isPreview ? 'rounded-[2rem] min-h-0' : 'rounded-[2.5rem] min-h-[850px]'}`}>
 
-          <div className="lg:w-[320px] xl:w-[380px] p-8 relative flex flex-col justify-between premium-glass-panel border-r border-slate-200 dark:border-zinc-800 z-10">
+          <div className={`${isPreview ? 'lg:w-[240px] xl:w-[280px] p-6' : 'lg:w-[320px] xl:w-[380px] p-8'} relative flex flex-col justify-between premium-glass-panel border-r border-slate-200 dark:border-zinc-800 z-10`}>
             <div>
-              <div className="flex items-center gap-4 mb-12 border-b border-slate-200/50 dark:border-zinc-800 pb-8">
-                <div className="w-14 h-14 bg-gradient-to-br from-[#b08968] to-[#967259] rounded-2xl flex items-center justify-center shadow-lg shadow-[#b08968]/30">
-                  <BookOpen className="w-7 h-7 text-white" />
+              <div className={`flex items-center gap-4 border-b border-slate-200/50 dark:border-zinc-800 ${isPreview ? 'mb-6 pb-4' : 'mb-12 pb-8'}`}>
+                <div className={`${isPreview ? 'w-10 h-10' : 'w-14 h-14'} bg-gradient-to-br from-[#b08968] to-[#967259] rounded-2xl flex items-center justify-center shadow-lg shadow-[#b08968]/30`}>
+                  <BookOpen className={`${isPreview ? 'w-5 h-5' : 'w-7 h-7'} text-white`} />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-serif font-black text-slate-900 dark:text-white tracking-widest uppercase mb-1">El Libro</h2>
+                  <h2 className={`${isPreview ? 'text-lg' : 'text-2xl'} font-serif font-black text-slate-900 dark:text-white tracking-widest uppercase mb-1`}>El Libro</h2>
                 </div>
               </div>
               <div className="space-y-4">
                 {tabs.map(tab => {
                   const isActive = currentPage === tab.id;
                   return (
-                    <button key={tab.id} onClick={() => setCurrentPage(tab.id)} className={`w-full text-left flex items-center gap-4 px-5 py-4 rounded-2xl transition-all duration-300 font-medium tracking-wide group ${isActive ? 'bg-[#b08968] text-white dark:text-zinc-950 shadow-lg shadow-[#b08968]/20' : 'text-slate-500 dark:text-orange-200/60 hover:bg-slate-200 dark:hover:bg-zinc-900 hover:text-slate-800 dark:hover:text-zinc-200'}`}>
-                      <tab.icon className={`w-5 h-5 transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} />
+                    <button key={tab.id} onClick={() => setCurrentPage(tab.id)} className={`w-full text-left flex items-center gap-4 rounded-2xl transition-all duration-300 font-medium tracking-wide group ${isPreview ? 'px-3 py-3 text-sm' : 'px-5 py-4'} ${isActive ? 'bg-[#b08968] text-white dark:text-zinc-950 shadow-lg shadow-[#b08968]/20' : 'text-slate-500 dark:text-orange-200/60 hover:bg-slate-200 dark:hover:bg-zinc-900 hover:text-slate-800 dark:hover:text-zinc-200'}`}>
+                      <tab.icon className={`${isPreview ? 'w-4 h-4' : 'w-5 h-5'} transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} />
                       <span>{tab.name}</span>
                     </button>
                   );
@@ -526,35 +526,36 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
               </div>
             </div>
 
-            <div className="pt-8 mt-12 border-t border-slate-200 dark:border-zinc-700">
-              <div className="flex justify-center gap-6">
-                <button onClick={handleFavorite} className={`p-4 rounded-full shadow-lg transition-all duration-300 hover:-translate-y-1 ${isFavorite ? 'bg-red-500 text-white shadow-red-500/20' : 'bg-slate-100 dark:bg-zinc-900 text-slate-400 dark:text-orange-200/60 hover:bg-slate-200 dark:hover:bg-zinc-800 hover:text-red-500 dark:hover:text-red-400 border border-slate-200 dark:border-zinc-700'}`} title={isFavorite ? "Ya no me gusta" : "Me gusta"}>
-                  <Heart className={`w-6 h-6 ${isFavorite ? 'fill-current' : ''}`} />
+            <div className={`${isPreview ? 'pt-4 mt-6' : 'pt-8 mt-12'} border-t border-slate-200 dark:border-zinc-700`}>
+              <div className={`flex justify-center ${isPreview ? 'gap-3' : 'gap-6'}`}>
+                <button onClick={handleFavorite} className={`${isPreview ? 'p-3' : 'p-4'} rounded-full shadow-lg transition-all duration-300 hover:-translate-y-1 ${isFavorite ? 'bg-red-500 text-white shadow-red-500/20' : 'bg-slate-100 dark:bg-zinc-900 text-slate-400 dark:text-orange-200/60 hover:bg-slate-200 dark:hover:bg-zinc-800 hover:text-red-500 dark:hover:text-red-400 border border-slate-200 dark:border-zinc-700'}`} title={isFavorite ? "Ya no me gusta" : "Me gusta"}>
+                  <Heart className={`${isPreview ? 'w-5 h-5' : 'w-6 h-6'} ${isFavorite ? 'fill-current' : ''}`} />
                 </button>
-                <button onClick={handleSave} className={`p-4 rounded-full shadow-lg transition-all duration-300 hover:-translate-y-1 ${isSaved ? 'bg-yellow-500 text-white dark:text-zinc-950 shadow-yellow-500/20' : 'bg-slate-100 dark:bg-zinc-900 text-slate-400 dark:text-orange-200/60 hover:bg-slate-200 dark:hover:bg-zinc-800 hover:text-yellow-500 border border-slate-200 dark:border-zinc-700'}`} title={isSaved ? "Quitar de Guardados" : "Guardar Receta"}>
-                  <Bookmark className={`w-6 h-6 ${isSaved ? 'fill-current' : ''}`} />
+                <button onClick={handleSave} className={`${isPreview ? 'p-3' : 'p-4'} rounded-full shadow-lg transition-all duration-300 hover:-translate-y-1 ${isSaved ? 'bg-yellow-500 text-white dark:text-zinc-950 shadow-yellow-500/20' : 'bg-slate-100 dark:bg-zinc-900 text-slate-400 dark:text-orange-200/60 hover:bg-slate-200 dark:hover:bg-zinc-800 hover:text-yellow-500 border border-slate-200 dark:border-zinc-700'}`} title={isSaved ? "Quitar de Guardados" : "Guardar Receta"}>
+                  <Bookmark className={`${isPreview ? 'w-5 h-5' : 'w-6 h-6'} ${isSaved ? 'fill-current' : ''}`} />
                 </button>
-                <button onClick={handleShare} className="p-4 rounded-full bg-slate-100 dark:bg-zinc-900 text-slate-400 dark:text-orange-200/60 shadow-lg hover:bg-slate-200 dark:hover:bg-zinc-800 hover:text-slate-800 dark:hover:text-zinc-200 transition-all duration-300 hover:-translate-y-1 border border-slate-200 dark:border-zinc-700" title="Compartir">
-                  <Share2 className="w-6 h-6" />
+                <button onClick={handleShare} className={`${isPreview ? 'p-3' : 'p-4'} rounded-full bg-slate-100 dark:bg-zinc-900 text-slate-400 dark:text-orange-200/60 shadow-lg hover:bg-slate-200 dark:hover:bg-zinc-800 hover:text-slate-800 dark:hover:text-zinc-200 transition-all duration-300 hover:-translate-y-1 border border-slate-200 dark:border-zinc-700`} title="Compartir">
+                  <Share2 className={`${isPreview ? 'w-5 h-5' : 'w-6 h-6'}`} />
                 </button>
               </div>
             </div>
           </div>
 
-          <div className="flex-1 p-8 md:p-12 xl:p-16 overflow-y-auto relative bg-transparent custom-scrollbar">
+          <div className={`flex-1 overflow-y-auto relative bg-transparent custom-scrollbar ${isPreview ? 'p-4 md:p-6' : 'p-8 md:p-12 xl:p-16'}`}>
             <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#b08968] opacity-[0.015] dark:opacity-[0.03] rounded-full blur-[100px] pointer-events-none"></div>
             <PageContent />
 
-            {/* ── Google AdSense banner ── */}
-            <AdSenseBanner
-              slot="9961213164"
-              format="auto"
-              className="mt-10 rounded-2xl"
-            />
-            
-            <CollectionPickerModal 
-              isOpen={isCollectionModalOpen} 
-              onOpenChange={setIsCollectionModalOpen} 
+            {!isPreview && (
+              <AdSenseBanner
+                slot="9961213164"
+                format="auto"
+                className="mt-10 rounded-2xl"
+              />
+            )}
+
+            <CollectionPickerModal
+              isOpen={isCollectionModalOpen}
+              onOpenChange={setIsCollectionModalOpen}
               recetaId={idReceta}
               onSaveComplete={handleCollectionSaveComplete}
             />
@@ -566,10 +567,10 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
   );
 }
 
-export default function RecetaDetalle(props) {
+export default function RecetaDetalle({ isPreview = false, ...props }) {
   return (
     <AuthProvider>
-      <RecetaDetalleContent {...props} />
+      <RecetaDetalleContent isPreview={isPreview} {...props} />
     </AuthProvider>
   );
 }

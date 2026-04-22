@@ -323,10 +323,78 @@ const RecetaFormContent = () => {
     return <div className="p-10 text-center font-bold text-slate-600">Inicializando Studio...</div>;
 
   return (
-    <div className="flex flex-col xl:flex-row gap-8 px-4 md:px-8 py-8 w-full max-w-[1600px] mx-auto min-h-screen">
+    <div className="flex flex-col gap-12 w-full min-h-screen relative">
       
-      {/* LEFT PANEL: PREMIUM CREATOR STUDIO FORM */}
-      <form onSubmit={handleSubmit} className="w-full xl:w-[50%] flex flex-col gap-10">
+      {/* SECCIÓN DE VISTA PREVIA: DISEÑO INTEGRADO Y AMPLIO */}
+      <div className="w-full bg-slate-50 dark:bg-[#0f1115] border-b border-slate-200 dark:border-white/5 px-4 md:px-12 py-10 transition-all duration-500">
+        <div className="w-full flex flex-col gap-8">
+          
+          {/* Encabezado de Control de Vista */}
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="flex flex-col">
+              <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">Estudio de Diseño</h2>
+              <p className="text-xs text-slate-500 font-medium">Previsualización en tiempo real de tu receta</p>
+            </div>
+            
+            <div className="flex items-center bg-slate-200/50 dark:bg-[#1a1c23]/60 backdrop-blur-xl rounded-2xl p-1 shadow-inner border border-slate-200 dark:border-white/5">
+                <button 
+                  type="button"
+                  onClick={() => setVista('card')}
+                  className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${vista === 'card' ? 'bg-[#b08969] text-white shadow-lg' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}>
+                  Tarjeta
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => setVista('detalle')}
+                  className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${vista === 'detalle' ? 'bg-[#b08969] text-white shadow-lg' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}>
+                  Detalle Completo
+                </button>
+            </div>
+          </div>
+
+          {/* Área de Visualización Amplia */}
+          <div className={`w-full relative ${vista === 'card' ? 'bg-white dark:bg-[#0a0c10] rounded-3xl border border-slate-200 dark:border-white/5 shadow-2xl overflow-hidden min-h-[400px]' : ''}`}>
+            <div className="w-full">
+              {(() => {
+                const selectedCountry = paises.find(p => p.id === Number(recetaData.pais));
+                const recetaParaPreview = {
+                  ...recetaData,
+                  preparacion: pasos.join('\n\n'),
+                  pais_nombre: selectedCountry ? selectedCountry.nombre : '',
+                  total_calorias: macrosLive.cal,
+                  total_proteinas: macrosLive.prot,
+                  total_carbohidratos: macrosLive.carb,
+                  total_grasas: macrosLive.gras
+                };
+
+                return vista === 'card' ? (
+                  <div className="max-w-md mx-auto p-6 md:p-10 transition-all duration-500 transform hover:scale-[1.02]">
+                    <RecipeCard receta={recetaParaPreview} usuarioEsAdmin={false} />
+                  </div>
+                ) : (
+                  <div className="w-full transition-all duration-500">
+                    <RecetaDetalle 
+                      receta={recetaParaPreview} 
+                      modoLocal={true} 
+                      usuarioEsAdmin={false} 
+                      isPreview={true} 
+                    />
+                  </div>
+                );
+              })()}
+            </div>
+            
+            {/* Indicador de Vista en Vivo */}
+            <div className="absolute top-4 right-4 flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
+              <span className="size-2 bg-emerald-500 rounded-full animate-pulse"></span>
+              <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-tighter">Live Preview</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* BOTTOM PANEL: PREMIUM CREATOR STUDIO FORM */}
+      <form onSubmit={handleSubmit} className="w-full max-w-[1400px] mx-auto flex flex-col gap-10 relative z-10">
         
         {/* HERO MEDIA SECTION */}
         <section className="bg-white dark:bg-[#1a1c23] border border-slate-200 dark:border-slate-800 rounded-3xl p-6 md:p-8 shadow-sm">
@@ -664,40 +732,6 @@ const RecetaFormContent = () => {
         </div>
 
       </form>
-
-      {/* RIGHT PANEL: LIVE PREVIEW SIDE-BY-SIDE */}
-      <div className="hidden xl:flex xl:w-[50%] self-start sticky top-2 flex-col gap-4 max-h-[95vh] pt-4">
-        
-        {/* Toggle View Cards/Detalle */}
-        <div className="flex justify-between items-center bg-slate-100 dark:bg-[#1a1c23]/50 backdrop-blur-md rounded-full px-2 py-1.5 shadow-sm border border-slate-200 dark:border-[#1a1c23] w-fit mx-auto">
-            <button 
-              type="button"
-              onClick={() => setVista('card')}
-              className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${vista === 'card' ? 'bg-white dark:bg-[#0f1115] text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}>
-              Vista Tarjeta
-            </button>
-            <button 
-              type="button"
-              onClick={() => setVista('detalle')}
-              className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${vista === 'detalle' ? 'bg-white dark:bg-[#0f1115] text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}>
-              Vista Desplegada
-            </button>
-        </div>
-
-        {/* Scrollable Container */}
-        <div className="w-full rounded-[2rem] bg-slate-50/50 dark:bg-[#1a1c23]/30 border border-slate-200 dark:border-slate-800 shadow-inner flex-1 overflow-y-auto custom-scrollbar p-6 relative">
-          {vista === 'card' ? (
-            <div className="max-w-md mx-auto pointer-events-none opacity-90 hover:opacity-100 transition-opacity mt-10">
-              <RecipeCard receta={{...recetaData, preparacion: pasos.join('\n\n')}} usuarioEsAdmin={false} />
-            </div>
-          ) : (
-            <div className="w-full xl:max-w-3xl mx-auto pointer-events-none">
-              <RecetaDetalle receta={{...recetaData, preparacion: pasos.join('\n\n')}} modoLocal={true} usuarioEsAdmin={false} />
-            </div>
-          )}
-        </div>
-
-      </div>
     </div>
   );
 };

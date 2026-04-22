@@ -167,7 +167,7 @@ export default function RecipeCard({ receta, usuarioEsAdmin = false, isSelected 
         <div className="absolute bottom-3 left-3 z-30" data-receta-ignore="true">
           <span className="px-3 py-1.5 rounded-full flex items-center gap-1.5 backdrop-blur-md transition-colors border shadow-md bg-black/40 text-white border-white/20 text-[10px] font-bold tracking-widest uppercase">
             <MapPin className="w-3.5 h-3.5" />
-            {receta.pais_nombre || receta.pais_detalle?.nombre || receta.pais || '—'}
+            {receta.pais_nombre || receta.pais_detalle?.nombre || (typeof receta.pais === 'string' && receta.pais.length > 3 ? receta.pais : '—')}
           </span>
         </div>
 
