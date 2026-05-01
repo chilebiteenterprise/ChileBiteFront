@@ -16,6 +16,7 @@ export default function CopilotChat({ isOpen, onClose, onAdd, onClear }) {
     }
   ]);
   const [loading, setLoading] = useState(false);
+  const [usingRecipe, setUsingRecipe] = useState(false);
   const [usage, setUsage] = useState({ current: 0, max: 10 });
   const messagesEndRef = useRef(null);
 
@@ -106,32 +107,37 @@ export default function CopilotChat({ isOpen, onClose, onAdd, onClear }) {
   };
 
   const handleUseRecipe = async (recipe) => {
-    if (!recipe || !recipe.ingredientes) return;
+    if (!recipe || !recipe.ingredientes || usingRecipe) return;
     
-    // 1. Limpiar calculadora actual
-    if (onClear) onClear();
+    setUsingRecipe(true);
+    try {
+      // 1. Limpiar calculadora actual
+      if (onClear) onClear();
 
-    // 2. Por cada ingrediente, buscar en la BD (core_ingrediente)
-    for (const ing of recipe.ingredientes) {
-      const { data, error } = await supabase
-        .from('core_ingrediente')
-        .select('*')
-        .ilike('nombre', `%${ing.nombre}%`)
-        .limit(1);
+      // 2. Por cada ingrediente, buscar en la BD (core_ingrediente)
+      for (const ing of recipe.ingredientes) {
+        const { data, error } = await supabase
+          .from('core_ingrediente')
+          .select('*')
+          .ilike('nombre', `%${ing.nombre}%`)
+          .limit(1);
 
-      if (data && data.length > 0) {
-        const foundIng = data[0];
-        foundIng.grams = ing.gramos || 100;
-        // 3. Añadir a la calculadora con los gramos sugeridos
-        if (onAdd) {
-          onAdd(foundIng);
+        if (data && data.length > 0) {
+          const foundIng = data[0];
+          foundIng.grams = ing.gramos || 100;
+          // 3. Añadir a la calculadora con los gramos sugeridos
+          if (onAdd) {
+            onAdd(foundIng);
+          }
+        } else {
+          console.warn(`Ingrediente no encontrado en BD: ${ing.nombre}`);
         }
-      } else {
-        console.warn(`Ingrediente no encontrado en BD: ${ing.nombre}`);
       }
+      
+      onClose();
+    } finally {
+      setUsingRecipe(false);
     }
-    
-    onClose();
   };
 
   return (
@@ -219,9 +225,10 @@ export default function CopilotChat({ isOpen, onClose, onAdd, onClear }) {
                         <p className="text-xs text-[#dac1b8] mb-3">{recipe.descripcion}</p>
                         <button 
                           onClick={() => handleUseRecipe(recipe)}
-                          className="w-full py-2 bg-[#A0522D] hover:bg-[#944925] active:scale-[0.98] text-white text-xs font-bold rounded-lg transition-all shadow-[0_4px_14px_0_rgba(160,82,45,0.39)]"
+                          disabled={usingRecipe}
+                          className="w-full py-2 bg-[#A0522D] hover:bg-[#944925] disabled:opacity-50 disabled:cursor-wait active:scale-[0.98] text-white text-xs font-bold rounded-lg transition-all shadow-[0_4px_14px_0_rgba(160,82,45,0.39)] disabled:shadow-none"
                         >
-                          Usar esta receta →
+                          {usingRecipe ? 'Cargando ingredientes...' : 'Usar esta receta →'}
                         </button>
                       </div>
                     ))}
