@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { supabase } from '@/lib/supabaseClient';
 import CopilotChat from './CopilotChat';
+import { Sparkles } from 'lucide-react';
 import { AuthProvider } from '@/features/auth/context/AuthContext';
 
 const normalize = (s = "") =>
@@ -506,7 +507,7 @@ function MacroCalculatorInner() {
         aria-label="Abrir Chef IA"
       >
         <span className="absolute -top-1 -right-1 bg-red-500 w-3.5 h-3.5 rounded-full border-2 border-[#19120f] animate-pulse"></span>
-        <span className="text-2xl group-hover:animate-spin-slow">✨</span>
+        <Sparkles className="w-7 h-7 text-white group-hover:animate-spin-slow" />
       </button>
 
       {/* Copilot Drawer Component */}

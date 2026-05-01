@@ -37,7 +37,7 @@ export default function Footer() {
               Descubre el mundo de la gastronomía, encuentra locales increíbles y conecta con otros amantes de la comida tradicional e innovadora.
             </p>
             <div className="flex space-x-4 pt-6">
-              <a href="#" className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-800 text-gray-400 hover:bg-[#b08968] hover:text-white transition-all duration-300 hover:scale-110 shadow-sm">
+              <a href="https://www.instagram.com/chilebite.channel?utm_source=qr&igsh=aGpkczc4aWp2dGg%3D" className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-800 text-gray-400 hover:bg-[#b08968] hover:text-white transition-all duration-300 hover:scale-110 shadow-sm">
                 <Instagram className="w-5 h-5" />
               </a>
               <a href="#" className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-800 text-gray-400 hover:bg-[#b08968] hover:text-white transition-all duration-300 hover:scale-110 shadow-sm">

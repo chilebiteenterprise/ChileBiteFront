@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/features/auth/context/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
+import { Sparkles } from 'lucide-react';
 
 export default function CopilotChat({ isOpen, onClose, onAdd, onClear }) {
   const { session } = useAuth();
@@ -153,7 +154,7 @@ export default function CopilotChat({ isOpen, onClose, onAdd, onClear }) {
         <div className="flex items-center justify-between p-6 border-b border-white/10">
           <div>
             <h2 className="text-xl font-bold font-['Inter'] flex items-center gap-2">
-              <span className="text-xl">✨</span> Chef IA
+              <Sparkles className="w-5 h-5 text-[#b08968]" /> Chef IA
             </h2>
             <p className="text-sm text-[#dac1b8]">Tu asistente de cocina inteligente</p>
           </div>
