@@ -1,11 +1,12 @@
 import { defineConfig } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite'; // Importa el plugin de Vite para Tailwind
 import react from '@astrojs/react';
+import vercel from '@astrojs/vercel';
 
 // https://astro.build/config
 export default defineConfig({
-  // MODO ESTÁTICO (SSG) - Recomendado para Vercel
-  
+  adapter: vercel(),
+
   // MODIFICAMOS EL BLOQUE VITE
   vite: {
     // 1. Añadimos el plugin de Tailwind CSS aquí

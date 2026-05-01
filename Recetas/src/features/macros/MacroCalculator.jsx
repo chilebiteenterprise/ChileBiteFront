@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { supabase } from '@/lib/supabaseClient';
+import CopilotChat from './CopilotChat';
+import { AuthProvider } from '@/features/auth/context/AuthContext';
 
 const normalize = (s = "") =>
   s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -262,10 +264,11 @@ function IngredientRow({ item, onUpdateGrams, onRemove }) {
 let _uid = 0;
 const nextUid = () => ++_uid;
 
-export default function MacroCalculator() {
+function MacroCalculatorInner() {
   const [allIngredients, setAllIngredients] = useState([]);
   const [loadingIngredients, setLoadingIngredients] = useState(true);
   const [selectedItems, setSelectedItems] = useState([]);
+  const [isCopilotOpen, setIsCopilotOpen] = useState(false);
 
   // Load ingredient catalogue from Supabase
   useEffect(() => {
@@ -285,7 +288,7 @@ export default function MacroCalculator() {
   const handleAdd = (ing) => {
     setSelectedItems((prev) => [
       ...prev,
-      { ...ing, grams: 100, _uid: nextUid() },
+      { grams: 100, ...ing, _uid: nextUid() },
     ]);
   };
 
@@ -495,6 +498,32 @@ export default function MacroCalculator() {
           </div>
         </div>
       </div>
+
+      {/* Floating Copilot Toggle Button */}
+      <button
+        onClick={() => setIsCopilotOpen(true)}
+        className="fixed bottom-6 right-6 z-30 w-14 h-14 bg-linear-to-br from-[#A0522D] to-[#7a3d20] rounded-full shadow-[0_4px_20px_rgba(160,82,45,0.5)] flex items-center justify-center text-white hover:scale-105 active:scale-95 transition-all group"
+        aria-label="Abrir Chef IA"
+      >
+        <span className="absolute -top-1 -right-1 bg-red-500 w-3.5 h-3.5 rounded-full border-2 border-[#19120f] animate-pulse"></span>
+        <span className="text-2xl group-hover:animate-spin-slow">✨</span>
+      </button>
+
+      {/* Copilot Drawer Component */}
+      <CopilotChat 
+        isOpen={isCopilotOpen} 
+        onClose={() => setIsCopilotOpen(false)}
+        onAdd={handleAdd}
+        onClear={handleClear}
+      />
     </div>
+  );
+}
+
+export default function MacroCalculator() {
+  return (
+    <AuthProvider>
+      <MacroCalculatorInner />
+    </AuthProvider>
   );
 }
