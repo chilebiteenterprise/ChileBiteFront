@@ -404,14 +404,13 @@ const RecetaFormContent = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
                 {/* Imagen URL */}
                 <div className="md:col-span-2 space-y-3">
-                    <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">URL de Imagen Principal</label>
+                    <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">URL de Imagen Principal (Opcional)</label>
                     <input 
                         name="imagen_url"
                         value={recetaData.imagen_url}
                         onChange={handleChange}
                         className={inputBaseStyle} 
                         placeholder="https://ejemplo.com/imagen.jpg" 
-                        required
                     />
                     {/* Preview Rápido */}
                     {recetaData.imagen_url && (
