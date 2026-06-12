@@ -4,6 +4,24 @@
 
 @layer theme, base, components, utilities;
 
+@theme {
+  --color-copper-50: #fdfaf8;
+  --color-copper-100: #f5ece8;
+  --color-copper-200: #eabe9b;
+  --color-copper-300: #d4a373;
+  --color-copper-400: #bc8a5f;
+  --color-copper-500: #b08969;
+  --color-copper-600: #8d6e53;
+  --color-copper-700: #6a523e;
+  --color-copper-800: #463729;
+  --color-copper-900: #231b14;
+
+  --color-sienna: #b08969;
+  --color-obsidian: #1c1916;
+  
+  --font-inter: "Inter", sans-serif;
+}
+
 @layer base {
   /* Light mode defaults */
   :root {
@@ -98,4 +116,3 @@ html.dark .premium-glass-wrapper {
   backdrop-filter: blur(40px);
   -webkit-backdrop-filter: blur(40px);
 }
-

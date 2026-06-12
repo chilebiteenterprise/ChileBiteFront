@@ -69,7 +69,7 @@ function NavbarContent() {
 
   const navLinks = [
     { id: "recetas", label: "Recetas", href: "/recipes", icon: BookOpen },
-    { id: "locales", label: "Locales", href: "/Locales", icon: MapPin },
+    { id: "locales", label: "Locales", href: "/locales", icon: MapPin },
   ];
 
   const handleLogin = async (e) => {
@@ -142,7 +142,7 @@ function NavbarContent() {
           <div className="hidden md:flex items-center space-x-1">
             {navLinks.map((link) => {
               const Icon = link.icon;
-              const isActive = window.location.pathname === link.href;
+              const isActive = typeof window !== 'undefined' && window.location.pathname === link.href;
               const linkColor = isActive ? "#b08968" : (isScrolled ? "#6b7280" : (isDarkMode || isHomePage ? "#e5e7eb" : "#4b5563"));
               return (
                 <a key={link.id} href={link.href} className="relative px-4 py-2 rounded-lg transition-all duration-300 group">
@@ -313,7 +313,7 @@ function NavbarContent() {
 
               {navLinks.map((link) => {
                 const Icon = link.icon;
-                const isActive = window.location.pathname === link.href;
+                const isActive = typeof window !== 'undefined' && window.location.pathname === link.href;
                 return (
                   <a key={link.id} href={link.href} className={`flex items-center space-x-3 px-4 py-3.5 rounded-2xl transition-all duration-300 ${isActive ? "bg-default" : "hover:bg-default-hover"}`}>
                     <Icon className="w-5 h-5" style={{ color: isActive ? "#b08968" : "var(--color-default-500)" }} />

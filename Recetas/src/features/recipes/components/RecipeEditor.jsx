@@ -265,6 +265,7 @@ const RecetaFormContent = () => {
           if (error) throw new Error(error.message);
         } else {
           recetaPayload.contador_likes = 0;
+          recetaPayload.fecha_creacion = new Date().toISOString();
           const { data: nuevaReceta, error } = await supabase
             .from('core_receta')
             .insert(recetaPayload)

@@ -1,0 +1,35 @@
+---
+import "@/styles/global.css";
+import Footer from "@/shared/layout/Footer";
+import Navbar from "@/shared/layout/Navbar";
+import BaseHead from "@/shared/layout/BaseHead.astro";
+import { LocalesSection } from "@/features/locales/components/LocalesSection";
+---
+
+<html lang="es">
+  <head>
+    <BaseHead />
+    <title>Locales | ChileBite - Descubre el sabor de Chile</title>
+    <meta name="description" content="Explora los mejores restaurantes, picadas y viñedos de Chile. Tu guía definitiva de la gastronomía nacional." />
+  </head>
+
+  <body class="bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 transition-colors duration-300">
+    <Navbar client:only="react" />
+
+    <main>
+      <LocalesSection client:load />
+    </main>
+
+    <Footer client:visible />
+
+    <style is:global>
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+    </style>
+  </body>
+</html>

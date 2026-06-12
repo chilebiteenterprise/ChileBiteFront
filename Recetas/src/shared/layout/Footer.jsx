@@ -6,7 +6,7 @@ export default function Footer() {
     resources: [
       { label: "Recetas", href: "/recipes" },
       { label: "Calculadora de Macros", href: "/calculadora" },
-      { label: "Locales", href: "#" },
+      { label: "Locales", href: "/locales" },
       { label: "Comunidad", href: "#" },
     ],
     legal: [
