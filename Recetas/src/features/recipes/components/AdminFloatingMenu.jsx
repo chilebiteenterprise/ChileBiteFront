@@ -14,6 +14,12 @@ export default function AdminFloatingMenu({ selectedRecipes = [], onDeleteSucces
     const handleDelete = async (onClose) => {
         setIsDeleting(true);
         try {
+            // Borrar referencias en cascada manualmente
+            await supabase.from('core_recetaingrediente').delete().in('receta_id', selectedRecipes);
+            await supabase.from('core_receta_estilos_vida').delete().in('receta_id', selectedRecipes);
+            await supabase.from('core_coleccion_receta').delete().in('receta_id', selectedRecipes);
+            await supabase.from('core_recetalike').delete().in('receta_id', selectedRecipes);
+
             const { error } = await supabase
                 .from('core_receta')
                 .delete()
@@ -23,6 +29,7 @@ export default function AdminFloatingMenu({ selectedRecipes = [], onDeleteSucces
             onClose();
         } catch (error) {
             console.error("Error al eliminar", error);
+            alert("Hubo un error al eliminar las recetas: " + error.message);
         } finally {
             setIsDeleting(false);
         }
