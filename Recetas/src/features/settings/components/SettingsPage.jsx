@@ -99,8 +99,7 @@ function SettingsContent() {
   const identities = user?.identities || [];
   const isGoogleLinked = identities.some(id => id.provider === "google");
 
-  // Set / change password form
-  const [pwForm, setPwForm] = useState({ current: "", password: "", confirm: "" });
+  // Change password form
   const [isSettingPw, setIsSettingPw] = useState(false);
 
   // Change email form
@@ -110,6 +109,7 @@ function SettingsContent() {
   // Delete
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isInitiatingDelete, setIsInitiatingDelete] = useState(false);
 
   // App Theme state
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -151,16 +151,15 @@ function SettingsContent() {
   /* handlers */
   const handleSetPassword = async (e) => {
     e.preventDefault();
-    if (pwForm.password.length < 6) { toast.error("Mínimo 6 caracteres"); return; }
-    if (pwForm.password !== pwForm.confirm) { toast.error("Las contraseñas no coinciden"); return; }
     setIsSettingPw(true);
     try {
-      const { error } = await supabase.auth.updateUser({ password: pwForm.password });
+      const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
+        redirectTo: `${window.location.origin}/auth/reset-password`,
+      });
       if (error) throw error;
-      toast.success("¡Contraseña actualizada correctamente!");
-      setPwForm({ current: "", password: "", confirm: "" });
+      toast.success("Te hemos enviado un correo con instrucciones para cambiar tu contraseña.");
     } catch (err) {
-      toast.error(err.message || "Error al actualizar la contraseña");
+      toast.error(err.message || "Error al solicitar el cambio de contraseña");
     } finally {
       setIsSettingPw(false);
     }
@@ -171,7 +170,10 @@ function SettingsContent() {
     if (!emailForm.email.includes("@")) { toast.error("Ingresa un email válido"); return; }
     setIsChangingEmail(true);
     try {
-      const { error } = await supabase.auth.updateUser({ email: emailForm.email });
+      const { error } = await supabase.auth.updateUser(
+        { email: emailForm.email },
+        { emailRedirectTo: `${window.location.origin}/settings` }
+      );
       if (error) throw error;
       toast.success("Te enviamos un enlace de confirmación al nuevo correo.");
       setEmailForm({ email: "" });
@@ -179,6 +181,29 @@ function SettingsContent() {
       toast.error(err.message || "Error al cambiar el email");
     } finally {
       setIsChangingEmail(false);
+    }
+  };
+
+  const handleInitiateDelete = async () => {
+    // If the user only has a Google identity, skip reauthentication since it's not supported for OAuth
+    if (isGoogleLinked && identities.length === 1) {
+      setShowDeleteConfirm(true);
+      return;
+    }
+    
+    setIsInitiatingDelete(true);
+    try {
+      const { error } = await supabase.auth.reauthenticate();
+      if (error) throw error;
+      
+      toast.success("Te enviamos un correo. Por favor confírmalo antes de proceder.", { duration: 5000 });
+      setShowDeleteConfirm(true);
+    } catch (err) {
+      // If reauthentication fails (e.g. they use OAuth despite having email), fallback to confirmation
+      console.error(err);
+      setShowDeleteConfirm(true);
+    } finally {
+      setIsInitiatingDelete(false);
     }
   };
 
@@ -244,21 +269,10 @@ function SettingsContent() {
           iconColor={BRAND}
         >
           <form onSubmit={handleSetPassword} className="space-y-3 mt-2">
-            <PwInput
-              value={pwForm.password}
-              onChange={e => setPwForm(p => ({ ...p, password: e.target.value }))}
-              placeholder="Nueva contraseña (mín. 6 caracteres)"
-              show={showPw}
-              onToggleShow={() => setShowPw(s => !s)}
-            />
-            <PwInput
-              value={pwForm.confirm}
-              onChange={e => setPwForm(p => ({ ...p, confirm: e.target.value }))}
-              placeholder="Confirmar nueva contraseña"
-              show={showPw}
-              onToggleShow={() => setShowPw(s => !s)}
-            />
-            {submitBtn(isSettingPw, Lock, "Cambiar contraseña")}
+            <p className="text-xs text-default-500 leading-relaxed">
+              Por seguridad, te enviaremos un enlace a tu correo electrónico registrado. Al hacer clic, podrás configurar una nueva contraseña de forma segura.
+            </p>
+            {submitBtn(isSettingPw, Mail, "Enviar correo de recuperación")}
           </form>
         </Row>
       </Section>
@@ -324,14 +338,18 @@ function SettingsContent() {
               Al eliminar tu cuenta, todos tus datos, recetas guardadas y configuraciones serán borrados permanentemente. Esta acción no se puede deshacer.
             </p>
             {!showDeleteConfirm ? (
-              <button onClick={() => setShowDeleteConfirm(true)}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-danger border border-danger hover:bg-danger-hover transition-colors">
-                <Trash2 className="w-4 h-4" />
+              <button onClick={handleInitiateDelete} disabled={isInitiatingDelete}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-danger border border-danger hover:bg-danger-hover disabled:opacity-50 transition-colors">
+                {isInitiatingDelete ? <Loader className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
                 Eliminar mi cuenta
               </button>
             ) : (
               <div className="space-y-3">
-                <p className="text-sm font-bold text-danger-700">¿Estás completamente seguro/a?</p>
+                <p className="text-sm font-bold text-danger-700">
+                  {(!isGoogleLinked || identities.length > 1) ? 
+                    "¿Ya verificaste tu identidad en el correo? ¿Estás completamente seguro/a?" : 
+                    "¿Estás completamente seguro/a?"}
+                </p>
                 <div className="flex flex-wrap gap-3">
                   <button onClick={handleDeleteAccount} disabled={isDeleting}
                     className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-danger hover:bg-danger-600 disabled:opacity-60 transition-all">

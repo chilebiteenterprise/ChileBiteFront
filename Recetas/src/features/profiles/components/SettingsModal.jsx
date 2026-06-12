@@ -6,7 +6,6 @@ import { supabase } from '@/lib/supabaseClient';
 import { deleteAccount } from '@/lib/profileService';
 
 export default function SettingsModal({ isOpen, onOpenChange, user, profile, linkGoogleToCurrentAccount }) {
-  const [passwordForm, setPasswordForm] = useState({ password: "", confirm: "", show: false });
   const [isSettingPassword, setIsSettingPassword] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -16,22 +15,15 @@ export default function SettingsModal({ isOpen, onOpenChange, user, profile, lin
 
   const handleSetPassword = async (e) => {
     e.preventDefault();
-    if (passwordForm.password.length < 6) {
-      toast.error("La contraseña debe tener al menos 6 caracteres.");
-      return;
-    }
-    if (passwordForm.password !== passwordForm.confirm) {
-      toast.error("Las contraseñas no coinciden.");
-      return;
-    }
     setIsSettingPassword(true);
     try {
-      const { error } = await supabase.auth.updateUser({ password: passwordForm.password });
+      const { error } = await supabase.auth.resetPasswordForEmail(profile?.email || user?.email, {
+        redirectTo: `${window.location.origin}/auth/reset-password`,
+      });
       if (error) throw error;
-      toast.success("¡Contraseña establecida! Ya puedes iniciar sesión con email.");
-      setPasswordForm({ password: "", confirm: "", show: false });
+      toast.success("Te hemos enviado un correo con un enlace seguro para establecer tu contraseña.");
     } catch (err) {
-      toast.error(err.message || "Error al establecer la contraseña");
+      toast.error(err.message || "Error al solicitar la contraseña");
     } finally {
       setIsSettingPassword(false);
     }
@@ -82,44 +74,16 @@ export default function SettingsModal({ isOpen, onOpenChange, user, profile, lin
                   >
                     <form onSubmit={handleSetPassword} className="space-y-4 pt-2">
                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                        Tu cuenta actualmente solo usa Google. Crea una contraseña para ingresar con <span className="font-semibold">{profile?.email}</span>.
+                        Tu cuenta actualmente solo usa Google. Por seguridad, te enviaremos un enlace a <span className="font-semibold">{profile?.email}</span> para que puedas establecer una contraseña de forma segura.
                       </p>
-                      <div>
-                        <div className="relative">
-                          <input
-                            type={passwordForm.show ? "text" : "password"}
-                            value={passwordForm.password}
-                            onChange={e => setPasswordForm(p => ({ ...p, password: e.target.value }))}
-                            placeholder="Nueva contraseña (mín 6)"
-                            className="w-full px-4 py-3 pr-10 rounded-xl text-sm border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:border-violet-500 transition-colors"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setPasswordForm(p => ({ ...p, show: !p.show }))}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
-                          >
-                            {passwordForm.show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                          </button>
-                        </div>
-                      </div>
-                      <div>
-                        <input
-                          type={passwordForm.show ? "text" : "password"}
-                          value={passwordForm.confirm}
-                          onChange={e => setPasswordForm(p => ({ ...p, confirm: e.target.value }))}
-                          placeholder="Confirmar contraseña"
-                          className="w-full px-4 py-3 rounded-xl text-sm border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:border-violet-500 transition-colors"
-                        />
-                      </div>
                       <Button
                         type="submit"
                         color="secondary"
                         isLoading={isSettingPassword}
-                        isDisabled={!passwordForm.password || !passwordForm.confirm}
                         className="w-full font-semibold"
-                        startContent={!isSettingPassword && <Lock className="w-4 h-4" />}
+                        startContent={!isSettingPassword && <Mail className="w-4 h-4" />}
                       >
-                        Establecer Contraseña
+                        Enviar Enlace de Configuración
                       </Button>
                     </form>
                   </AccordionItem>
