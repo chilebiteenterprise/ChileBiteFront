@@ -146,6 +146,37 @@ export const AuthProvider = ({ children }) => {
   };
 
   /**
+   * Desvincula Google del usuario actual.
+   * REGLA: Solo se puede desvincular si el usuario tiene una identidad 'email'
+   * (contraseña establecida). De lo contrario, quedaría sin forma de acceder.
+   */
+  const unlinkGoogle = async () => {
+    if (!user) return { error: new Error("Debes estar autenticado.") };
+
+    // Obtener identidades actuales
+    const { data: identitiesData, error: fetchError } = await supabase.auth.getUserIdentities();
+    if (fetchError) return { error: fetchError };
+
+    const identities = identitiesData?.identities ?? [];
+    const googleIdentity = identities.find((id) => id.provider === "google");
+    const hasEmailIdentity = identities.some((id) => id.provider === "email");
+
+    if (!googleIdentity) {
+      return { error: new Error("No tienes Google vinculado.") };
+    }
+    if (!hasEmailIdentity) {
+      return {
+        error: new Error(
+          "Debes establecer una contraseña antes de desvincular Google, para no perder el acceso a tu cuenta."
+        ),
+      };
+    }
+
+    const { error } = await supabase.auth.unlinkIdentity(googleIdentity);
+    return { error };
+  };
+
+  /**
    * Login con email + password.
    * Si el error es que el email ya está vinculado a Google, lanza mensaje amigable.
    */
@@ -161,6 +192,37 @@ export const AuthProvider = ({ children }) => {
         return { data: null, error: friendlyError };
       }
     }
+
+    if (!error) {
+      const { data: assurance, error: assuranceError } =
+        await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      if (assuranceError) return { data, error: assuranceError };
+
+      if (assurance?.nextLevel === "aal2" && assurance.currentLevel !== "aal2") {
+        const { data: factors, error: factorsError } = await supabase.auth.mfa.listFactors();
+        if (factorsError) return { data, error: factorsError };
+
+        const totpFactor = factors?.totp?.find((factor) => factor.status === "verified");
+        if (totpFactor) {
+          return { data, error: null, mfaRequired: true, factorId: totpFactor.id };
+        }
+      }
+    }
+
+    return { data, error, mfaRequired: false };
+  };
+
+  const verifyMfaCode = async (factorId, code) => {
+    if (!factorId) return { error: new Error("No se encontró el factor 2FA.") };
+    if (!/^\d{6}$/.test(code)) {
+      return { error: new Error("Ingresa el código de 6 dígitos de tu app autenticadora.") };
+    }
+
+    const { data, error } = await supabase.auth.mfa.challengeAndVerify({
+      factorId,
+      code,
+    });
+
     return { data, error };
   };
 
@@ -205,7 +267,9 @@ export const AuthProvider = ({ children }) => {
     loading,
     loginWithGoogle,
     linkGoogleToCurrentAccount,
+    unlinkGoogle,
     loginWithEmail,
+    verifyMfaCode,
     registerWithEmail,
     logout,
     refreshProfile,

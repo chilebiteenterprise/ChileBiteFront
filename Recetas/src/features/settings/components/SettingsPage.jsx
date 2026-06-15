@@ -2,11 +2,13 @@ import React, { useState } from "react";
 import { useAuth, AuthProvider } from '@/features/auth/context/AuthContext';
 import {
   ShieldCheck, KeyRound, Mail, Trash2, Link2, ChevronRight,
-  Loader, Eye, EyeOff, Lock, X, CheckCircle2, UserCircle2, Moon, Sun
+  Loader, Eye, EyeOff, Lock, X, CheckCircle2, UserCircle2, Moon, Sun,
+  LogOut, Unlink, AlertCircle
 } from "lucide-react";
 import { toast } from "@heroui/react";
 import { supabase } from '@/lib/supabaseClient';
 import { deleteAccount } from '@/lib/profileService';
+import MFASetup from './MFASetup';
 
 const BRAND = "#b08968";
 
@@ -88,7 +90,7 @@ function PwInput({ value, onChange, placeholder, show, onToggleShow }) {
    MAIN SETTINGS CONTENT
 ────────────────────────────────────────────────────────────── */
 function SettingsContent() {
-  const { user, profile, loading: authLoading, linkGoogleToCurrentAccount } = useAuth();
+  const { user, profile, loading: authLoading, linkGoogleToCurrentAccount, unlinkGoogle } = useAuth();
 
   const [showPw, setShowPw] = useState(false);
   /**
@@ -98,6 +100,7 @@ function SettingsContent() {
    */
   const identities = user?.identities || [];
   const isGoogleLinked = identities.some(id => id.provider === "google");
+  const hasEmailIdentity = identities.some(id => id.provider === "email");
 
   // Change password form
   const [isSettingPw, setIsSettingPw] = useState(false);
@@ -110,6 +113,13 @@ function SettingsContent() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isInitiatingDelete, setIsInitiatingDelete] = useState(false);
+
+  // Unlink Google
+  const [showUnlinkConfirm, setShowUnlinkConfirm] = useState(false);
+  const [isUnlinking, setIsUnlinking] = useState(false);
+
+  // Sign out all devices
+  const [isSigningOutAll, setIsSigningOutAll] = useState(false);
 
   // App Theme state
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -181,6 +191,34 @@ function SettingsContent() {
       toast.error(err.message || "Error al cambiar el email");
     } finally {
       setIsChangingEmail(false);
+    }
+  };
+
+  /* ── Desvincular Google ── */
+  const handleUnlinkGoogle = async () => {
+    setIsUnlinking(true);
+    try {
+      const { error } = await unlinkGoogle();
+      if (error) throw error;
+      toast.success("Google desvinculado correctamente.");
+      setShowUnlinkConfirm(false);
+    } catch (err) {
+      toast.error(err.message || "Error al desvincular Google.");
+    } finally {
+      setIsUnlinking(false);
+    }
+  };
+
+  /* ── Cerrar todas las sesiones ── */
+  const handleSignOutAllDevices = async () => {
+    setIsSigningOutAll(true);
+    try {
+      await supabase.auth.signOut({ scope: "global" });
+      toast.success("Sesión cerrada en todos los dispositivos.");
+      setTimeout(() => { window.location.href = "/"; }, 1200);
+    } catch (err) {
+      toast.error("Error al cerrar sesiones.");
+      setIsSigningOutAll(false);
     }
   };
 
@@ -275,6 +313,38 @@ function SettingsContent() {
             {submitBtn(isSettingPw, Mail, "Enviar correo de recuperación")}
           </form>
         </Row>
+
+        <Row
+          icon={ShieldCheck}
+          label="Autenticación en dos pasos"
+          sublabel="Protege tu cuenta con un código de una app autenticadora"
+          iconColor="#22c55e"
+        >
+          <MFASetup />
+        </Row>
+
+        <Row
+          icon={LogOut}
+          label="Cerrar todas las sesiones"
+          sublabel="Cierra tu sesión en todos los dispositivos simultáneamente"
+          iconColor="#6366f1"
+        >
+          <div className="space-y-3 mt-2">
+            <p className="text-xs text-default-500 leading-relaxed">
+              Esto cerrará tu sesión en todos los navegadores y dispositivos donde hayas iniciado sesión. Tendrás que volver a ingresar con tu contraseña o Google.
+            </p>
+            <button
+              type="button"
+              onClick={handleSignOutAllDevices}
+              disabled={isSigningOutAll}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-50 transition-all mt-1"
+              style={{ backgroundColor: "#6366f1" }}
+            >
+              {isSigningOutAll ? <Loader className="w-4 h-4 animate-spin" /> : <LogOut className="w-4 h-4" />}
+              Cerrar todas las sesiones
+            </button>
+          </div>
+        </Row>
       </Section>
 
       {/* ─── CUENTAS VINCULADAS ─── */}
@@ -294,9 +364,57 @@ function SettingsContent() {
           iconColor="#4285F4"
         >
           {isGoogleLinked ? (
-            <div className="flex items-center gap-2 mt-2 p-3 bg-success-soft rounded-xl border border-success-soft">
-              <CheckCircle2 className="w-4 h-4 text-success shrink-0" />
-              <p className="text-xs text-foreground">Google está correctamente vinculado a esta cuenta.</p>
+            <div className="mt-2 space-y-3">
+              <div className="flex items-center gap-2 p-3 bg-success-soft rounded-xl border border-success-soft">
+                <CheckCircle2 className="w-4 h-4 text-success shrink-0" />
+                <p className="text-xs text-foreground">Google está correctamente vinculado a esta cuenta.</p>
+              </div>
+
+              {/* Botón desvincular — con aviso si no tiene contraseña */}
+              {!hasEmailIdentity ? (
+                <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800">
+                  <AlertCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                  <p className="text-xs text-amber-700 dark:text-amber-400 leading-relaxed">
+                    Para desvincular Google, primero debes <strong>establecer una contraseña</strong> en la sección Seguridad.
+                  </p>
+                </div>
+              ) : (
+                !showUnlinkConfirm ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowUnlinkConfirm(true)}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                  >
+                    <Unlink className="w-4 h-4" />
+                    Desvincular Google
+                  </button>
+                ) : (
+                  <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800 space-y-3">
+                    <p className="text-sm font-bold text-red-700 dark:text-red-400">¿Confirmar desvinculación?</p>
+                    <p className="text-xs text-red-600 dark:text-red-500 leading-relaxed">
+                      Dejarás de poder iniciar sesión con Google. Usarás tu contraseña de aquí en adelante.
+                    </p>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={handleUnlinkGoogle}
+                        disabled={isUnlinking}
+                        className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-white bg-red-500 hover:bg-red-600 disabled:opacity-50 transition-colors"
+                      >
+                        {isUnlinking ? <Loader className="w-4 h-4 animate-spin" /> : <Unlink className="w-4 h-4" />}
+                        Sí, desvincular
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowUnlinkConfirm(false)}
+                        className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-default-600 border border-border hover:bg-default-hover transition-colors"
+                      >
+                        <X className="w-4 h-4" /> Cancelar
+                      </button>
+                    </div>
+                  </div>
+                )
+              )}
             </div>
           ) : (
             <div className="mt-2 space-y-3">

@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef } from "react";
-import { ChefHat, BookOpen, MapPin, User, Menu, X, Mail, Lock, Moon, Sun } from "lucide-react";
+import { ChefHat, BookOpen, MapPin, User, Menu, X, Mail, Lock, Moon, Sun, ShieldCheck } from "lucide-react";
 import { supabase } from '@/lib/supabaseClient';
 import { AuthProvider, useAuth } from '@/features/auth/context/AuthContext';
 import { Toast, toast, Alert } from "@heroui/react";
 
 function NavbarContent() {
-  const { user, profile, logout, loginWithGoogle } = useAuth();
+  const { user, profile, logout, loginWithGoogle, loginWithEmail, verifyMfaCode } = useAuth();
 
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -14,10 +14,13 @@ function NavbarContent() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isForgotPwOpen, setIsForgotPwOpen] = useState(false);
   const [isSendingReset, setIsSendingReset] = useState(false);
+  const [mfaChallenge, setMfaChallenge] = useState(null);
+  const [mfaCode, setMfaCode] = useState("");
+  const [isVerifyingMfa, setIsVerifyingMfa] = useState(false);
   const loginRef = useRef(null);
 
   const isHomePage = typeof window !== 'undefined' && window.location.pathname === '/';
-  const isLoggedIn = !!user;
+  const isLoggedIn = !!user && !mfaChallenge;
 
   // Darkmode init
   useEffect(() => {
@@ -56,6 +59,9 @@ function NavbarContent() {
         setIsLoginOpen(false);
         setLoginError(null);
         setIsForgotPwOpen(false);
+        if (mfaChallenge) {
+          cancelMfaChallenge();
+        }
       }
     };
 
@@ -65,7 +71,7 @@ function NavbarContent() {
       window.removeEventListener("scroll", handleScroll);
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, []);
+  }, [mfaChallenge]);
 
   const navLinks = [
     { id: "recetas", label: "Recetas", href: "/recipes", icon: BookOpen },
@@ -76,17 +82,51 @@ function NavbarContent() {
     e.preventDefault();
     setLoginError(null);
     const form = e.target;
+    setIsVerifyingMfa(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: form.email.value,
-        password: form.password.value,
-      });
+      if (mfaChallenge) {
+        if (!/^\d{6}$/.test(mfaCode)) {
+          setLoginError("Ingresa el código de 6 dígitos de tu app autenticadora.");
+          return;
+        }
+        const { error } = await verifyMfaCode(mfaChallenge.factorId, mfaCode);
+        if (error) throw error;
+        setMfaChallenge(null);
+        setMfaCode("");
+        setIsLoginOpen(false);
+        toast.success("¡Sesión verificada! Bienvenido de nuevo.");
+        return;
+      }
+
+      const { error, mfaRequired, factorId } = await loginWithEmail(
+        form.email.value,
+        form.password.value,
+      );
       if (error) throw error;
+      if (mfaRequired) {
+        setMfaChallenge({
+          factorId,
+          email: form.email.value,
+        });
+        setMfaCode("");
+        toast.success("Ingresa el código de tu app autenticadora para continuar.");
+        return;
+      }
+
       setIsLoginOpen(false);
       toast.success("¡Bienvenido de nuevo! Sesión iniciada.");
     } catch (error) {
       setLoginError(error.message || "Credenciales incorrectas");
+    } finally {
+      setIsVerifyingMfa(false);
     }
+  };
+
+  const cancelMfaChallenge = async () => {
+    setMfaChallenge(null);
+    setMfaCode("");
+    setLoginError(null);
+    await supabase.auth.signOut({ scope: "local" });
   };
 
   const handleResetPassword = async (e) => {
@@ -117,9 +157,41 @@ function NavbarContent() {
   const handleUserClick = () => {
     setIsLoginOpen(!isLoginOpen);
     setLoginError(null);
+    if (mfaChallenge) {
+      cancelMfaChallenge();
+    }
   };
 
   const currentAvatar = profile?.avatar_url || user?.user_metadata?.avatar_url || "/default-avatar.png";
+  const mfaSubmitLabel = isVerifyingMfa ? "Verificando..." : "Verificar código";
+
+  const renderMfaChallengeForm = () => (
+    <>
+      <div className="flex items-start gap-3 p-3 rounded-xl bg-default border border-border">
+        <ShieldCheck className="w-5 h-5 shrink-0 mt-0.5" style={{ color: "#b08968" }} />
+        <div className="min-w-0">
+          <p className="text-sm font-bold text-foreground">Verificación 2FA</p>
+          <p className="text-xs text-default-500 truncate">{mfaChallenge?.email}</p>
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-xs font-bold text-default-600 mb-1 ml-1 uppercase tracking-wide">Código autenticador</label>
+        <input
+          type="text"
+          inputMode="numeric"
+          maxLength={6}
+          value={mfaCode}
+          onChange={(e) => {
+            setMfaCode(e.target.value.replace(/\D/g, ""));
+            setLoginError(null);
+          }}
+          placeholder="000000"
+          className="w-full px-5 py-3.5 border-2 border-border rounded-xl outline-none bg-field text-foreground placeholder-default-500 focus:border-[#b08968] focus:bg-default transition-colors font-mono text-center text-lg tracking-[0.35em]"
+        />
+      </div>
+    </>
+  );
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${isScrolled ? "bg-background/95 backdrop-blur-md shadow-lg" : "bg-transparent"}`}>
@@ -210,29 +282,37 @@ function NavbarContent() {
                     </>
                   ) : (
                     <>
-                      <h3 className="text-xl font-black mb-4 dark:text-white" style={{ color: "#b08968" }}>Iniciar Sesión</h3>
+                      <h3 className="text-xl font-black mb-4 dark:text-white" style={{ color: "#b08968" }}>
+                        {mfaChallenge ? "Verifica tu acceso" : "Iniciar Sesión"}
+                      </h3>
 
                       <form onSubmit={handleLogin} className="space-y-4">
-                        {/* Email */}
-                        <div>
-                          <label className="block text-xs font-bold text-default-600 mb-1 ml-1 uppercase tracking-wide">Email</label>
-                          <div className="relative">
-                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: "#b08968" }} />
-                            <input type="email" name="email" required className="w-full pl-10 pr-4 py-3 border-2 border-border rounded-xl outline-none bg-field text-foreground placeholder-default-500 focus:border-[#b08968] focus:bg-default transition-colors font-medium" placeholder="tu@email.com" />
-                          </div>
-                        </div>
+                        {mfaChallenge ? (
+                          renderMfaChallengeForm()
+                        ) : (
+                          <>
+                            {/* Email */}
+                            <div>
+                              <label className="block text-xs font-bold text-default-600 mb-1 ml-1 uppercase tracking-wide">Email</label>
+                              <div className="relative">
+                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: "#b08968" }} />
+                                <input type="email" name="email" required className="w-full pl-10 pr-4 py-3 border-2 border-border rounded-xl outline-none bg-field text-foreground placeholder-default-500 focus:border-[#b08968] focus:bg-default transition-colors font-medium" placeholder="tu@email.com" />
+                              </div>
+                            </div>
 
-                        {/* Password */}
-                        <div>
-                          <div className="flex justify-between items-end mb-1 ml-1">
-                            <label className="block text-xs font-bold text-default-600 uppercase tracking-wide">Contraseña</label>
-                            <button type="button" onClick={() => setIsForgotPwOpen(true)} className="text-[10px] font-bold text-[#b08968] hover:underline focus:outline-none">¿Olvidaste tu contraseña?</button>
-                          </div>
-                          <div className="relative">
-                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: "#b08968" }} />
-                            <input type="password" name="password" required className="w-full pl-10 pr-4 py-3 border-2 border-border rounded-xl outline-none bg-field text-foreground placeholder-default-500 focus:border-[#b08968] focus:bg-default transition-colors font-medium" placeholder="••••••••" />
-                          </div>
-                        </div>
+                            {/* Password */}
+                            <div>
+                              <div className="flex justify-between items-end mb-1 ml-1">
+                                <label className="block text-xs font-bold text-default-600 uppercase tracking-wide">Contraseña</label>
+                                <button type="button" onClick={() => setIsForgotPwOpen(true)} className="text-[10px] font-bold text-[#b08968] hover:underline focus:outline-none">¿Olvidaste tu contraseña?</button>
+                              </div>
+                              <div className="relative">
+                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: "#b08968" }} />
+                                <input type="password" name="password" required className="w-full pl-10 pr-4 py-3 border-2 border-border rounded-xl outline-none bg-field text-foreground placeholder-default-500 focus:border-[#b08968] focus:bg-default transition-colors font-medium" placeholder="••••••••" />
+                              </div>
+                            </div>
+                          </>
+                        )}
 
                         {/* Login error as HeroUI alert */}
                         {loginError && (
@@ -244,21 +324,29 @@ function NavbarContent() {
                           </Alert>
                         )}
 
-                        <button type="submit" className="w-full py-3 mt-2 rounded-xl text-white font-extrabold hover:opacity-90 hover:scale-[1.02] transition-all shadow-lg" style={{ backgroundColor: "#b08968", shadowColor: "rgba(176, 137, 104, 0.4)" }}>
-                          Entrar
+                        <button type="submit" disabled={isVerifyingMfa} className="w-full py-3 mt-2 rounded-xl text-white font-extrabold hover:opacity-90 hover:scale-[1.02] transition-all shadow-lg disabled:opacity-50" style={{ backgroundColor: "#b08968", shadowColor: "rgba(176, 137, 104, 0.4)" }}>
+                          {mfaChallenge ? mfaSubmitLabel : "Entrar"}
                         </button>
 
-                        <div className="relative my-5"><div className="absolute inset-0 flex items-center"><span className="w-full border-t border-divider"></span></div><div className="relative flex justify-center text-xs uppercase"><span className="bg-overlay px-2 text-default-500 font-bold">O</span></div></div>
+                        {mfaChallenge ? (
+                          <button type="button" onClick={cancelMfaChallenge} className="w-full text-center text-sm font-extrabold hover:underline" style={{ color: "#b08968" }}>
+                            Volver al inicio de sesión
+                          </button>
+                        ) : (
+                          <>
+                            <div className="relative my-5"><div className="absolute inset-0 flex items-center"><span className="w-full border-t border-divider"></span></div><div className="relative flex justify-center text-xs uppercase"><span className="bg-overlay px-2 text-default-500 font-bold">O</span></div></div>
 
-                        <button type="button" onClick={() => loginWithGoogle()} className="w-full flex items-center justify-center space-x-3 py-3 border-2 border-border text-foreground-700 rounded-xl hover:bg-default-hover transition-colors font-bold truncate">
-                          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-5 h-5 bg-white rounded-full p-0.5" alt="Google" />
-                          <span>Continuar con Google</span>
-                        </button>
+                            <button type="button" onClick={() => loginWithGoogle()} className="w-full flex items-center justify-center space-x-3 py-3 border-2 border-border text-foreground-700 rounded-xl hover:bg-default-hover transition-colors font-bold truncate">
+                              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-5 h-5 bg-white rounded-full p-0.5" alt="Google" />
+                              <span>Continuar con Google</span>
+                            </button>
+                          </>
+                        )}
                       </form>
 
-                      <div className="mt-5 pt-5 border-t border-divider space-y-2">
+                      {!mfaChallenge && <div className="mt-5 pt-5 border-t border-divider space-y-2">
                         <p className="text-center text-sm font-medium text-default-500">¿No tienes cuenta? <a href="/auth/register" className="font-extrabold hover:underline ml-1" style={{ color: "#b08968" }}>Regístrate</a></p>
-                      </div>
+                      </div>}
                     </>
                   )
                 ) : (
@@ -326,8 +414,14 @@ function NavbarContent() {
               {!isLoggedIn ? (
                 <div className="mt-6 pt-6 border-t border-divider space-y-4 px-2">
                   <form onSubmit={handleLogin} className="space-y-3">
-                    <input type="email" name="email" placeholder="Email" className="w-full px-5 py-3.5 border-2 border-transparent bg-field text-foreground placeholder-default-500 focus:border-[#b08968] focus:bg-default rounded-xl outline-none transition-all font-medium" />
-                    <input type="password" name="password" placeholder="Contraseña" className="w-full px-5 py-3.5 border-2 border-transparent bg-field text-foreground placeholder-default-500 focus:border-[#b08968] focus:bg-default rounded-xl outline-none transition-all font-medium" />
+                    {mfaChallenge ? (
+                      renderMfaChallengeForm()
+                    ) : (
+                      <>
+                        <input type="email" name="email" placeholder="Email" className="w-full px-5 py-3.5 border-2 border-transparent bg-field text-foreground placeholder-default-500 focus:border-[#b08968] focus:bg-default rounded-xl outline-none transition-all font-medium" />
+                        <input type="password" name="password" placeholder="Contraseña" className="w-full px-5 py-3.5 border-2 border-transparent bg-field text-foreground placeholder-default-500 focus:border-[#b08968] focus:bg-default rounded-xl outline-none transition-all font-medium" />
+                      </>
+                    )}
                     {loginError && (
                       <Alert status="danger" className="py-2">
                         <Alert.Indicator />
@@ -336,18 +430,28 @@ function NavbarContent() {
                         </Alert.Content>
                       </Alert>
                     )}
-                    <button type="submit" className="w-full py-4 rounded-xl text-white font-extrabold text-lg shadow-lg" style={{ backgroundColor: "#b08968" }}>Iniciar sesión</button>
+                    <button type="submit" disabled={isVerifyingMfa} className="w-full py-4 rounded-xl text-white font-extrabold text-lg shadow-lg disabled:opacity-50" style={{ backgroundColor: "#b08968" }}>
+                      {mfaChallenge ? mfaSubmitLabel : "Iniciar sesión"}
+                    </button>
                   </form>
-                  <div className="relative my-5"><div className="absolute inset-0 flex items-center"><span className="w-full border-t border-divider"></span></div><div className="relative flex justify-center text-xs uppercase"><span className="bg-background px-2 text-default-500 font-bold">O</span></div></div>
+                  {mfaChallenge ? (
+                    <button type="button" onClick={cancelMfaChallenge} className="w-full text-center text-sm font-extrabold" style={{ color: "#b08968" }}>
+                      Volver al inicio de sesión
+                    </button>
+                  ) : (
+                    <>
+                      <div className="relative my-5"><div className="absolute inset-0 flex items-center"><span className="w-full border-t border-divider"></span></div><div className="relative flex justify-center text-xs uppercase"><span className="bg-background px-2 text-default-500 font-bold">O</span></div></div>
 
-                  <button onClick={() => loginWithGoogle()} className="w-full flex items-center justify-center space-x-3 py-4 border-2 border-border rounded-xl font-bold text-foreground-700 hover:bg-default-hover transition-colors">
-                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-5 h-5 bg-white rounded-full p-0.5" alt="Google" />
-                    <span>Continuar con Google</span>
-                  </button>
-                  <div className="flex justify-between items-center text-sm pt-4 px-2">
-                    <a href="/auth/register" className="font-extrabold" style={{ color: "#b08968" }}>Crear cuenta</a>
-                    <a href="/auth/login" className="text-default-500 font-medium hover:text-default-700">¿Olvidaste tu contraseña?</a>
-                  </div>
+                      <button onClick={() => loginWithGoogle()} className="w-full flex items-center justify-center space-x-3 py-4 border-2 border-border rounded-xl font-bold text-foreground-700 hover:bg-default-hover transition-colors">
+                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-5 h-5 bg-white rounded-full p-0.5" alt="Google" />
+                        <span>Continuar con Google</span>
+                      </button>
+                      <div className="flex justify-between items-center text-sm pt-4 px-2">
+                        <a href="/auth/register" className="font-extrabold" style={{ color: "#b08968" }}>Crear cuenta</a>
+                        <a href="/auth/login" className="text-default-500 font-medium hover:text-default-700">¿Olvidaste tu contraseña?</a>
+                      </div>
+                    </>
+                  )}
                 </div>
               ) : (
                 <div className="mt-6 pt-6 border-t border-divider space-y-4 px-2">

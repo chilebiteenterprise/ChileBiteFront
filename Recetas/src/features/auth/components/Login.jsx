@@ -1,15 +1,17 @@
 import { useState } from "react";
-import { Mail, Lock, User, Eye, EyeOff, Loader2 } from "lucide-react";
+import { Mail, Lock, User, Eye, EyeOff, Loader2, ShieldCheck } from "lucide-react";
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth, AuthProvider } from '@/features/auth/context/AuthContext';
 import { Toast, toast, Alert } from "@heroui/react";
 
 function LoginContent() {
-  const { loginWithGoogle } = useAuth();
+  const { loginWithGoogle, loginWithEmail, verifyMfaCode } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isLogin, setIsLogin] = useState(false); 
   const [isForgotPw, setIsForgotPw] = useState(false); 
+  const [mfaChallenge, setMfaChallenge] = useState(null);
+  const [mfaCode, setMfaCode] = useState("");
   const [formData, setFormData] = useState({
     nombres: "",
     apellido_paterno: "",
@@ -26,8 +28,20 @@ function LoginContent() {
     setErrors({ ...errors, [e.target.name]: "" });
   };
 
+  const cancelMfaChallenge = async () => {
+    setMfaChallenge(null);
+    setMfaCode("");
+    setErrors({});
+    await supabase.auth.signOut({ scope: "local" });
+  };
+
   const validate = () => {
     const newErrors = {};
+    if (mfaChallenge) {
+      if (!/^\d{6}$/.test(mfaCode)) newErrors.mfa = "Ingresa el código de 6 dígitos";
+      return newErrors;
+    }
+
     if (!formData.email) newErrors.email = "Ingresa tu correo";
     else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "Correo inválido";
 
@@ -68,11 +82,22 @@ function LoginContent() {
       }
 
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
-          email: formData.email,
-          password: formData.password,
-        });
+        if (mfaChallenge) {
+          const { error } = await verifyMfaCode(mfaChallenge.factorId, mfaCode);
+          if (error) throw error;
+          toast.success("¡Sesión verificada! Bienvenido de vuelta.");
+          setTimeout(() => { window.location.href = "/"; }, 1000);
+          return;
+        }
+
+        const { error, mfaRequired, factorId } = await loginWithEmail(formData.email, formData.password);
         if (error) throw error;
+        if (mfaRequired) {
+          setMfaChallenge({ factorId, email: formData.email });
+          setMfaCode("");
+          toast.success("Ingresa el código de tu app autenticadora para continuar.");
+          return;
+        }
         toast.success("¡Sesión iniciada! Bienvenido de vuelta.");
         setTimeout(() => { window.location.href = "/"; }, 1000);
       } else {
@@ -113,17 +138,44 @@ function LoginContent() {
       <Toast.Provider placement="bottom end" />
       <div className="text-center mb-10">
         <h1 className="text-4xl font-extrabold mb-3 tracking-tight text-foreground">
-          {isForgotPw ? "Recuperar Contraseña" : isLogin ? "¡Hola de nuevo!" : "Crea tu Cuenta"}
+          {mfaChallenge ? "Verifica tu acceso" : isForgotPw ? "Recuperar Contraseña" : isLogin ? "¡Hola de nuevo!" : "Crea tu Cuenta"}
         </h1>
         <p className="text-default-500 font-medium tracking-wide">
-          {isForgotPw 
+          {mfaChallenge
+            ? "Ingresa el código de 6 dígitos de tu app autenticadora"
+            : isForgotPw
             ? "Ingresa tu correo y te enviaremos un enlace mágico" 
             : isLogin ? "Inicia sesión para descubrir nuevos sabores" : "Únete a la comunidad gastronómica de Chile"}
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {!isLogin && !isForgotPw && (
+        {mfaChallenge ? (
+          <div className="animate-in fade-in slide-in-from-top-4 duration-500 space-y-4">
+            <div className="flex items-center gap-3 p-4 rounded-2xl bg-default border border-border">
+              <ShieldCheck className="w-5 h-5 shrink-0 text-[#b08968]" />
+              <p className="text-sm text-default-600">
+                Cuenta protegida: {mfaChallenge.email}
+              </p>
+            </div>
+            <div>
+              <label className="text-xs font-bold text-default-600 uppercase tracking-widest ml-1">Código 2FA</label>
+              <input
+                type="text"
+                inputMode="numeric"
+                maxLength={6}
+                value={mfaCode}
+                onChange={(e) => {
+                  setMfaCode(e.target.value.replace(/\D/g, ""));
+                  setErrors({ ...errors, mfa: "", global: "" });
+                }}
+                placeholder="000000"
+                className="w-full px-5 py-4 mt-1 rounded-2xl text-center text-xl font-mono tracking-[0.4em] bg-field hover:bg-field-hover border-2 border-transparent focus:border-[#b08968] focus:bg-default text-foreground outline-none transition-all placeholder-default-500"
+              />
+              {errors.mfa && <p className="text-danger-500 text-xs mt-1 ml-1 font-bold">{errors.mfa}</p>}
+            </div>
+          </div>
+        ) : !isLogin && !isForgotPw && (
           <div className="animate-in fade-in slide-in-from-top-4 duration-500 space-y-6">
              <div>
                 <label className="text-xs font-bold text-default-600 uppercase tracking-widest ml-1">Username</label>
@@ -151,7 +203,7 @@ function LoginContent() {
           </div>
         )}
 
-        <div>
+        {!mfaChallenge && <div>
           <label className="text-xs font-bold text-default-600 uppercase tracking-widest ml-1">Correo Electrónico</label>
           <div className="relative mt-1">
             <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#b08968]" />
@@ -159,9 +211,9 @@ function LoginContent() {
               className="w-full pl-12 pr-4 py-4 rounded-2xl bg-field hover:bg-field-hover border-2 border-transparent focus:border-[#b08968] focus:bg-default text-foreground outline-none transition-all font-medium placeholder-default-500" />
           </div>
           {errors.email && <p className="text-danger-500 text-xs mt-1 ml-1 font-bold">{errors.email}</p>}
-        </div>
+        </div>}
 
-        {!isForgotPw && (
+        {!isForgotPw && !mfaChallenge && (
           <div className={`grid grid-cols-1 ${!isLogin ? 'md:grid-cols-2' : ''} gap-6`}>
             <div>
               <label className="text-xs font-bold text-default-600 uppercase tracking-widest ml-1">Contraseña</label>
@@ -200,7 +252,7 @@ function LoginContent() {
         <button type="submit" disabled={loading}
           className="w-full py-4 rounded-2xl text-white font-extrabold text-lg transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 shadow-xl shadow-[#b08968]/30 dark:shadow-[#b08968]/20 mt-4 flex items-center justify-center gap-2"
           style={{ backgroundColor: "#b08968" }}>
-          {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : (isForgotPw ? "Enviar enlace mágico" : isLogin ? "Entrar ahora" : "Completar Registro")}
+          {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : (mfaChallenge ? "Verificar código" : isForgotPw ? "Enviar enlace mágico" : isLogin ? "Entrar ahora" : "Completar Registro")}
         </button>
 
       {errors.global && (
@@ -215,14 +267,18 @@ function LoginContent() {
 
       <div className="mt-8 text-center border-t border-divider pt-8">
         <p className="text-sm font-medium text-default-500">
-          {isForgotPw ? (
+          {mfaChallenge ? (
+            <button type="button" onClick={cancelMfaChallenge} className="text-[#b08968] font-extrabold hover:underline">
+               Volver al inicio de sesión
+            </button>
+          ) : isForgotPw ? (
             <button type="button" onClick={() => setIsForgotPw(false)} className="text-[#b08968] font-extrabold hover:underline">
                Volver al inicio de sesión
             </button>
           ) : (
             <>
               {isLogin ? "¿Eres nuevo por aquí? " : "¿Ya tienes una cuenta? "}
-              <button type="button" onClick={() => { setIsLogin(!isLogin); }} className="text-[#b08968] font-extrabold hover:underline ml-1">
+              <button type="button" onClick={() => { setIsLogin(!isLogin); setMfaChallenge(null); setMfaCode(""); }} className="text-[#b08968] font-extrabold hover:underline ml-1">
                 {isLogin ? "Crea una cuenta gratis" : "Inicia sesión"}
               </button>
             </>
@@ -230,7 +286,7 @@ function LoginContent() {
         </p>
       </div>
       
-      {!isForgotPw && (
+      {!isForgotPw && !mfaChallenge && (
         <div className="mt-6">
             <button type="button" onClick={() => loginWithGoogle()} className="w-full flex items-center justify-center gap-3 py-4 border-2 border-border rounded-2xl font-bold text-foreground-700 hover:bg-default-hover transition-all">
                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-5 h-5 bg-white rounded-full p-0.5" alt="Google" />
