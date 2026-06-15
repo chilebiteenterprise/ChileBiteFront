@@ -12,16 +12,27 @@ export default function ResetPasswordClient() {
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    const checkSession = async () => {
-      // Supabase parses the access_token from the URL hash automatically 
-      // and establishes a session.
-      const { data: { session } } = await supabase.auth.getSession();
+    // Supabase v2 processes the #access_token hash asynchronously.
+    // We must listen to onAuthStateChange for the PASSWORD_RECOVERY event,
+    // which fires once Supabase has validated the recovery token from the URL.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === "PASSWORD_RECOVERY" || (event === "SIGNED_IN" && session)) {
+          setValidSession(true);
+          setChecking(false);
+        }
+      }
+    );
+
+    // Fallback: check if a session already exists (e.g. page re-render)
+    supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         setValidSession(true);
       }
       setChecking(false);
-    };
-    checkSession();
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const handleChange = (e) => {
