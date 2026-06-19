@@ -37,6 +37,7 @@ export default function MFASetup() {
   const [isCopied, setIsCopied] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [totpUnavailable, setTotpUnavailable] = useState(false);
 
   // ── Chequear si ya está enrolled ─────────────────────────────────────────
   useEffect(() => {
@@ -63,10 +64,20 @@ export default function MFASetup() {
     }
   };
 
+  const isTotpDisabledError = (err) => {
+    const message = (err?.message || "").toLowerCase();
+    return (
+      message.includes("mfa enroll is disabled for totp") ||
+      message.includes("mfa enroll is disabled") ||
+      message.includes("disabled for totp")
+    );
+  };
+
   // ── Paso 1→2: Iniciar enrollment y obtener QR ────────────────────────────
   const handleStartEnroll = async () => {
     setIsSubmitting(true);
     setError("");
+    setTotpUnavailable(false);
     try {
       const { data, error } = await supabase.auth.mfa.enroll({
         factorType: "totp",
@@ -79,7 +90,13 @@ export default function MFASetup() {
       setSecret(data.totp.secret);
       setMode("enrolling-step2");
     } catch (err) {
-      setError(err.message || "Error al iniciar la configuración de 2FA.");
+      if (isTotpDisabledError(err)) {
+        setTotpUnavailable(true);
+        setMode("idle");
+        setError("La autenticación TOTP está deshabilitada en Supabase para este proyecto. Debes activarla en la configuración de Auth/MFA antes de poder enrolar 2FA.");
+      } else {
+        setError(err.message || "Error al iniciar la configuración de 2FA.");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -201,6 +218,13 @@ export default function MFASetup() {
           </>
         ) : (
           <>
+            {totpUnavailable && (
+              <div className="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800">
+                <p className="text-xs text-amber-700 dark:text-amber-400 leading-relaxed">
+                  TOTP está desactivado en Supabase para este proyecto. Actívalo en el panel de Supabase, dentro de la configuración de autenticación / MFA, y luego vuelve a intentar.
+                </p>
+              </div>
+            )}
             <div className="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800">
               <p className="text-xs text-amber-700 dark:text-amber-400 leading-relaxed">
                 <strong>Recomendado:</strong> El 2FA agrega una capa de seguridad extra. Necesitarás una app autenticadora (Google Authenticator, Authy, etc.).
@@ -209,11 +233,12 @@ export default function MFASetup() {
             <button
               type="button"
               onClick={() => setMode("enrolling-step1")}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90"
+              disabled={totpUnavailable}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ backgroundColor: BRAND }}
             >
               <ShieldCheck className="w-4 h-4" />
-              Activar 2FA
+              {totpUnavailable ? "TOTP desactivado" : "Activar 2FA"}
             </button>
           </>
         )}

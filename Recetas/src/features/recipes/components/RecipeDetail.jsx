@@ -5,6 +5,7 @@ import { ChefHat, Clock, Users, Heart, Share2, BookOpen, ListOrdered, Video, Boo
 import { supabase } from '@/lib/supabaseClient';
 import AdSenseBanner from '@/shared/ui/AdSenseBanner';
 import CollectionPickerModal from './CollectionPickerModal.jsx';
+import VideoEmbed from '@/shared/ui/VideoEmbed.jsx';
 
 const COLOR_PRINCIPAL = '#b08968';
 
@@ -476,9 +477,7 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
               ) : (
                 <>
                   <h2 className="text-3xl font-serif font-bold mb-6 text-slate-800 dark:text-orange-200">Video Tutorial</h2>
-                  <div className="relative h-0 pb-[56.25%] rounded-2xl overflow-hidden shadow-2xl border border-slate-200 dark:border-zinc-700">
-                    <iframe src={receta.video_url} frameBorder="0" allowFullScreen className="absolute top-0 left-0 w-full h-full"></iframe>
-                  </div>
+                  <VideoEmbed url={receta.video_url} />
                 </>
               )}
             </div>

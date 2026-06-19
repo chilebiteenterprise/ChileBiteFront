@@ -159,21 +159,17 @@ export const AuthProvider = ({ children }) => {
 
     const identities = identitiesData?.identities ?? [];
     const googleIdentity = identities.find((id) => id.provider === "google");
-    const hasEmailIdentity = identities.some((id) => id.provider === "email");
 
     if (!googleIdentity) {
       return { error: new Error("No tienes Google vinculado.") };
     }
-    if (!hasEmailIdentity) {
-      return {
-        error: new Error(
-          "Debes establecer una contraseña antes de desvincular Google, para no perder el acceso a tu cuenta."
-        ),
-      };
-    }
 
-    const { error } = await supabase.auth.unlinkIdentity(googleIdentity);
-    return { error };
+    try {
+      const { error } = await supabase.auth.unlinkIdentity(googleIdentity);
+      return { error };
+    } catch (error) {
+      return { error };
+    }
   };
 
   /**

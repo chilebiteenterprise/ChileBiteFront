@@ -5,8 +5,10 @@ import RecetaDetalle from './RecipeDetail';
 import IngredientSelector from './IngredientSelector';
 import { addToast, ToastProvider } from "@heroui/toast";
 import DOMPurify from 'dompurify';
+import { Youtube, Smartphone, Video } from 'lucide-react';
 import { useRateLimit } from '@/hooks/useRateLimit';
 import { supabase } from '@/lib/supabaseClient';
+import { getVideoEmbedInfo } from '@/utils/videoHelper';
 
 const DIFICULTADES = ['Muy Fácil', 'Fácil', 'Media', 'Difícil', 'Muy Difícil'];
 
@@ -30,6 +32,30 @@ const initialRecipeState = {
 // Constante para estilos de inputs unificados
 const inputBaseStyle = "w-full bg-white dark:bg-[#0f1115] border border-slate-200 dark:border-slate-800 rounded-2xl px-5 py-4 text-sm text-slate-700 dark:text-slate-200 focus:border-[#b08969] focus:ring-1 focus:ring-[#b08969] outline-none shadow-sm transition-all placeholder:text-slate-400 dark:placeholder:text-slate-600";
 
+const VIDEO_FORMAT_OPTIONS = [
+  {
+    id: 'youtube',
+    label: 'YouTube',
+    description: 'Video horizontal tradicional',
+    placeholder: 'https://www.youtube.com/watch?v=... o https://youtu.be/...',
+    icon: Youtube,
+  },
+  {
+    id: 'shorts',
+    label: 'Shorts',
+    description: 'Formato vertical de YouTube Shorts',
+    placeholder: 'https://www.youtube.com/shorts/...',
+    icon: Video,
+  },
+  {
+    id: 'tiktok',
+    label: 'TikTok',
+    description: 'Video vertical de TikTok',
+    placeholder: 'https://www.tiktok.com/@usuario/video/...',
+    icon: Smartphone,
+  },
+];
+
 const RecetaFormContent = () => {
   const { session, profile, loading: authLoading } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
@@ -41,10 +67,14 @@ const RecetaFormContent = () => {
   const [paises, setPaises] = useState([]);
   const [tiposPlato, setTiposPlato] = useState([]);
   const [estilosVida, setEstilosVida] = useState([]);
+  const [videoFormat, setVideoFormat] = useState('youtube');
 
   // Estados visuales custom
   const [pasos, setPasos] = useState(['']);
   const [isOpenPais, setIsOpenPais] = useState(false);
+
+  const videoInfo = useMemo(() => getVideoEmbedInfo(recetaData.video_url), [recetaData.video_url]);
+  const videoFieldHint = VIDEO_FORMAT_OPTIONS.find(option => option.id === videoFormat) || VIDEO_FORMAT_OPTIONS[0];
 
   // Anti-Spam Rate Limiting (evita clicks dobles/bots)
   const { isRateLimited, executeWithLimit } = useRateLimit(3000);
@@ -62,6 +92,22 @@ const RecetaFormContent = () => {
     };
     fetchTaxonomias();
   }, []);
+
+  useEffect(() => {
+    if (!videoInfo?.platform) return;
+
+    if (videoInfo.platform === 'TikTok') {
+      setVideoFormat('tiktok');
+      return;
+    }
+
+    if (recetaData.video_url?.includes('/shorts/')) {
+      setVideoFormat('shorts');
+      return;
+    }
+
+    setVideoFormat('youtube');
+  }, [videoInfo?.platform, recetaData.video_url]);
 
   useEffect(() => {
     if (typeof window === 'undefined' || authLoading) return;
@@ -423,14 +469,45 @@ const RecetaFormContent = () => {
                 {/* Video URL */}
                 <div className="space-y-3">
                     <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">URL de Video (Opcional)</label>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        {VIDEO_FORMAT_OPTIONS.map(option => {
+                            const Icon = option.icon;
+                            const isSelected = videoFormat === option.id;
+                            return (
+                                <button
+                                    key={option.id}
+                                    type="button"
+                                    onClick={() => setVideoFormat(option.id)}
+                                    className={`rounded-2xl border px-4 py-3 text-left transition-all shadow-sm ${
+                                        isSelected
+                                            ? 'border-[#b08969] bg-[#b08969]/10 dark:bg-[#b08969]/20 shadow-[#b08969]/15'
+                                            : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0f1115] hover:border-[#b08969]/40 hover:bg-slate-50 dark:hover:bg-[#131722]'
+                                    }`}
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className={`size-9 rounded-xl flex items-center justify-center ${isSelected ? 'bg-[#b08969] text-white' : 'bg-slate-100 dark:bg-slate-900 text-slate-500 dark:text-slate-300'}`}>
+                                            <Icon className="w-4 h-4" />
+                                        </div>
+                                        <div>
+                                            <p className="font-bold text-sm text-slate-800 dark:text-slate-100">{option.label}</p>
+                                            <p className="text-[11px] text-slate-500 dark:text-slate-400">{option.description}</p>
+                                        </div>
+                                    </div>
+                                </button>
+                            );
+                        })}
+                    </div>
                     <input 
                         name="video_url"
                         value={recetaData.video_url}
                         onChange={handleChange}
                         className={inputBaseStyle}
-                        placeholder="Enlace de YouTube/Vimeo" 
+                        placeholder={videoFieldHint.placeholder}
                         type="url"
                     />
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                        Formato activo: <span className="font-semibold text-slate-700 dark:text-slate-200">{videoFieldHint.label}</span>. Acepta YouTube normal, Shorts y TikTok. Si pegas una URL corta de TikTok, puede guardarse pero no siempre se incrusta en vista previa.
+                    </p>
                 </div>
 
                 {/* Tiempo de Preparación Rediseñado */}

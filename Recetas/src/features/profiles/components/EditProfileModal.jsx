@@ -15,6 +15,8 @@ export default function EditProfileModal({ isOpen, onOpenChange, user, profile, 
   });
   const fileInputRef = useRef(null);
 
+  const [usernameStatus, setUsernameStatus] = useState('idle');
+
   useEffect(() => {
     if (profile && isOpen) {
       setTempData({
@@ -23,12 +25,54 @@ export default function EditProfileModal({ isOpen, onOpenChange, user, profile, 
         bio: profile.bio || "",
         ubicacion: profile.ubicacion || ""
       });
+      setUsernameStatus('idle');
     }
   }, [profile, isOpen]);
+
+  useEffect(() => {
+    const username = tempData.username.toLowerCase();
+    
+    if (!username || username === profile?.username?.toLowerCase()) {
+      setUsernameStatus('idle');
+      return;
+    }
+
+    if (username.length < 3 || /[^a-z0-9_]/.test(username)) {
+      setUsernameStatus('invalid');
+      return;
+    }
+
+    setUsernameStatus('checking');
+    
+    const timeoutId = setTimeout(async () => {
+      try {
+        const { data } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('username', username)
+          .maybeSingle();
+          
+        if (data && data.id !== user?.id) {
+          setUsernameStatus('taken');
+        } else {
+          setUsernameStatus('available');
+        }
+      } catch (err) {
+        setUsernameStatus('idle');
+      }
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [tempData.username, profile?.username, user?.id]);
 
 
   const handleSave = async (onClose) => {
     if (!user?.id) return;
+    if (usernameStatus === 'invalid' || usernameStatus === 'taken' || usernameStatus === 'checking') {
+      toast.error("Por favor ingresa un nombre de usuario válido y disponible");
+      return;
+    }
+    
     setIsSaving(true);
     
     // Validaciones básicas
@@ -82,15 +126,22 @@ export default function EditProfileModal({ isOpen, onOpenChange, user, profile, 
                       startContent={<User className="w-4 h-4 text-default-400" />}
                       radius="lg"
                     />
-                    <Input 
-                      label="Username" 
-                      labelPlacement="outside"
-                      placeholder="chilean_chef" 
-                      value={tempData.username}
-                      onChange={(e) => setTempData({...tempData, username: e.target.value})}
-                      startContent={<span className="text-default-400 text-sm">@</span>}
-                      radius="lg"
-                    />
+                    <div className="flex flex-col gap-1">
+                      <Input 
+                        label="Username" 
+                        labelPlacement="outside"
+                        placeholder="chilean_chef" 
+                        value={tempData.username}
+                        onChange={(e) => setTempData({...tempData, username: e.target.value})}
+                        startContent={<span className="text-default-400 text-sm">@</span>}
+                        radius="lg"
+                        color={usernameStatus === 'invalid' || usernameStatus === 'taken' ? "danger" : usernameStatus === 'available' ? "success" : "default"}
+                      />
+                      {usernameStatus === 'checking' && <p className="text-xs text-default-400 ml-1">Verificando disponibilidad...</p>}
+                      {usernameStatus === 'available' && <p className="text-xs text-success ml-1 font-semibold">¡Nombre de usuario disponible!</p>}
+                      {usernameStatus === 'taken' && <p className="text-xs text-danger ml-1 font-semibold">Este nombre de usuario ya está en uso</p>}
+                      {usernameStatus === 'invalid' && <p className="text-xs text-danger ml-1">Mínimo 3 caracteres, solo letras, números y guión bajo</p>}
+                    </div>
                   </div>
                   
                   <Input 
@@ -122,7 +173,8 @@ export default function EditProfileModal({ isOpen, onOpenChange, user, profile, 
               <Button 
                 color="primary" 
                 onPress={() => handleSave(() => onOpenChange(false))} 
-                isLoading={isSaving} 
+                isLoading={isSaving}
+                isDisabled={usernameStatus === 'invalid' || usernameStatus === 'taken' || usernameStatus === 'checking'} 
                 className="font-semibold bg-[#b08968] hover:bg-[#977353] text-white"
               >
                 Guardar Cambios
