@@ -17,7 +17,7 @@ export function LocaleSection({ user, profile }) {
       if (error) throw error;
       toast.success("Idioma y región actualizados.");
     } catch (err) {
-      toast.error("Error al actualizar idioma y región.");
+      toast.danger("Error al actualizar idioma y región.");
     } finally {
       setIsSaving(false);
     }

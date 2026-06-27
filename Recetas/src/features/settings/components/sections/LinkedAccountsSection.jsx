@@ -19,7 +19,7 @@ export function LinkedAccountsSection({ user, linkGoogleToCurrentAccount, unlink
       toast.success("Google desvinculado correctamente.");
       setShowUnlinkConfirm(false);
     } catch (err) {
-      toast.error(err?.message || "No se pudo desvincular Google.");
+      toast.danger(err?.message || "No se pudo desvincular Google.");
     } finally {
       setIsUnlinking(false);
     }
@@ -49,9 +49,26 @@ export function LinkedAccountsSection({ user, linkGoogleToCurrentAccount, unlink
             </div>
 
             {!canUnlinkGoogle ? (
-              <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800">
-                <AlertCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-                <p className="text-xs text-amber-700 dark:text-amber-400 leading-relaxed">No puedes desvincular Google en este momento.</p>
+              <div className="flex flex-col gap-3 p-4 bg-amber-50 dark:bg-amber-950/20 rounded-xl border border-amber-200 dark:border-amber-900/40">
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-xs font-bold text-amber-800 dark:text-amber-300">
+                      Desvinculación no disponible (Falta Identidad de Correo)
+                    </p>
+                    <p className="text-xs text-amber-700 dark:text-amber-400 leading-relaxed mt-1">
+                      Aunque tengas una contraseña configurada y puedas usarla para iniciar sesión, Supabase aún registra tu cuenta internamente como <strong>únicamente de Google</strong>. Para desvincular Google de forma segura, debes sincronizar tu identidad de correo.
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="pl-6 border-t border-amber-200/50 dark:border-amber-800/30 pt-2.5">
+                  <p className="text-xs font-semibold text-amber-800 dark:text-amber-300 mb-1.5">Cómo solucionarlo en 2 pasos:</p>
+                  <ol className="list-decimal pl-4 text-xs text-amber-700 dark:text-amber-400 space-y-1">
+                    <li>Cierra sesión en este dispositivo.</li>
+                    <li>Ve a la pantalla de <strong>Crear Cuenta</strong> y regístrate ingresando el mismo correo y la misma contraseña. Supabase detectará tu cuenta y enlazará la identidad de correo automáticamente.</li>
+                  </ol>
+                </div>
               </div>
             ) : !showUnlinkConfirm ? (
               <>

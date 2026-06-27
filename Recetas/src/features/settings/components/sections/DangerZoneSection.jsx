@@ -40,7 +40,7 @@ export function DangerZoneSection({ user }) {
       await deleteAccount();
       window.location.href = "/";
     } catch {
-      toast.error("Error al eliminar la cuenta");
+      toast.danger("Error al eliminar la cuenta");
       setIsDeleting(false);
     }
   };

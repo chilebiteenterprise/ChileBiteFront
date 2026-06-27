@@ -32,7 +32,7 @@ export function PrivacySection({ user, profile }) {
       if (error) throw error;
       toast.success("Visibilidad del perfil actualizada.");
     } catch (err) {
-      toast.error("Error al actualizar la visibilidad.");
+      toast.danger("Error al actualizar la visibilidad.");
     } finally {
       setIsSaving(false);
     }
@@ -47,7 +47,7 @@ export function PrivacySection({ user, profile }) {
       if (error) throw error;
       toast.success(`Colecciones marcadas como ${newValue ? 'públicas' : 'privadas'}.`);
     } catch (err) {
-      toast.error("Error al actualizar colecciones.");
+      toast.danger("Error al actualizar colecciones.");
       setCollectionsPublic(!newValue);
     } finally {
       setIsSaving(false);

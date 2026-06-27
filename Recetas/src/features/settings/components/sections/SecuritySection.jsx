@@ -19,7 +19,7 @@ export function SecuritySection({ user }) {
       if (error) throw error;
       toast.success("Te hemos enviado un correo con instrucciones para cambiar tu contraseña.");
     } catch (err) {
-      toast.error(err.message || "Error al solicitar el cambio de contraseña");
+      toast.danger(err.message || "Error al solicitar el cambio de contraseña");
     } finally {
       setIsSettingPw(false);
     }
@@ -32,7 +32,7 @@ export function SecuritySection({ user }) {
       toast.success("Sesión cerrada en todos los dispositivos.");
       setTimeout(() => { window.location.href = "/"; }, 1200);
     } catch (err) {
-      toast.error("Error al cerrar sesiones.");
+      toast.danger("Error al cerrar sesiones.");
       setIsSigningOutAll(false);
     }
   };

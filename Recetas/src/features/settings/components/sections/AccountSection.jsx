@@ -10,7 +10,7 @@ export function AccountSection({ user }) {
 
   const handleChangeEmail = async (e) => {
     e.preventDefault();
-    if (!emailForm.email.includes("@")) { toast.error("Ingresa un email válido"); return; }
+    if (!emailForm.email.includes("@")) { toast.danger("Ingresa un email válido"); return; }
     setIsChangingEmail(true);
     try {
       const { error } = await supabase.auth.updateUser(
@@ -21,7 +21,7 @@ export function AccountSection({ user }) {
       toast.success("Te enviamos un enlace de confirmación al nuevo correo.");
       setEmailForm({ email: "" });
     } catch (err) {
-      toast.error(err.message || "Error al cambiar el email");
+      toast.danger(err.message || "Error al cambiar el email");
     } finally {
       setIsChangingEmail(false);
     }
