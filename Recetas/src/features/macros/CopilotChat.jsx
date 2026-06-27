@@ -3,7 +3,7 @@ import { useAuth } from '@/features/auth/context/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 import { Sparkles } from 'lucide-react';
 
-export default function CopilotChat({ isOpen, onClose, onAdd, onClear }) {
+export default function CopilotChat({ isOpen, onClose, onAdd, onClear, onSetRecipeName }) {
   const { session } = useAuth();
   const [message, setMessage] = useState('');
   const [history, setHistory] = useState([
@@ -111,23 +111,90 @@ export default function CopilotChat({ isOpen, onClose, onAdd, onClear }) {
     
     setUsingRecipe(true);
     try {
-      // 1. Limpiar calculadora actual
+      // 1. Limpiar calculadora actual e indicar el nombre de la receta
       if (onClear) onClear();
+      if (onSetRecipeName) onSetRecipeName(recipe.nombre);
 
       // 2. Por cada ingrediente, buscar en la BD (core_ingrediente)
       for (const ing of recipe.ingredientes) {
-        const { data, error } = await supabase
+        if (!ing.nombre) continue;
+
+        // 2a. Buscar hasta 10 candidatos que coincidan parcialmente
+        let { data } = await supabase
           .from('core_ingrediente')
           .select('*')
           .ilike('nombre', `%${ing.nombre}%`)
-          .limit(1);
+          .limit(10);
 
+        const cleanedLower = ing.nombre
+          .replace(/\(.*?\)/g, '') // Eliminar descripciones entre paréntesis
+          .toLowerCase()
+          .trim();
+
+        // 2b. Búsqueda inteligente de fallback si falla la coincidencia directa
+        if (!data || data.length === 0) {
+          const stopWords = new Set([
+            'de', 'en', 'con', 'para', 'al', 'del', 'los', 'las', 'un', 'una', 'y', 'o',
+            'cortada', 'cortado', 'cortadas', 'cortados', 'tiras', 'trozo', 'trozos',
+            'mediana', 'mediano', 'medianas', 'medianos', 'entero', 'entera', 'enteros',
+            'rayado', 'rallado', 'picado', 'picada', 'picados', 'picadas', 'en', 'tiras',
+            'grado', '1', '2', '3', '4', 'a', 'la', 'el'
+          ]);
+
+          const words = cleanedLower.split(/\s+/).map(w => w.trim()).filter(w => w && !stopWords.has(w));
+          if (words.length > 0) {
+            const searchWord = words[0]; // Palabra principal
+            const { data: fallbackData } = await supabase
+              .from('core_ingrediente')
+              .select('*')
+              .ilike('nombre', `%${searchWord}%`)
+              .limit(10);
+            
+            if (fallbackData && fallbackData.length > 0) {
+              data = fallbackData;
+            }
+          }
+        }
+
+        // 2c. Clasificar y ordenar candidatos para encontrar la mejor coincidencia semántica
         if (data && data.length > 0) {
-          const foundIng = data[0];
-          foundIng.grams = ing.gramos || 100;
-          // 3. Añadir a la calculadora con los gramos sugeridos
+          const searchWords = cleanedLower.split(/\s+/).filter(w => w.length > 2);
+          
+          data.sort((a, b) => {
+            const nameA = a.nombre.toLowerCase();
+            const nameB = b.nombre.toLowerCase();
+
+            // Prioridad 1: Coincidencia exacta
+            const exactA = nameA === cleanedLower;
+            const exactB = nameB === cleanedLower;
+            if (exactA && !exactB) return -1;
+            if (!exactA && exactB) return 1;
+
+            // Prioridad 2: Comienza con la palabra de búsqueda
+            const startsA = nameA.startsWith(cleanedLower);
+            const startsB = nameB.startsWith(cleanedLower);
+            if (startsA && !startsB) return -1;
+            if (!startsA && startsB) return 1;
+
+            // Prioridad 3: Coincidencia de palabra completa (evita que "papa" coincida con "papaya")
+            if (searchWords.length > 0) {
+              const regex = new RegExp(`\\b${searchWords[0]}\\b`, 'i');
+              const wordA = regex.test(nameA);
+              const wordB = regex.test(nameB);
+              if (wordA && !wordB) return -1;
+              if (!wordA && wordB) return 1;
+            }
+
+            // Prioridad 4: El nombre más corto (ej. prefiere "Papa (mediana)" ante "Panqueque de papa")
+            return nameA.length - nameB.length;
+          });
+
+                    const foundIng = data[0];
+          // 3. Añadir a la calculadora con la cantidad y unidad sugeridas por la IA
+          const qty = ing.cantidad || ing.gramos || 100;
+          const unit = ing.unidad || 'g';
           if (onAdd) {
-            onAdd(foundIng);
+            onAdd(foundIng, qty, unit);
           }
         } else {
           console.warn(`Ingrediente no encontrado en BD: ${ing.nombre}`);

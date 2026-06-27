@@ -17,52 +17,63 @@ export default function RecipeCard({ receta, usuarioEsAdmin = false, isSelected 
 
   // === CARGA INICIAL: sincroniza estado de corazon y guardado para este usuario ===
   useEffect(() => {
-    // Si viene en receta (cuando renderiza un contexto con likes), priorizamos, sino fetch del usuario
     setLikes(receta.likes ?? receta.contador_likes ?? 0);
 
-    if (!idToUse || !session?.user?.id) return;
+    if (!idToUse) return;
     
     const fetchEstado = async () => {
       try {
-        const [
-          { count: likeCount }, 
-          { count: globalLikes },
-          { data: colecciones }
-        ] = await Promise.all([
+        const promises = [
           supabase
             .from('core_recetalike')
             .select('*', { count: 'exact', head: true })
             .eq('receta_id', idToUse)
-            .eq('user_id', session.user.id),
-          supabase
-            .from('core_recetalike')
-            .select('*', { count: 'exact', head: true })
-            .eq('receta_id', idToUse),
-          supabase
-            .from('core_coleccion')
-            .select('id')
-            .eq('user_id', session.user.id)
-        ]);
-        
-        let saveCount = 0;
-        if (colecciones && colecciones.length > 0) {
-          const { count } = await supabase
-            .from('core_coleccion_receta')
-            .select('*', { count: 'exact', head: true })
-            .eq('receta_id', idToUse)
-            .in('coleccion_id', colecciones.map(c => c.id));
-          saveCount = count || 0;
+        ];
+
+        if (session?.user?.id) {
+          promises.push(
+            supabase
+              .from('core_recetalike')
+              .select('*', { count: 'exact', head: true })
+              .eq('receta_id', idToUse)
+              .eq('user_id', session.user.id),
+            supabase
+              .from('core_coleccion')
+              .select('id')
+              .eq('user_id', session.user.id)
+          );
         }
 
-        setLiked(likeCount > 0);
-        setGuardado(saveCount > 0);
-        setLikes(globalLikes || 0); // Override with accurate DB count
+        const results = await Promise.all(promises);
+        const globalLikes = results[0].count || 0;
+
+        let userLiked = false;
+        let userSaved = false;
+
+        if (session?.user?.id) {
+          const likeCount = results[1].count || 0;
+          const colecciones = results[2].data || [];
+          userLiked = likeCount > 0;
+
+          if (colecciones.length > 0) {
+            const { count } = await supabase
+              .from('core_coleccion_receta')
+              .select('*', { count: 'exact', head: true })
+              .eq('receta_id', idToUse)
+              .in('coleccion_id', colecciones.map(c => c.id));
+            userSaved = (count || 0) > 0;
+          }
+        }
+
+        setLiked(userLiked);
+        setGuardado(userSaved);
+        setLikes(globalLikes); 
       } catch (err) {
         console.error("Error al obtener estado de receta:", err);
       }
     };
     fetchEstado();
-  }, [idToUse, session, receta]);
+  }, [idToUse, session?.user?.id, receta]);
 
   // === LIKE ===
   const handleFavorite = async (e) => {

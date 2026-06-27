@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { MessageSquare, Send, MessageCircle, Trash2, Edit3, Check, X, ShieldCheck, CornerUpLeft, Filter, Clock, Users, ThumbsUp, EyeOff, Eye, Ban } from 'lucide-react';
-import { toast } from "@heroui/react";
 import { useAuth, AuthProvider } from '@/features/auth/context/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 import DOMPurify from 'dompurify';
 import { useRateLimit } from '@/hooks/useRateLimit';
+import { toast } from "@heroui/react";
+
 function getTimeAgo(dateString) {
     const date = new Date(dateString);
     const now = new Date();
@@ -241,7 +242,7 @@ function CommentItem({ comment, currentUserId, currentUserRole, onReply, onEdit,
                                     <button
                                         onClick={() => {
                                             if (!currentUserId) {
-                                                toast.error("Debes iniciar sesión para dar me gusta");
+                                                toast.danger("Debes iniciar sesión para dar me gusta");
                                             } else {
                                                 onLike(comment.id);
                                             }
@@ -393,8 +394,8 @@ function CommentSectionContent({ recipeId }) {
     const localAuthToken = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
     const token = session?.access_token || localAuthToken;
 
-    const loadComments = useCallback(async () => {
-        setIsLoading(true);
+    const loadComments = useCallback(async (silent = false) => {
+        if (!silent) setIsLoading(true);
         try {
             const { data: commentsData, error: commentsErr } = await supabase
                 .from('core_comentarioreceta')
@@ -444,7 +445,7 @@ function CommentSectionContent({ recipeId }) {
             setComments(processedData);
         } catch (err) {
             console.error("Error loading comments:", err);
-            toast.error("Error al cargar los comentarios.");
+            toast.danger("Error al cargar los comentarios.");
         } finally {
             setIsLoading(false);
         }
@@ -456,7 +457,7 @@ function CommentSectionContent({ recipeId }) {
 
     const handleLikeComment = async (commentId) => {
         if (!currentUser?.id) {
-            toast.error("Debes iniciar sesión para dar me gusta");
+            toast.danger("Debes iniciar sesión para dar me gusta");
             return;
         }
 
@@ -491,7 +492,7 @@ function CommentSectionContent({ recipeId }) {
             setComments(prevComments => 
                 prevComments.map(c => c.id === commentId ? originalComment : c)
             );
-            toast.error("Error al registrar me gusta");
+            toast.danger("Error al registrar me gusta");
         }
     }
 
@@ -499,7 +500,7 @@ function CommentSectionContent({ recipeId }) {
         if (!newComment.trim()) return;
         
         if (!currentUser?.id) {
-            toast.error("Debes iniciar sesión para comentar");
+            toast.danger("Debes iniciar sesión para comentar");
             return;
         }
 
@@ -520,7 +521,9 @@ function CommentSectionContent({ recipeId }) {
                 user_id: currentUser.id,
                 texto: DOMPurify.sanitize(rawText),
                 comentario_padre_id: finalParent || null,
-                estado: 'visible'
+                estado: 'visible',
+                fecha_creacion: new Date().toISOString(),
+                contador_likes: 0
             };
             
             setIsSubmitting(true);
@@ -533,11 +536,11 @@ function CommentSectionContent({ recipeId }) {
                 toast.success("Comentario publicado!"); 
                 setNewComment('');
                 setReplyingTo(null);
-                loadComments(); 
+                loadComments(true); 
                 setVisibleCommentCount(INITIAL_LOAD); 
             } catch (err) {
                 console.error(err);
-                toast.error("No se pudo publicar el comentario");
+                toast.danger("No se pudo publicar el comentario");
             } finally {
                 setIsSubmitting(false); 
             }
@@ -554,10 +557,10 @@ function CommentSectionContent({ recipeId }) {
 
             if (error) throw new Error(error.message);
             toast.success("Comentario actualizado");
-            loadComments();
+            loadComments(true);
         } catch (err) {
             console.error(err);
-            toast.error("No se pudo editar el comentario");
+            toast.danger("No se pudo editar el comentario");
         }
     };
 
@@ -569,6 +572,7 @@ function CommentSectionContent({ recipeId }) {
         if (!currentUser?.id) return;
         
         try {
+            await supabase.from('core_comentariolike').delete().eq('comentario_id', commentId);
             const { error } = await supabase
                 .from('core_comentarioreceta')
                 .delete()
@@ -576,10 +580,10 @@ function CommentSectionContent({ recipeId }) {
                 
             if (error) throw new Error(error.message);
             toast.success("Comentario eliminado");
-            loadComments();
+            loadComments(true);
         } catch (err) {
             console.error(err);
-            toast.error("No se pudo eliminar el comentario");
+            toast.danger("No se pudo eliminar el comentario");
         } finally {
             setShowDeleteModal(null);
         }
@@ -605,7 +609,7 @@ function CommentSectionContent({ recipeId }) {
             if (!res.ok) throw new Error("Error baneando al usuario");
             toast.success("Usuario baneado con éxito. Se le notificará por email.");
         } catch (err) {
-            toast.error("No se pudo banear al usuario.");
+            toast.danger("No se pudo banear al usuario.");
         } finally {
             setBanModalData(null);
             setBanReason('');
@@ -614,7 +618,7 @@ function CommentSectionContent({ recipeId }) {
     
     const handleReply = (parentId) => {
         if (!currentUser) {
-            toast.error("Debes iniciar sesión para responder");
+            toast.danger("Debes iniciar sesión para responder");
             return;
         }
 

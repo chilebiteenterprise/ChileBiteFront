@@ -31,16 +31,20 @@ function IngredientSearch({ onAdd, allIngredients, loadingIngredients }) {
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [activeIdx, setActiveIdx] = useState(-1);
+  const [selectedIngredient, setSelectedIngredient] = useState(null);
+  const [cantidad, setCantidad] = useState("");
+  const [unidad, setUnidad] = useState("g");
+  const [isOpenUnidad, setIsOpenUnidad] = useState(false);
   const inputRef = useRef(null);
   const containerRef = useRef(null);
 
   const suggestions = useMemo(() => {
     const q = normalize(query.trim());
-    if (!q || q.length < 2) return [];
+    if (!q || q.length < 2 || selectedIngredient) return [];
     return allIngredients
       .filter((ing) => normalize(ing.nombre).includes(q))
       .slice(0, 8);
-  }, [query, allIngredients]);
+  }, [query, allIngredients, selectedIngredient]);
 
   useEffect(() => {
     const handler = (e) => {
@@ -54,11 +58,21 @@ function IngredientSearch({ onAdd, allIngredients, loadingIngredients }) {
   }, []);
 
   const handleSelect = (ing) => {
-    onAdd(ing);
-    setQuery("");
+    setSelectedIngredient(ing);
+    setQuery(ing.nombre);
     setIsOpen(false);
     setActiveIdx(-1);
-    inputRef.current?.focus();
+    setCantidad("1"); // Cantidad por defecto
+    setUnidad("g");
+  };
+
+  const handleAdd = () => {
+    if (!selectedIngredient || !cantidad || Number(cantidad) <= 0) return;
+    onAdd(selectedIngredient, Number(cantidad), unidad);
+    setSelectedIngredient(null);
+    setQuery("");
+    setCantidad("");
+    setUnidad("g");
   };
 
   const handleKeyDown = (e) => {
@@ -94,10 +108,10 @@ function IngredientSearch({ onAdd, allIngredients, loadingIngredients }) {
     );
   };
 
-  const showDrop = isOpen && suggestions.length > 0;
+  const showDrop = isOpen && suggestions.length > 0 && !selectedIngredient;
 
   return (
-    <div ref={containerRef} className="relative w-full">
+    <div ref={containerRef} className="relative w-full flex flex-col gap-4">
       <div className="relative">
         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
           <svg
@@ -129,54 +143,103 @@ function IngredientSearch({ onAdd, allIngredients, loadingIngredients }) {
           onChange={(e) => {
             setQuery(e.target.value);
             setIsOpen(true);
+            setSelectedIngredient(null);
             setActiveIdx(-1);
           }}
           onFocus={() => suggestions.length > 0 && setIsOpen(true)}
           onKeyDown={handleKeyDown}
           className="w-full pl-12 pr-4 py-4 bg-white dark:bg-[#1a1d24] border-2 border-gray-200 dark:border-gray-700 rounded-2xl outline-none focus:border-[#A0522D] text-gray-900 dark:text-gray-100 placeholder-gray-400 transition-all font-medium text-base disabled:opacity-50 disabled:cursor-wait shadow-sm"
         />
+
+        {showDrop && (
+          <div className="absolute top-[calc(100%+8px)] left-0 right-0 z-50 bg-white dark:bg-[#1a1d24] border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl overflow-hidden">
+            <ul className="py-1 max-h-64 overflow-y-auto">
+              {suggestions.map((ing, i) => {
+                const name = ing.nombre;
+                return (
+                  <li
+                    key={ing.id || name}
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      handleSelect(ing);
+                    }}
+                    onMouseEnter={() => setActiveIdx(i)}
+                    className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors text-sm ${
+                      i === activeIdx
+                        ? "bg-[#A0522D]/10 dark:bg-[#A0522D]/20"
+                        : "hover:bg-gray-50 dark:hover:bg-gray-800/60"
+                    }`}
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-gray-800 dark:text-gray-200 truncate">
+                        {highlight(name, query)}
+                      </p>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        )}
       </div>
 
-      {showDrop && (
-        <div className="absolute top-[calc(100%+8px)] left-0 right-0 z-50 bg-white dark:bg-[#1a1d24] border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl overflow-hidden">
-          <div className="px-4 pt-3 pb-2 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2">
-            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-              {suggestions.length} resultado{suggestions.length !== 1 ? "s" : ""}
-            </span>
+      {selectedIngredient && (
+        <div className="flex gap-2.5 animate-fade-in">
+          <input
+            type="number"
+            min="0.1"
+            step="0.1"
+            placeholder="Cant."
+            value={cantidad}
+            onChange={(e) => setCantidad(e.target.value)}
+            className="w-24 text-center px-4 py-3 bg-white dark:bg-[#1a1d24] border-2 border-gray-200 dark:border-gray-700 rounded-2xl outline-none focus:border-[#A0522D] text-gray-900 dark:text-gray-100 placeholder-gray-400 transition-all font-medium text-base shadow-sm"
+          />
+          <div className="relative flex-1">
+            <button
+              type="button"
+              onClick={() => setIsOpenUnidad(!isOpenUnidad)}
+              className="w-full flex justify-between items-center px-4 py-3 bg-white dark:bg-[#1a1d24] border-2 border-gray-200 dark:border-gray-700 rounded-2xl outline-none focus:border-[#A0522D] text-gray-900 dark:text-gray-100 font-medium text-base shadow-sm text-left"
+            >
+              <span className="truncate pr-2">
+                {unidad === 'g' ? 'Gramos (g)' : unidad === 'unidad' ? 'Unidades (ud)' : unidad === 'cda' ? 'Cucharadas (cda)' : 'Tazas'}
+              </span>
+              <svg xmlns="http://www.w3.org/2000/svg" className={`w-4 h-4 text-gray-400 shrink-0 transition-transform duration-300 ${isOpenUnidad ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            {isOpenUnidad && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setIsOpenUnidad(false)}></div>
+                <div className="absolute z-50 w-full mt-2 bg-white dark:bg-[#1a1d24] border border-gray-200 dark:border-gray-700 rounded-2xl shadow-xl py-2 top-full right-0">
+                  {[
+                    { val: 'g', label: 'Gramos (g)' },
+                    { val: 'unidad', label: 'Unidades (ud)' },
+                    { val: 'cda', label: 'Cucharadas (cda)' },
+                    { val: 'taza', label: 'Tazas' }
+                  ].map(u => (
+                    <button
+                      key={u.val}
+                      type="button"
+                      onClick={() => { setUnidad(u.val); setIsOpenUnidad(false); }}
+                      className="w-full text-left px-4 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                    >
+                      {u.label}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
-          <ul className="py-1 max-h-64 overflow-y-auto">
-            {suggestions.map((ing, i) => {
-              const name = ing.nombre;
-              return (
-                <li
-                  key={ing.id || name}
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    handleSelect(ing);
-                  }}
-                  onMouseEnter={() => setActiveIdx(i)}
-                  className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors text-sm ${
-                    i === activeIdx
-                      ? "bg-[#A0522D]/10 dark:bg-[#A0522D]/20"
-                      : "hover:bg-gray-50 dark:hover:bg-gray-800/60"
-                  }`}
-                >
-                  <div className="min-w-0 flex-1">
-                    <p className="font-medium text-gray-800 dark:text-gray-200 truncate">
-                      {highlight(name, query)}
-                    </p>
-                  </div>
-                  <div className="ml-auto shrink-0 text-right text-xs text-gray-400">
-                    {ing.calorias_por_100g != null && (
-                      <span className="bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400 px-2 py-0.5 rounded-full font-bold">
-                        {Math.round(ing.calorias_por_100g)} kcal
-                      </span>
-                    )}
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
+          <button
+            type="button"
+            onClick={handleAdd}
+            disabled={!cantidad}
+            className="bg-[#A0522D] text-white px-5 rounded-2xl hover:bg-[#944925] disabled:opacity-50 transition-all shadow-md flex items-center justify-center shrink-0"
+          >
+            <svg className="w-6 h-6 font-bold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+            </svg>
+          </button>
         </div>
       )}
     </div>
@@ -186,12 +249,21 @@ function IngredientSearch({ onAdd, allIngredients, loadingIngredients }) {
 // ─────────────────────────────────────────────────────────────────────────────
 // Single ingredient row in the list
 // ─────────────────────────────────────────────────────────────────────────────
-function IngredientRow({ item, onUpdateGrams, onRemove }) {
+const getItemGrams = (item) => {
+  if (item.unidad === 'unidad') return item.cantidad * (Number(item.peso_por_unidad_gramos) || 100);
+  if (item.unidad === 'taza') return item.cantidad * (Number(item.peso_por_taza_gramos) || 200);
+  if (item.unidad === 'cda') return item.cantidad * (Number(item.peso_por_cucharada_gramos) || 15);
+  return item.cantidad; // 'g'
+};
+
+function IngredientRow({ item, onUpdateQuantity, onUpdateUnit, onRemove }) {
+  const [isOpenUnit, setIsOpenUnit] = useState(false);
   const name = item.nombre;
-  const factor = item.grams / 100;
+  const grams = getItemGrams(item);
+  const factor = grams / 100;
 
   const handleAdjust = (val) => {
-    onUpdateGrams(item._uid, Math.max(1, item.grams + val));
+    onUpdateQuantity(item._uid, Math.max(0.1, item.cantidad + val));
   };
 
   return (
@@ -209,14 +281,17 @@ function IngredientRow({ item, onUpdateGrams, onRemove }) {
           <span>C: {(item.carbohidratos_por_100g * factor).toFixed(1)}g</span>
           <span className="opacity-40">•</span>
           <span>G: {(item.grasas_por_100g * factor).toFixed(1)}g</span>
+          <span className="opacity-40">•</span>
+          <span>({Math.round(grams)}g totales)</span>
         </div>
       </div>
 
-      {/* Controller: Comfort Gram selection */}
+      {/* Controller: Quantity and Unit Selection */}
       <div className="flex items-center gap-3">
+        {/* Quantity Controller Box */}
         <div className="flex items-center bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-1 shadow-sm">
           <button
-            onClick={() => handleAdjust(-10)}
+            onClick={() => handleAdjust(item.unidad === 'g' ? -10 : -0.5)}
             className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 transition-colors active:scale-90"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -226,16 +301,15 @@ function IngredientRow({ item, onUpdateGrams, onRemove }) {
           
           <input
             type="number"
-            min={1}
-            max={2000}
-            value={item.grams}
-            onChange={(e) => onUpdateGrams(item._uid, Math.max(1, Number(e.target.value)))}
-            className="w-14 text-center text-sm font-black bg-transparent border-none outline-none text-gray-900 dark:text-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            min={0.1}
+            step={item.unidad === 'g' ? 1 : 0.1}
+            value={item.cantidad}
+            onChange={(e) => onUpdateQuantity(item._uid, Math.max(0.1, Number(e.target.value)))}
+            className="w-12 text-center text-sm font-black bg-transparent border-none outline-none text-gray-900 dark:text-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
           />
-          <span className="text-[10px] uppercase font-bold text-gray-400 pr-1">g</span>
 
           <button
-            onClick={() => handleAdjust(10)}
+            onClick={() => handleAdjust(item.unidad === 'g' ? 10 : 0.5)}
             className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 transition-colors active:scale-90"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -244,24 +318,56 @@ function IngredientRow({ item, onUpdateGrams, onRemove }) {
           </button>
         </div>
 
-        {/* Remove */}
-        <button
-          onClick={() => onRemove(item._uid)}
-          className="w-10 h-10 flex items-center justify-center rounded-xl text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all active:scale-95"
-          aria-label="Eliminar ingrediente"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-          </svg>
-        </button>
+        {/* Custom Dropdown Selector */}
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setIsOpenUnit(!isOpenUnit)}
+            className="flex items-center gap-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-xs font-bold text-[#A0522D] dark:text-[#d4906a] rounded-xl px-3 py-2 outline-none cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-all shadow-sm select-none"
+          >
+            <span>
+              {item.unidad === 'g' ? 'Gramos (g)' : item.unidad === 'unidad' ? 'Unidades (ud)' : item.unidad === 'cda' ? 'Cucharadas (cda)' : 'Tazas'}
+            </span>
+            <svg xmlns="http://www.w3.org/2000/svg" className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-300 ${isOpenUnit ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          {isOpenUnit && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setIsOpenUnit(false)}></div>
+              <div className="absolute right-0 top-[calc(100%+6px)] z-50 min-w-[140px] bg-white dark:bg-[#1a1d24] border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl py-1.5 overflow-hidden animate-fade-in">
+                {[
+                  { val: 'g', label: 'Gramos (g)' },
+                  { val: 'unidad', label: 'Unidades (ud)' },
+                  { val: 'cda', label: 'Cucharadas (cda)' },
+                  { val: 'taza', label: 'Tazas' }
+                ].map(u => (
+                  <button
+                    key={u.val}
+                    type="button"
+                    onClick={() => {
+                      onUpdateUnit(item._uid, u.val);
+                      setIsOpenUnit(false);
+                    }}
+                    className={`w-full text-left px-4 py-2.5 text-xs font-semibold transition-colors ${
+                      item.unidad === u.val
+                        ? 'bg-[#A0522D]/10 text-[#A0522D] dark:bg-[#A0522D]/20 dark:text-[#d4906a]'
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+                    }`}
+                  >
+                    {u.label}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Main Calculator Component
-// ─────────────────────────────────────────────────────────────────────────────
 let _uid = 0;
 const nextUid = () => ++_uid;
 
@@ -270,13 +376,14 @@ function MacroCalculatorInner() {
   const [loadingIngredients, setLoadingIngredients] = useState(true);
   const [selectedItems, setSelectedItems] = useState([]);
   const [isCopilotOpen, setIsCopilotOpen] = useState(false);
+  const [recipeName, setRecipeName] = useState(null);
 
   // Load ingredient catalogue from Supabase
   useEffect(() => {
     setLoadingIngredients(true);
     supabase
       .from('core_ingrediente')
-      .select('id, nombre, calorias_por_100g, proteinas_por_100g, carbohidratos_por_100g, grasas_por_100g, fibra_por_100g, peso_por_unidad_gramos')
+      .select('id, nombre, calorias_por_100g, proteinas_por_100g, carbohidratos_por_100g, grasas_por_100g, fibra_por_100g, peso_por_unidad_gramos, peso_por_taza_gramos, peso_por_cucharada_gramos')
       .order('nombre')
       .limit(1000)
       .then(({ data, error }) => {
@@ -286,16 +393,22 @@ function MacroCalculatorInner() {
       .finally(() => setLoadingIngredients(false));
   }, []);
 
-  const handleAdd = (ing) => {
+    const handleAdd = (ing, cantidad = 100, unidad = 'g') => {
     setSelectedItems((prev) => [
       ...prev,
-      { grams: 100, ...ing, _uid: nextUid() },
+      { cantidad, unidad, ...ing, _uid: nextUid() },
     ]);
   };
 
-  const handleUpdateGrams = (uid, grams) => {
+  const handleUpdateQuantity = (uid, cantidad) => {
     setSelectedItems((prev) =>
-      prev.map((i) => (i._uid === uid ? { ...i, grams } : i))
+      prev.map((i) => (i._uid === uid ? { ...i, cantidad } : i))
+    );
+  };
+
+  const handleUpdateUnit = (uid, unidad) => {
+    setSelectedItems((prev) =>
+      prev.map((i) => (i._uid === uid ? { ...i, unidad } : i))
     );
   };
 
@@ -303,13 +416,17 @@ function MacroCalculatorInner() {
     setSelectedItems((prev) => prev.filter((i) => i._uid !== uid));
   };
 
-  const handleClear = () => setSelectedItems([]);
+  const handleClear = () => {
+    setSelectedItems([]);
+    setRecipeName(null);
+  };
 
   // Totals Summation
   const totals = useMemo(() => {
     return selectedItems.reduce(
       (acc, item) => {
-        const f = item.grams / 100;
+        const grams = getItemGrams(item);
+        const f = grams / 100;
         return {
           calorias: acc.calorias + (Number(item.calorias_por_100g) || 0) * f,
           proteinas: acc.proteinas + (Number(item.proteinas_por_100g) || 0) * f,
@@ -367,12 +484,19 @@ function MacroCalculatorInner() {
           {/* List */}
           <div className="bg-white dark:bg-[#0f1115] rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 flex flex-col gap-3 min-h-[400px]">
              <div className="flex items-center justify-between">
-              <h2 className="text-base font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                <span className="w-6 h-6 bg-[#A0522D] rounded-lg flex items-center justify-center text-white text-xs font-black">2</span>
-                Ingredientes en el plato
-                {selectedItems.length > 0 && (
-                  <span className="bg-[#A0522D]/15 text-[#A0522D] text-xs font-bold px-2 py-0.5 rounded-full">
-                    {selectedItems.length}
+              <h2 className="text-base font-bold text-gray-700 dark:text-gray-300 flex flex-col gap-1">
+                <div className="flex items-center gap-2">
+                  <span className="w-6 h-6 bg-[#A0522D] rounded-lg flex items-center justify-center text-white text-xs font-black">2</span>
+                  Ingredientes en el plato
+                  {selectedItems.length > 0 && (
+                    <span className="bg-[#A0522D]/15 text-[#A0522D] text-xs font-bold px-2 py-0.5 rounded-full">
+                      {selectedItems.length}
+                    </span>
+                  )}
+                </div>
+                {recipeName && (
+                  <span className="text-xs text-[#A0522D] dark:text-[#d4906a] font-black uppercase tracking-wider mt-1 block">
+                    Receta: {recipeName}
                   </span>
                 )}
               </h2>
@@ -394,12 +518,13 @@ function MacroCalculatorInner() {
                 <p className="text-sm font-medium">El plato está vacío</p>
               </div>
             ) : (
-              <div className="flex flex-col gap-3 mt-4 max-h-[500px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-800">
+              <div className="flex flex-col gap-3 mt-4">
                 {selectedItems.map((item) => (
                   <IngredientRow
                     key={item._uid}
                     item={item}
-                    onUpdateGrams={handleUpdateGrams}
+                    onUpdateQuantity={handleUpdateQuantity}
+                    onUpdateUnit={handleUpdateUnit}
                     onRemove={handleRemove}
                   />
                 ))}
@@ -516,6 +641,7 @@ function MacroCalculatorInner() {
         onClose={() => setIsCopilotOpen(false)}
         onAdd={handleAdd}
         onClear={handleClear}
+        onSetRecipeName={setRecipeName}
       />
     </div>
   );

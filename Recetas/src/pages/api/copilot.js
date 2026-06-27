@@ -114,7 +114,8 @@ Si el usuario pregunta algo general, responde:
 {"tipo":"texto", "mensaje":"tu respuesta aquí en markdown"}
 
 Si el usuario pide qué cocinar, sugiere 1 a 3 recetas en este formato:
-{"tipo":"opciones", "opciones": [{"nombre":"...","descripcion":"...", "ingredientes":[{"nombre":"nombre exacto del ingrediente en db","gramos":150}, {"nombre":"otro ingrediente","gramos":25}], "pasos":["1...", "2..."]}]}
+{"tipo":"opciones", "opciones": [{"nombre":"...","descripcion":"...", "ingredientes":[{"nombre":"nombre exacto del ingrediente en db","cantidad":2,"unidad":"unidad"}, {"nombre":"otro ingrediente","cantidad":1.5,"unidad":"taza"}], "pasos":["1...", "2..."]}]}
+Las unidades válidas que puedes sugerir son: "g" (gramos), "unidad" (unidades/unidades físicas), "cda" (cucharadas) y "taza" (tazas). Elige la medida más natural para cada ingrediente (ej. 2 huevo -> unidad, 1 aceite -> cda, 1 arroz -> taza, 150 carne -> g).}
 
 REGLA ESTRICTA DE PORCIONES: 
 ¡PROHIBIDO usar siempre 100 gramos! Debes asignar pesos lógicos y reales para 1 sola persona según el ingrediente. Ejemplo: Proteínas (150g-200g), Carbohidratos secos (60g-80g), Aceites/Salsas (10g-20g), Verduras (100g-250g). Varía los números.
@@ -128,26 +129,62 @@ DEBES priorizar usar exactamente estos nombres si coinciden.`;
        return new Response(JSON.stringify({ error: 'Gemini API Key missing en el servidor' }), { status: 500 });
     }
 
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${geminiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        system_instruction: { parts: [{ text: systemPrompt }] },
-        contents: [
-            ...history.map(m => ({
-              role: m.role === 'user' ? 'user' : 'model',
-              parts: [{ text: m.content }]
-            })),
-            { role: 'user', parts: [{ text: message }] }
-        ],
-        generationConfig: { response_mime_type: "application/json" }
-      })
-    });
+    let res;
+    let geminiData;
+    let retries = 3;
+    let delay = 1000;
 
-    const geminiData = await res.json();
-    
-    if (geminiData.error) {
-      return new Response(JSON.stringify({ error: geminiData.error.message }), { status: 500 });
+    while (retries > 0) {
+      res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${geminiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          system_instruction: { parts: [{ text: systemPrompt }] },
+          contents: [
+              ...history.map(m => ({
+                role: m.role === 'user' ? 'user' : 'model',
+                parts: [{ text: m.content }]
+              })),
+              { role: 'user', parts: [{ text: message }] }
+          ],
+          generationConfig: { response_mime_type: "application/json" }
+        })
+      });
+
+      geminiData = await res.json();
+
+      // Si es exitoso o no es un error transitorio de cuota/saturación (429/503), salimos
+      if (res.ok && !geminiData.error) {
+        break;
+      }
+
+      const isRateLimitOrOverload = geminiData.error?.message?.includes("quota") || 
+                                    geminiData.error?.message?.includes("limit") || 
+                                    geminiData.error?.message?.includes("demand") ||
+                                    res.status === 429 || res.status === 503;
+
+      if (!isRateLimitOrOverload) {
+        break;
+      }
+
+      retries--;
+      if (retries > 0) {
+        console.warn(`[Gemini API] Solicitud saturada. Reintentando en ${delay}ms... (Intentos restantes: ${retries})`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        delay *= 2; // Backoff exponencial
+      }
+    }
+
+    if (!res.ok || geminiData.error) {
+      const errMsg = geminiData.error?.message || 'Error en el servicio de IA';
+      
+      // Si el error es de cuota o demanda alta, devolvemos un mensaje amigable con código 429
+      if (res.status === 429 || res.status === 503 || errMsg.includes("quota") || errMsg.includes("demand") || errMsg.includes("limit")) {
+        return new Response(JSON.stringify({ 
+          error: 'El asistente de IA está experimentando alta demanda temporal en su capa gratuita. Por favor, intenta de nuevo en unos segundos.' 
+        }), { status: 429, headers: { 'Content-Type': 'application/json' } });
+      }
+      return new Response(JSON.stringify({ error: errMsg }), { status: res.status || 500, headers: { 'Content-Type': 'application/json' } });
     }
 
     const textResponse = geminiData.candidates[0].content.parts[0].text;
