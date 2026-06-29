@@ -330,12 +330,12 @@ function IngredientesAdminContent() {
 
             {/* General Modal (Edit/View/Create) */}
             {isModalOpen && (
-                <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto" onClick={() => setIsModalOpen(false)}>
+                <div className="fixed inset-0 z-[100] flex items-start justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto" onClick={() => setIsModalOpen(false)}>
                     <div 
                         onClick={(e) => e.stopPropagation()}
-                        className="bg-white dark:bg-slate-900 rounded-[1.5rem] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] w-full max-w-2xl border border-slate-200 dark:border-slate-800 overflow-hidden transform scale-100 transition-all my-8">
+                        className="bg-white dark:bg-slate-900 rounded-[1.5rem] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] w-full max-w-2xl border border-slate-200 dark:border-slate-800 overflow-hidden transform scale-100 transition-all my-4 sm:my-8">
                         
-                        <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800/60 flex justify-between items-center bg-slate-50/80 dark:bg-slate-800/30">
+                        <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800/60 flex justify-between items-center bg-slate-50/80 dark:bg-slate-800/30 sticky top-0 z-10">
                             <h3 className="text-xl font-black text-slate-800 dark:text-white tracking-tight flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-full bg-[#b08969]/10 text-[#b08969] flex items-center justify-center">
                                     <span className="material-symbols-outlined">{isViewMode ? 'visibility' : formData.id ? 'edit_square' : 'add_box'}</span>
