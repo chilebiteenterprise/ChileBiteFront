@@ -152,7 +152,7 @@ export async function deleteAccount() {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session?.access_token) throw new Error('No hay sesión activa');
 
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://tnzpojvhsxjzfachozid.supabase.co';
+  const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL || 'https://tnzpojvhsxjzfachozid.supabase.co';
 
   const res = await fetch(`${supabaseUrl}/functions/v1/delete-user`, {
     method: 'POST',

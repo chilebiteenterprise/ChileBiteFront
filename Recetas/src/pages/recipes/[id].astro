@@ -9,30 +9,23 @@ import AffiliateCarousel from '@/shared/ui/AffiliateCarousel';
 
 import { supabase } from '@/lib/supabaseClient';
 
-export async function getStaticPaths() {
-  try {
-    const { data: recetas, error } = await supabase
-      .from('core_receta')
-      .select('id, nombre');
-      
-    if (error) throw new Error(error.message);
-
-    if (!recetas || recetas.length === 0) {
-      return [{ params: { id: "1" }, props: { nombre: "Detalle de Receta" } }]; 
-    }
-    
-    return recetas.map((receta) => ({
-      params: { id: receta.id.toString() },
-      props: { nombre: receta.nombre },
-    }));
-  } catch (err) {
-    console.error("Error obteniendo rutas estáticas (getStaticPaths) desde Supabase:", err);
-    return [{ params: { id: "1" }, props: { nombre: "Detalle de Receta" } }];
-  }
-}
+export const prerender = false;
 
 const { id } = Astro.params;
-const { nombre } = Astro.props;
+
+let nombre = "Detalle de Receta";
+try {
+  const { data } = await supabase
+    .from('core_receta')
+    .select('nombre')
+    .eq('id', id)
+    .single();
+  if (data && data.nombre) {
+    nombre = data.nombre;
+  }
+} catch (err) {
+  console.error("Error obteniendo nombre de la receta en SSR:", err);
+}
 ---
 
 <html lang="es">
