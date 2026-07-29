@@ -17,10 +17,10 @@ import BaseHead from "@/shared/layout/BaseHead.astro";
     <Navbar client:only="react" />
 
     <!-- Wrapper normal debajo del navbar -->
-    <div class="pt-20 pb-5">
+    <main class="pt-20 pb-5">
       <RecipeGrid client:load />
-    </div>
-  </body>
+    </main>
 
-  <Footer />
+    <Footer client:visible />
+  </body>
 </html>

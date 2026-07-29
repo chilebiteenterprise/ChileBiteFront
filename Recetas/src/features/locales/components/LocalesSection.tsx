@@ -1,16 +1,30 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { LocalesHero } from './LocalesHero';
 import { LocalesFilter } from './LocalesFilter';
 import { LocalesGrid } from './LocalesGrid';
 import { LocalesMapPreview } from './LocalesMapPreview';
 
 export const LocalesSection: React.FC = () => {
+  const [selectedCategory, setSelectedCategory] = useState("Todos");
+  const [selectedRegion, setSelectedRegion] = useState("Todas");
+
   return (
     <div className="bg-zinc-50 dark:bg-zinc-950 min-h-screen">
       <LocalesHero />
-      <LocalesFilter />
-      <LocalesGrid />
-      <LocalesMapPreview />
+      <LocalesFilter 
+        selectedCategory={selectedCategory} 
+        setSelectedCategory={setSelectedCategory}
+        selectedRegion={selectedRegion}
+        setSelectedRegion={setSelectedRegion}
+      />
+      <LocalesGrid 
+        selectedCategory={selectedCategory}
+        selectedRegion={selectedRegion}
+      />
+      <LocalesMapPreview 
+        selectedRegion={selectedRegion}
+        setSelectedRegion={setSelectedRegion}
+      />
       
       {/* Visual Footer/CTA for businesses */}
       <section className="bg-zinc-900 py-20 px-6 text-center text-white">

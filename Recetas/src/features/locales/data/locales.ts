@@ -7,6 +7,9 @@ export interface Locale {
   distance: string;
   category: "Restaurante" | "Picada" | "Cafetería" | "Viñedo" | "Mercado";
   tags: string[];
+  region: string;
+  lat: number;
+  lng: number;
   isFeatured?: boolean;
   isCertified?: boolean;
 }
@@ -21,6 +24,9 @@ export const locales: Locale[] = [
     distance: "2.4 km",
     category: "Restaurante",
     tags: ["Alta Cocina", "Endémico", "Sustentable"],
+    region: "Metropolitana de Santiago",
+    lat: -33.3986,
+    lng: -70.5739,
     isFeatured: true,
     isCertified: true,
   },
@@ -33,6 +39,9 @@ export const locales: Locale[] = [
     distance: "0.8 km",
     category: "Picada",
     tags: ["Tradicional", "Popular", "Cultura"],
+    region: "Metropolitana de Santiago",
+    lat: -33.4328,
+    lng: -70.6521,
     isCertified: true,
   },
   {
@@ -44,6 +53,9 @@ export const locales: Locale[] = [
     distance: "35 km",
     category: "Viñedo",
     tags: ["Patrimonio", "Vinos", "Vistas"],
+    region: "Metropolitana de Santiago",
+    lat: -33.6333,
+    lng: -70.6167,
     isFeatured: true,
   },
   {
@@ -55,6 +67,9 @@ export const locales: Locale[] = [
     distance: "1.2 km",
     category: "Mercado",
     tags: ["Mariscos", "Turismo", "Santiago"],
+    region: "Metropolitana de Santiago",
+    lat: -33.4332,
+    lng: -70.6514,
   },
   {
     id: "5",
@@ -65,5 +80,8 @@ export const locales: Locale[] = [
     distance: "0.5 km",
     category: "Cafetería",
     tags: ["Especialidad", "Moderno", "Tranquilo"],
+    region: "Metropolitana de Santiago",
+    lat: -33.4372,
+    lng: -70.6480,
   }
 ];

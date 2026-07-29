@@ -25,3 +25,5 @@ pnpm-debug.log*
 
 # Vercel
 .vercel/
+
+testsprite_tests\tmp\config.json

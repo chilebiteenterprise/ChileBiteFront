@@ -29,6 +29,9 @@ try {
 export default defineConfig({
   site: 'https://chilebite.cl',
   adapter: vercel(),
+  devToolbar: {
+    enabled: false
+  },
 
   vite: {
     plugins: [tailwindcss()],
