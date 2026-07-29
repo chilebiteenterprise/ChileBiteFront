@@ -322,6 +322,8 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
                     <img
                       src={imageUrl}
                       alt={receta.nombre}
+                      width="400"
+                      height="300"
                       className="w-full h-full object-cover"
                     />
                   </div>
@@ -416,13 +418,13 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
                 </div>
               </div>
               <div className="flex items-center gap-6 premium-glass-panel p-3 rounded-full border border-slate-200 dark:border-zinc-800 shadow-sm dark:shadow-inner relative z-10">
-                <button onClick={() => setPorcionesDeseadas(p => Math.max(1, p - 1))} className="p-3 rounded-full bg-slate-100 dark:bg-zinc-800 hover:bg-[#b08968] dark:hover:bg-[#b08968] text-slate-700 dark:text-zinc-200 hover:text-white dark:hover:text-zinc-950 transition-all duration-300 focus:ring-4 focus:ring-[#b08968]/30 focus:outline-none shadow-sm dark:shadow-md border border-slate-200 dark:border-none">
+                <button onClick={() => setPorcionesDeseadas(p => Math.max(1, p - 1))} aria-label="Restar porción" className="p-3 rounded-full bg-slate-100 dark:bg-zinc-800 hover:bg-[#b08968] dark:hover:bg-[#b08968] text-slate-700 dark:text-zinc-200 hover:text-white dark:hover:text-zinc-950 transition-all duration-300 focus:ring-4 focus:ring-[#b08968]/30 focus:outline-none shadow-sm dark:shadow-md border border-slate-200 dark:border-none">
                   <Minus className="w-5 h-5" />
                 </button>
                 <div className="flex flex-col items-center justify-center w-12">
                   <span className="font-extrabold text-3xl text-[#b08968] dark:text-orange-200 leading-none">{porcionesDeseadas}</span>
                 </div>
-                <button onClick={() => setPorcionesDeseadas(p => Math.min(20, p + 1))} className="p-3 rounded-full bg-slate-100 dark:bg-zinc-800 hover:bg-[#b08968] dark:hover:bg-[#b08968] text-slate-700 dark:text-zinc-200 hover:text-white dark:hover:text-zinc-950 transition-all duration-300 focus:ring-4 focus:ring-[#b08968]/30 focus:outline-none shadow-sm dark:shadow-md border border-slate-200 dark:border-none">
+                <button onClick={() => setPorcionesDeseadas(p => Math.min(20, p + 1))} aria-label="Sumar porción" className="p-3 rounded-full bg-slate-100 dark:bg-zinc-800 hover:bg-[#b08968] dark:hover:bg-[#b08968] text-slate-700 dark:text-zinc-200 hover:text-white dark:hover:text-zinc-950 transition-all duration-300 focus:ring-4 focus:ring-[#b08968]/30 focus:outline-none shadow-sm dark:shadow-md border border-slate-200 dark:border-none">
                   <Plus className="w-5 h-5" />
                 </button>
               </div>
@@ -527,13 +529,13 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
 
             <div className={`${isPreview ? 'pt-4 mt-6' : 'pt-8 mt-12'} border-t border-slate-200 dark:border-zinc-700`}>
               <div className={`flex justify-center ${isPreview ? 'gap-3' : 'gap-6'}`}>
-                <button onClick={handleFavorite} className={`${isPreview ? 'p-3' : 'p-4'} rounded-full shadow-lg transition-all duration-300 hover:-translate-y-1 ${isFavorite ? 'bg-red-500 text-white shadow-red-500/20' : 'bg-slate-100 dark:bg-zinc-900 text-slate-400 dark:text-orange-200/60 hover:bg-slate-200 dark:hover:bg-zinc-800 hover:text-red-500 dark:hover:text-red-400 border border-slate-200 dark:border-zinc-700'}`} title={isFavorite ? "Ya no me gusta" : "Me gusta"}>
+                <button onClick={handleFavorite} aria-label={isFavorite ? "Quitar de favoritos" : "Añadir a favoritos"} className={`${isPreview ? 'p-3' : 'p-4'} rounded-full shadow-lg transition-all duration-300 hover:-translate-y-1 ${isFavorite ? 'bg-red-500 text-white shadow-red-500/20' : 'bg-slate-100 dark:bg-zinc-900 text-slate-400 dark:text-orange-200/60 hover:bg-slate-200 dark:hover:bg-zinc-800 hover:text-red-500 dark:hover:text-red-400 border border-slate-200 dark:border-zinc-700'}`} title={isFavorite ? "Ya no me gusta" : "Me gusta"}>
                   <Heart className={`${isPreview ? 'w-5 h-5' : 'w-6 h-6'} ${isFavorite ? 'fill-current' : ''}`} />
                 </button>
-                <button onClick={handleSave} className={`${isPreview ? 'p-3' : 'p-4'} rounded-full shadow-lg transition-all duration-300 hover:-translate-y-1 ${isSaved ? 'bg-yellow-500 text-white dark:text-zinc-950 shadow-yellow-500/20' : 'bg-slate-100 dark:bg-zinc-900 text-slate-400 dark:text-orange-200/60 hover:bg-slate-200 dark:hover:bg-zinc-800 hover:text-yellow-500 border border-slate-200 dark:border-zinc-700'}`} title={isSaved ? "Quitar de Guardados" : "Guardar Receta"}>
+                <button onClick={handleSave} aria-label={isSaved ? "Quitar de Guardados" : "Guardar Receta"} className={`${isPreview ? 'p-3' : 'p-4'} rounded-full shadow-lg transition-all duration-300 hover:-translate-y-1 ${isSaved ? 'bg-yellow-500 text-white dark:text-zinc-950 shadow-yellow-500/20' : 'bg-slate-100 dark:bg-zinc-900 text-slate-400 dark:text-orange-200/60 hover:bg-slate-200 dark:hover:bg-zinc-800 hover:text-yellow-500 border border-slate-200 dark:border-zinc-700'}`} title={isSaved ? "Quitar de Guardados" : "Guardar Receta"}>
                   <Bookmark className={`${isPreview ? 'w-5 h-5' : 'w-6 h-6'} ${isSaved ? 'fill-current' : ''}`} />
                 </button>
-                <button onClick={handleShare} className={`${isPreview ? 'p-3' : 'p-4'} rounded-full bg-slate-100 dark:bg-zinc-900 text-slate-400 dark:text-orange-200/60 shadow-lg hover:bg-slate-200 dark:hover:bg-zinc-800 hover:text-slate-800 dark:hover:text-zinc-200 transition-all duration-300 hover:-translate-y-1 border border-slate-200 dark:border-zinc-700`} title="Compartir">
+                <button onClick={handleShare} aria-label="Compartir receta" className={`${isPreview ? 'p-3' : 'p-4'} rounded-full bg-slate-100 dark:bg-zinc-900 text-slate-400 dark:text-orange-200/60 shadow-lg hover:bg-slate-200 dark:hover:bg-zinc-800 hover:text-slate-800 dark:hover:text-zinc-200 transition-all duration-300 hover:-translate-y-1 border border-slate-200 dark:border-zinc-700`} title="Compartir">
                   <Share2 className={`${isPreview ? 'w-5 h-5' : 'w-6 h-6'}`} />
                 </button>
               </div>

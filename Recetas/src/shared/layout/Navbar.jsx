@@ -229,7 +229,7 @@ function NavbarContent() {
 
           {/* User actions desktop */}
           <div className="hidden md:flex items-center relative" ref={loginRef}>
-            <button onClick={handleUserClick} className={`p-1.5 rounded-full transition-all duration-300 hover:scale-110 flex items-center justify-center overflow-hidden border-2 ${isLoggedIn ? "border-[#b08968]" : "bg-[#b08968] border-transparent"}`}>
+            <button onClick={handleUserClick} aria-label="Menú de usuario" className={`p-1.5 rounded-full transition-all duration-300 hover:scale-110 flex items-center justify-center overflow-hidden border-2 ${isLoggedIn ? "border-[#b08968]" : "bg-[#b08968] border-transparent"}`}>
               {isLoggedIn ? (
                 <img src={currentAvatar} alt="Avatar" className="w-7 h-7 object-cover rounded-full" />
               ) : (
@@ -242,7 +242,7 @@ function NavbarContent() {
                 {/* Opciones Generales (Dark Mode) */}
                 <div className="flex justify-between items-center mb-4 pb-4 border-b border-divider">
                   <span className="text-sm font-bold text-default-500 uppercase tracking-wider">Apariencia</span>
-                  <button onClick={toggleDarkMode} className="flex items-center justify-center p-2 rounded-full bg-default hover:bg-default-hover transition-colors text-default-600">
+                  <button onClick={toggleDarkMode} aria-label="Alternar modo oscuro" className="flex items-center justify-center p-2 rounded-full bg-default hover:bg-default-hover transition-colors text-default-600">
                     {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
                   </button>
                 </div>
@@ -385,7 +385,7 @@ function NavbarContent() {
           </div>
 
           {/* Mobile menu button */}
-          <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className={`md:hidden p-2 rounded-lg ${isScrolled || (!isDarkMode && !isHomePage) ? "text-gray-800 dark:text-white" : "text-white"}`}>
+          <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} aria-label="Menú móvil" className={`md:hidden p-2 rounded-lg ${isScrolled || (!isDarkMode && !isHomePage) ? "text-gray-800 dark:text-white" : "text-white"}`}>
             {isMobileMenuOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
           </button>
 
@@ -394,7 +394,7 @@ function NavbarContent() {
             <div className="px-4 space-y-3">
               <div className="flex justify-between items-center mb-4 px-4 pb-4 border-b border-divider">
                 <span className="text-sm font-bold text-default-500 uppercase tracking-wider">Modo Oscuro</span>
-                <button onClick={toggleDarkMode} className="p-2 rounded-full bg-default text-default-600 hover:bg-default-hover">
+                <button onClick={toggleDarkMode} aria-label="Alternar modo oscuro" className="p-2 rounded-full bg-default text-default-600 hover:bg-default-hover">
                   {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
                 </button>
               </div>

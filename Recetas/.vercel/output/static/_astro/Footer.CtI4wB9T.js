@@ -1,1 +1,0 @@
-import{default as d}from"./Footer.Bp5H1x2y.js";import"./jsx-runtime.D_zvdyIk.js";import"./chef-hat.JzX_Hd3d.js";import"./createLucideIcon.DPuHn03i.js";import"./index.7in8nkh5.js";import"./youtube.BKa0cMTt.js";import"./mail.d4hUooA3.js";import"./map-pin.CNNuJxBA.js";export{d as default};

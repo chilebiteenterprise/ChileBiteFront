@@ -158,6 +158,7 @@ export default function RecipeCard({ receta, usuarioEsAdmin = false, isSelected 
         >
           <button 
             onClick={(e) => { e.stopPropagation(); onToggleSelect && onToggleSelect(idToUse); }}
+            aria-label="Seleccionar receta"
             className={`w-8 h-8 rounded-lg flex items-center justify-center border-2 transition-all backdrop-blur-md shadow-lg ${isSelected ? "bg-[#b08969] border-[#b08969] text-white" : "bg-black/30 border-white/40 text-transparent hover:border-white"}`}
           >
             <Check className={`w-5 h-5 ${isSelected ? "opacity-100" : "opacity-0"}`} strokeWidth={3} />
@@ -169,6 +170,8 @@ export default function RecipeCard({ receta, usuarioEsAdmin = false, isSelected 
       <div className="relative h-56 shrink-0 overflow-hidden">
         <img 
           alt={receta.nombre} 
+          width="400"
+          height="224"
           className={`w-full h-full object-cover transition-transform duration-700 ease-in-out ${isSelected ? 'scale-110' : 'group-hover:scale-110'}`} 
           src={receta.imagen_url || "https://placehold.co/800x600?text=Receta"}
           onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/800x600?text=No+Image"; }}
@@ -189,6 +192,7 @@ export default function RecipeCard({ receta, usuarioEsAdmin = false, isSelected 
               type="button"
               onClick={(e) => { e.stopPropagation(); window.open(`/recipes/${idToUse}`, "_blank"); }}
               title="Ver Receta"
+              aria-label="Ver Receta"
               className="w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-md transition-colors border shadow-md bg-black/40 text-white border-white/20 hover:bg-[#b08969]"
             >
               <Eye className="w-5 h-5" />
@@ -198,6 +202,7 @@ export default function RecipeCard({ receta, usuarioEsAdmin = false, isSelected 
             type="button"
             onClick={handleSave}
             title={guardado ? "Quitar de Guardados" : "Guardar Receta"}
+            aria-label={guardado ? "Quitar de Guardados" : "Guardar Receta"}
             className={`w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-md transition-colors border shadow-md border-white/20 hover:bg-black/60 ${guardado ? "bg-yellow-500/90 text-white border-yellow-400" : "bg-black/40 text-white"}`}
           >
             <Bookmark className={`w-5 h-5 ${guardado ? "fill-current" : ""}`} />
@@ -231,6 +236,7 @@ export default function RecipeCard({ receta, usuarioEsAdmin = false, isSelected 
             type="button"
             onClick={handleFavorite}
             title={liked ? "Ya no me gusta" : "Me gusta"}
+            aria-label={liked ? "Quitar de favoritos" : "Añadir a favoritos"}
             className="flex items-center gap-2 group/heart bg-transparent border-none p-1 cursor-pointer transition-transform active:scale-90"
           >
             <Heart className={`w-6 h-6 transition-transform group-hover/heart:scale-125 ${liked ? "fill-[#ff4757] text-[#ff4757]" : "text-slate-400"}`} />

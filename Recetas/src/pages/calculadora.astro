@@ -19,7 +19,7 @@ import BaseHead from "@/shared/layout/BaseHead.astro";
   <body class="bg-stone-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-300">
     <Navbar client:only="react" />
 
-    <div class="pt-20 pb-12 min-h-screen">
+    <main class="pt-20 pb-12 min-h-screen">
       <MacroCalculator client:load />
 
       <!-- ── Monetización: Carrusel Premium ── -->
@@ -34,7 +34,7 @@ import BaseHead from "@/shared/layout/BaseHead.astro";
           />
         </div>
       </div>
-    </div>
+    </main>
 
     <Footer client:visible />
   </body>
