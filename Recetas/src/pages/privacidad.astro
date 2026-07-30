@@ -1,0 +1,228 @@
+---
+import "@/styles/global.css";
+import Footer from "@/shared/layout/Footer";
+import Navbar from "@/shared/layout/Navbar";
+import BaseHead from "@/shared/layout/BaseHead.astro";
+---
+
+<html lang="es" class="scroll-smooth">
+  <head>
+    <BaseHead 
+      title="Política de Privacidad – ChileBite" 
+      description="Política de privacidad oficial de ChileBite. Conoce cómo gestionamos los datos, el uso de cookies y nuestra integración con proveedores de anuncios como Google AdSense."
+    />
+    <style>
+      .toc-link.active {
+        color: #b08968;
+        border-left-color: #b08968;
+        font-weight: 700;
+        background-color: rgba(176, 137, 104, 0.05);
+      }
+    </style>
+  </head>
+
+  <body class="bg-stone-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-300 min-h-screen flex flex-col antialiased">
+    <Navbar client:only="react" />
+
+    <main class="flex-grow pt-32 pb-24 px-4 sm:px-6 lg:px-8 relative z-10">
+      <div class="max-w-[1440px] mx-auto w-full">
+        
+        <!-- Encabezado Hero Premium -->
+        <div class="text-center max-w-3xl mx-auto mb-16">
+          <div class="inline-block mb-3 px-4 py-1.5 rounded-full bg-[#b08968]/10 dark:bg-[#b08968]/20 border border-[#b08968]/30 text-[#b08968] dark:text-orange-200 text-xs font-bold tracking-widest uppercase">
+            Privacidad & Transparencia
+          </div>
+          <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white tracking-tight mb-6">
+            Política de Privacidad
+          </h1>
+          <p class="text-lg text-gray-600 dark:text-gray-400 font-medium">
+            Última actualización: 29 de julio de 2026 • ChileBite
+          </p>
+        </div>
+
+        <!-- Contenido principal: Dos Columnas -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+          
+          <!-- Columna Izquierda: Tabla de Contenidos (Sticky en Desktop) -->
+          <aside class="lg:col-span-3 sticky top-28 hidden lg:block">
+            <div class="bg-white/40 dark:bg-zinc-950/40 backdrop-blur-md border border-gray-200/80 dark:border-zinc-800 rounded-3xl p-6 shadow-sm">
+              <h3 class="text-sm font-bold uppercase tracking-wider text-[#b08968] mb-4 pl-3">
+                Contenido del Documento
+              </h3>
+              <nav class="space-y-1">
+                <a href="#recopilacion" class="toc-link block py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white border-l-2 border-transparent transition-all rounded-r-xl">
+                  1. Recopilación de Información
+                </a>
+                <a href="#cookies" class="toc-link block py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white border-l-2 border-transparent transition-all rounded-r-xl">
+                  2. Uso de Cookies (Google AdSense)
+                </a>
+                <a href="#seguridad" class="toc-link block py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white border-l-2 border-transparent transition-all rounded-r-xl">
+                  3. Seguridad de Datos
+                </a>
+                <a href="#derechos" class="toc-link block py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white border-l-2 border-transparent transition-all rounded-r-xl">
+                  4. Derechos de Usuarios
+                </a>
+                <a href="#contacto" class="toc-link block py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white border-l-2 border-transparent transition-all rounded-r-xl">
+                  5. Contacto & Soporte
+                </a>
+              </nav>
+            </div>
+          </aside>
+
+          <!-- Columna Derecha: Contenido de Texto -->
+          <div class="lg:col-span-9 space-y-12">
+            
+            <!-- Tarjeta de Introducción -->
+            <div class="bg-white/40 dark:bg-zinc-950/20 border border-gray-200 dark:border-zinc-800 rounded-3xl p-6 sm:p-8">
+              <p class="text-lg text-slate-700 dark:text-zinc-300 leading-relaxed font-serif">
+                En ChileBite nos tomamos muy en serio la transparencia y la privacidad de nuestros usuarios. A continuación explicamos de manera clara y detallada cómo tratamos tu información, qué herramientas de terceros utilizamos y cómo garantizamos una navegación segura.
+              </p>
+            </div>
+
+            <!-- Secciones -->
+            <div class="space-y-12">
+              
+              <!-- Sección 1 -->
+              <section id="recopilacion" class="scroll-mt-28 space-y-4">
+                <div class="flex items-center gap-3">
+                  <h2 class="text-2xl font-black text-slate-900 dark:text-white">
+                    1. Recopilación de Información
+                  </h2>
+                </div>
+                <div class="pl-0 text-gray-600 dark:text-zinc-400 space-y-4 text-lg leading-relaxed text-justify">
+                  <p>
+                    Recopilamos información de los usuarios para proporcionar un servicio óptimo y personalizado. Esto ocurre mediante:
+                  </p>
+                  <ul class="list-disc pl-6 space-y-3">
+                    <li>
+                      <span><strong>Datos de Registro:</strong> Dirección de correo electrónico, nombre de usuario y avatar a través de nuestra pasarela de autenticación de Supabase (incluido el inicio de sesión con Google).</span>
+                    </li>
+                    <li>
+                      <span><strong>Datos de Uso:</strong> Recetas guardadas en tus colecciones personales, valoraciones otorgadas, comentarios en publicaciones e información sobre tus objetivos de la Calculadora de Macros.</span>
+                    </li>
+                  </ul>
+                </div>
+              </section>
+
+              <!-- Sección 2 -->
+              <section id="cookies" class="scroll-mt-28 space-y-4">
+                <div class="flex items-center gap-3">
+                  <h2 class="text-2xl font-black text-slate-900 dark:text-white">
+                    2. Cookies y Publicidad de Terceros (Google AdSense)
+                  </h2>
+                </div>
+                <div class="pl-0 text-gray-600 dark:text-zinc-400 space-y-4 text-lg leading-relaxed text-justify">
+                  <p>
+                    Utilizamos cookies para personalizar el contenido, los anuncios y analizar el tráfico de nuestra web.
+                  </p>
+                  <div class="bg-white/40 dark:bg-zinc-950/20 border border-gray-200 dark:border-zinc-800 rounded-2xl p-6 space-y-4">
+                    <h4 class="font-extrabold text-slate-800 dark:text-orange-200">
+                      Información Requerida sobre Google AdSense:
+                    </h4>
+                    <p class="text-base text-gray-500 dark:text-gray-400">
+                      Google, como proveedor asociado de ChileBite, utiliza cookies para publicar anuncios en este sitio web basados en las visitas anteriores de los usuarios a nuestro sitio o a otros portales de internet.
+                    </p>
+                    <p class="text-base text-gray-500 dark:text-gray-400">
+                      El uso de la cookie de publicidad permite a Google y a sus socios presentar anuncios más relevantes a los usuarios según la información recopilada en sus navegaciones.
+                    </p>
+                    <p class="text-base text-gray-500 dark:text-gray-400 font-semibold border-t border-gray-200 dark:border-zinc-800 pt-3">
+                      ¿Cómo desactivar la publicidad personalizada?
+                    </p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                      Puedes desactivar el uso de cookies publicitarias y la publicidad basada en intereses configurando los ajustes de tu cuenta de Google. Alternativamente, puedes guiarte y desactivar el uso de cookies de terceros en el portal independiente <a href="https://www.aboutads.info" target="_blank" rel="noopener noreferrer" class="text-[#b08968] underline hover:text-[#9a7657]">www.aboutads.info</a>.
+                    </p>
+                  </div>
+                </div>
+              </section>
+
+              <!-- Sección 3 -->
+              <section id="seguridad" class="scroll-mt-28 space-y-4">
+                <div class="flex items-center gap-3">
+                  <h2 class="text-2xl font-black text-slate-900 dark:text-white">
+                    3. Seguridad y Almacenamiento de Datos
+                  </h2>
+                </div>
+                <div class="pl-0 text-gray-600 dark:text-zinc-400 space-y-4 text-lg leading-relaxed text-justify">
+                  <p>
+                    Toda la información del perfil del usuario y los datos de autenticación segura se almacenan utilizando la infraestructura global de <strong>Supabase</strong>, la cual cuenta con cifrado de nivel empresarial y protocolos de comunicación segura HTTPS.
+                  </p>
+                  <p>
+                    Aunque implementamos todas las medidas técnicas de seguridad posibles para salvaguardar tu información, recordamos que ninguna transmisión a través de internet o almacenamiento digital puede garantizar seguridad absoluta.
+                  </p>
+                </div>
+              </section>
+
+              <!-- Sección 4 -->
+              <section id="derechos" class="scroll-mt-28 space-y-4">
+                <div class="flex items-center gap-3">
+                  <h2 class="text-2xl font-black text-slate-900 dark:text-white">
+                    4. Derechos de los Usuarios
+                  </h2>
+                </div>
+                <div class="pl-0 text-gray-600 dark:text-zinc-400 space-y-4 text-lg leading-relaxed text-justify">
+                  <p>
+                    Tienes derecho en cualquier momento a conocer qué información tenemos tuya, solicitar su modificación o exigir la eliminación permanente de tu cuenta y todos tus datos asociados. 
+                  </p>
+                  <p>
+                    Esto puede gestionarse de forma directa desde la pestaña de Ajustes en tu Perfil de usuario o contactándonos mediante los canales indicados en la siguiente sección.
+                  </p>
+                </div>
+              </section>
+
+              <!-- Sección 5 -->
+              <section id="contacto" class="scroll-mt-28 space-y-4">
+                <div class="flex items-center gap-3">
+                  <h2 class="text-2xl font-black text-slate-900 dark:text-white">
+                    5. Contacto & Soporte
+                  </h2>
+                </div>
+                <div class="pl-0 text-gray-600 dark:text-zinc-400 space-y-4 text-lg leading-relaxed text-justify">
+                  <p>
+                    Si tienes dudas sobre el tratamiento de tus datos, necesitas ayuda técnica o deseas eliminar tu cuenta del sistema, escríbenos directamente a nuestra casilla electrónica de soporte:
+                  </p>
+                  <div class="inline-flex items-center gap-4 bg-white/50 dark:bg-zinc-950/30 border border-gray-200 dark:border-zinc-800 px-6 py-4 rounded-2xl shadow-sm">
+                    <div>
+                      <p class="text-xs text-gray-400 font-bold uppercase tracking-wider">Email de Contacto</p>
+                      <a href="mailto:contacto@chilebite.cl" class="text-lg font-black text-slate-800 dark:text-white hover:text-[#b08968] transition-colors">
+                        contacto@chilebite.cl
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+    <Footer client:visible />
+
+    <script is:inline>
+      // Lógica simple para marcar el índice activo al hacer scroll
+      document.addEventListener("DOMContentLoaded", () => {
+        const sections = document.querySelectorAll("section");
+        const navLinks = document.querySelectorAll(".toc-link");
+
+        window.addEventListener("scroll", () => {
+          let current = "";
+          sections.forEach((section) => {
+            const sectionTop = section.offsetTop;
+            if (window.scrollY >= sectionTop - 150) {
+              current = section.getAttribute("id");
+            }
+          });
+
+          navLinks.forEach((link) => {
+            link.classList.remove("active");
+            if (link.getAttribute("href") === `#${current}`) {
+              link.classList.add("active");
+            }
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

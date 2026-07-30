@@ -36,7 +36,10 @@ export const LocalesSection: React.FC = () => {
             Únete a la red más grande de sabores chilenos y conecta con miles de foodies.
             Registra tu local de forma gratuita y destaca tu propuesta.
           </p>
-          <button className="rounded-full bg-white px-10 py-4 text-zinc-950 font-bold hover:scale-105 transition-transform shadow-xl shadow-white/10">
+          <button 
+            onClick={() => window.location.href = '/auth/register'}
+            className="rounded-full bg-white px-10 py-4 text-zinc-950 font-bold hover:scale-105 transition-transform shadow-xl shadow-white/10"
+          >
             Registra tu Local Hoy
           </button>
         </div>

@@ -220,7 +220,7 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
       navigator.share({ title: receta.nombre, text: `Mira esta receta: ${receta.nombre}`, url: window.location.href }).catch(console.error);
     } else {
       navigator.clipboard.writeText(window.location.href);
-      console.log('Link copiado al portapapeles');
+      toast.success("Enlace de la receta copiado al portapapeles");
     }
   };
 

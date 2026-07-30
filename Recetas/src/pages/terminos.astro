@@ -1,0 +1,208 @@
+---
+import "@/styles/global.css";
+import Footer from "@/shared/layout/Footer";
+import Navbar from "@/shared/layout/Navbar";
+import BaseHead from "@/shared/layout/BaseHead.astro";
+---
+
+<html lang="es" class="scroll-smooth">
+  <head>
+    <BaseHead 
+      title="Términos de Uso – ChileBite" 
+      description="Términos y condiciones de uso de la plataforma gastronómica ChileBite. Conoce las normas de nuestra comunidad y el uso de nuestros servicios."
+    />
+    <style>
+      .toc-link.active {
+        color: #b08968;
+        border-left-color: #b08968;
+        font-weight: 700;
+        background-color: rgba(176, 137, 104, 0.05);
+      }
+    </style>
+  </head>
+
+  <body class="bg-stone-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-300 min-h-screen flex flex-col antialiased">
+    <Navbar client:only="react" />
+
+    <main class="flex-grow pt-32 pb-24 px-4 sm:px-6 lg:px-8 relative z-10">
+      <div class="max-w-[1440px] mx-auto w-full">
+        
+        <!-- Encabezado Hero Premium -->
+        <div class="text-center max-w-3xl mx-auto mb-16">
+          <div class="inline-block mb-3 px-4 py-1.5 rounded-full bg-[#b08968]/10 dark:bg-[#b08968]/20 border border-[#b08968]/30 text-[#b08968] dark:text-orange-200 text-xs font-bold tracking-widest uppercase">
+            Acuerdo & Condiciones
+          </div>
+          <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white tracking-tight mb-6">
+            Términos de Uso
+          </h1>
+          <p class="text-lg text-gray-600 dark:text-gray-400 font-medium">
+            Última actualización: 29 de julio de 2026 • ChileBite
+          </p>
+        </div>
+
+        <!-- Contenido principal: Dos Columnas -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+          
+          <!-- Columna Izquierda: Tabla de Contenidos (Sticky en Desktop) -->
+          <aside class="lg:col-span-3 sticky top-28 hidden lg:block">
+            <div class="bg-white/40 dark:bg-zinc-950/40 backdrop-blur-md border border-gray-200/80 dark:border-zinc-800 rounded-3xl p-6 shadow-sm">
+              <h3 class="text-sm font-bold uppercase tracking-wider text-[#b08968] mb-4 pl-3">
+                Contenido del Documento
+              </h3>
+              <nav class="space-y-1">
+                <a href="#aceptacion" class="toc-link block py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white border-l-2 border-transparent transition-all rounded-r-xl">
+                  1. Aceptación de Términos
+                </a>
+                <a href="#uso" class="toc-link block py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white border-l-2 border-transparent transition-all rounded-r-xl">
+                  2. Uso del Servicio
+                </a>
+                <a href="#comunidad" class="toc-link block py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white border-l-2 border-transparent transition-all rounded-r-xl">
+                  3. Cuentas & Comunidad
+                </a>
+                <a href="#nutricional" class="toc-link block py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white border-l-2 border-transparent transition-all rounded-r-xl">
+                  4. Exclusión Nutricional
+                </a>
+                <a href="#modificaciones" class="toc-link block py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white border-l-2 border-transparent transition-all rounded-r-xl">
+                  5. Modificaciones
+                </a>
+              </nav>
+            </div>
+          </aside>
+
+          <!-- Columna Derecha: Contenido de Texto -->
+          <div class="lg:col-span-9 space-y-12">
+            
+            <!-- Tarjeta de Introducción -->
+            <div class="bg-white/40 dark:bg-zinc-950/20 border border-gray-200 dark:border-zinc-800 rounded-3xl p-6 sm:p-8">
+              <p class="text-lg text-slate-700 dark:text-zinc-300 leading-relaxed font-serif">
+                Bienvenido a ChileBite. Al acceder o utilizar nuestro sitio web, herramientas y aplicaciones asociadas, usted acepta regirse por este acuerdo de Términos de Uso. Le solicitamos leerlos con detenimiento antes de navegar.
+              </p>
+            </div>
+
+            <!-- Secciones -->
+            <div class="space-y-12">
+              
+              <!-- Sección 1 -->
+              <section id="aceptacion" class="scroll-mt-28 space-y-4">
+                <div class="flex items-center gap-3">
+                  <h2 class="text-2xl font-black text-slate-900 dark:text-white">
+                    1. Aceptación de los Términos
+                  </h2>
+                </div>
+                <div class="pl-0 text-gray-600 dark:text-zinc-400 space-y-4 text-lg leading-relaxed text-justify">
+                  <p>
+                    Al utilizar los servicios de ChileBite, usted acepta estar sujeto a estos términos en su totalidad, así como a las leyes y regulaciones aplicables en el territorio chileno. Si no está de acuerdo con alguna de las condiciones estipuladas, debe abstenerse inmediatamente de utilizar la plataforma.
+                  </p>
+                </div>
+              </section>
+
+              <!-- Sección 2 -->
+              <section id="uso" class="scroll-mt-28 space-y-4">
+                <div class="flex items-center gap-3">
+                  <h2 class="text-2xl font-black text-slate-900 dark:text-white">
+                    2. Uso del Servicio
+                  </h2>
+                </div>
+                <div class="pl-0 text-gray-600 dark:text-zinc-400 space-y-4 text-lg leading-relaxed text-justify">
+                  <p>
+                    ChileBite otorga una licencia limitada, personal y no transferible para navegar por nuestro catálogo de recetas, utilizar la calculadora nutricional y consultar los perfiles y ubicaciones de los locales gastronómicos asociados. Queda estrictamente prohibido:
+                  </p>
+                  <ul class="list-disc pl-6 space-y-3">
+                    <li>
+                      <span>Extraer o recopilar de manera automatizada (scraping) datos de recetas o locales del sitio web con fines comerciales sin autorización expresa.</span>
+                    </li>
+                    <li>
+                      <span>Realizar cualquier actividad que comprometa el rendimiento de los servidores o los servicios de Supabase.</span>
+                    </li>
+                  </ul>
+                </div>
+              </section>
+
+              <!-- Sección 3 -->
+              <section id="comunidad" class="scroll-mt-28 space-y-4">
+                <div class="flex items-center gap-3">
+                  <h2 class="text-2xl font-black text-slate-900 dark:text-white">
+                    3. Cuentas de Usuario y Contenido de la Comunidad
+                  </h2>
+                </div>
+                <div class="pl-0 text-gray-600 dark:text-zinc-400 space-y-4 text-lg leading-relaxed text-justify">
+                  <p>
+                    Para acceder a características especiales como guardar colecciones o realizar valoraciones, usted debe registrarse. Usted se hace responsable de mantener en secreto la contraseña asociada a su cuenta.
+                  </p>
+                  <p>
+                    Al publicar comentarios, calificaciones o sugerencias en nuestra comunidad, nos otorga un derecho no exclusivo e indefinido para reproducir y mostrar dicho contenido con el fin de promover la interacción en ChileBite. Cualquier conducta difamatoria, ofensiva o ilegal será sancionada con la suspensión definitiva del perfil.
+                  </p>
+                </div>
+              </section>
+
+              <!-- Sección 4 -->
+              <section id="nutricional" class="scroll-mt-28 space-y-4">
+                <div class="flex items-center gap-3">
+                  <h2 class="text-2xl font-black text-slate-900 dark:text-white">
+                    4. Exclusión de Responsabilidad Nutricional
+                  </h2>
+                </div>
+                <div class="pl-0 text-gray-600 dark:text-zinc-400 space-y-4 text-lg leading-relaxed text-justify">
+                  <p>
+                    Los cálculos y proporciones mostrados en nuestra Calculadora de Macros e interacciones del Chef IA Copilot se generan mediante estimaciones y datos genéricos del departamento de agricultura (USDA).
+                  </p>
+                  <div class="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-6 text-amber-800 dark:text-amber-200">
+                    <p class="font-bold mb-2 text-base">
+                      Exención de Responsabilidad:
+                    </p>
+                    <p class="text-sm">
+                      Dicha información es meramente referencial y educativa. No debe sustituir tratamientos dietéticos, médicos ni la consulta con un nutricionista certificado.
+                    </p>
+                  </div>
+                </div>
+              </section>
+
+              <!-- Sección 5 -->
+              <section id="modificaciones" class="scroll-mt-28 space-y-4">
+                <div class="flex items-center gap-3">
+                  <h2 class="text-2xl font-black text-slate-900 dark:text-white">
+                    5. Modificaciones de los Términos
+                  </h2>
+                </div>
+                <div class="pl-0 text-gray-600 dark:text-zinc-400 space-y-4 text-lg leading-relaxed text-justify">
+                  <p>
+                    Nos reservamos el derecho de modificar o actualizar estos Términos de Uso en cualquier momento y sin previo aviso. Es responsabilidad del usuario consultar esta página periódicamente para informarse sobre eventuales modificaciones. El uso del sitio tras la publicación de cambios implicará la conformidad absoluta del usuario.
+                  </p>
+                </div>
+              </section>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+    <Footer client:visible />
+
+    <script is:inline>
+      // Lógica simple para marcar el índice activo al hacer scroll
+      document.addEventListener("DOMContentLoaded", () => {
+        const sections = document.querySelectorAll("section");
+        const navLinks = document.querySelectorAll(".toc-link");
+
+        window.addEventListener("scroll", () => {
+          let current = "";
+          sections.forEach((section) => {
+            const sectionTop = section.offsetTop;
+            if (window.scrollY >= sectionTop - 150) {
+              current = section.getAttribute("id");
+            }
+          });
+
+          navLinks.forEach((link) => {
+            link.classList.remove("active");
+            if (link.getAttribute("href") === `#${current}`) {
+              link.classList.add("active");
+            }
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

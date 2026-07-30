@@ -7,13 +7,12 @@ export default function Footer() {
       { label: "Recetas", href: "/recipes" },
       { label: "Calculadora de Macros", href: "/calculadora" },
       { label: "Locales", href: "/locales" },
-      { label: "Comunidad", href: "#" },
+      { label: "Comunidad", href: "/recipes" },
     ],
     legal: [
-      { label: "Términos de Uso", href: "#" },
-      { label: "Política de Privacidad", href: "#" },
-      { label: "Cookies", href: "#" },
-      { label: "Licencias", href: "#" },
+      { label: "Términos de Uso", href: "/terminos" },
+      { label: "Política de Privacidad", href: "/privacidad" },
+      { label: "Contacto", href: "mailto:contacto@chilebite.cl" },
     ],
   };
 
