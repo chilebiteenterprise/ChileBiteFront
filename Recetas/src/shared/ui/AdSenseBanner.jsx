@@ -17,7 +17,7 @@ import { useEffect, useRef } from 'react';
  *   format     string  - 'auto' | 'rectangle' | 'horizontal' | 'vertical'
  *   className  string  - clases Tailwind adicionales para el contenedor
  *
- *  Publisher ID activo: ca-pub-4855312501819907
+ *  Publisher ID activo: ca-pub-8451477510853664
  */
 export default function AdSenseBanner({
   slot = 'REEMPLAZA_CON_TU_SLOT',
@@ -56,7 +56,7 @@ export default function AdSenseBanner({
       <ins
         className="adsbygoogle"
         style={{ display: 'block' }}
-        data-ad-client="ca-pub-4855312501819907"
+        data-ad-client="ca-pub-8451477510853664"
         data-ad-slot={slot}
         data-ad-format={format}
         data-full-width-responsive="true"

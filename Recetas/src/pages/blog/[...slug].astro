@@ -4,6 +4,7 @@ import Footer from '@/shared/layout/Footer';
 import Navbar from '@/shared/layout/Navbar';
 import VideoEmbed from '@/components/common/VideoEmbed.astro';
 import { getCollection, render } from 'astro:content';
+import BaseHead from '@/shared/layout/BaseHead.astro';
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog');
@@ -24,28 +25,11 @@ const components = {
 
 <html lang="es">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{post.data.title} | La Ruta del Sabor</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <script is:inline>
-      const theme = (() => {
-        if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
-          return localStorage.getItem('theme');
-        }
-        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-          return 'dark';
-        }
-        return 'light';
-      })();
-      if (theme === 'dark') {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
-    </script>
-  
-    <meta name="google-adsense-account" content="ca-pub-4855312501819907" />
+    <BaseHead 
+      title={`${post.data.title} | La Ruta del Sabor`} 
+      description={post.data.description} 
+      image={post.data.heroImage} 
+    />
   </head>
 
   <body class="bg-stone-50 dark:bg-gray-950 text-gray-800 dark:text-gray-200 transition-colors duration-300">

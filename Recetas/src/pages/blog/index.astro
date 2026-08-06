@@ -4,6 +4,7 @@ import Footer from '@/shared/layout/Footer';
 import Navbar from '@/shared/layout/Navbar';
 import ChileMap from '@/features/ruta/components/ChileMap';
 import { getCollection } from 'astro:content';
+import BaseHead from '@/shared/layout/BaseHead.astro';
 
 const posts = await getCollection('blog');
 const sortedPosts = posts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
@@ -14,28 +15,10 @@ const mapPosts = [...posts].sort((a, b) => a.data.pubDate.valueOf() - b.data.pub
 
 <html lang="es">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>La Ruta del Sabor | ChileBite</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <script is:inline>
-      const theme = (() => {
-        if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
-          return localStorage.getItem('theme');
-        }
-        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-          return 'dark';
-        }
-        return 'light';
-      })();
-      if (theme === 'dark') {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
-    </script>
-  
-    <meta name="google-adsense-account" content="ca-pub-4855312501819907" />
+    <BaseHead 
+      title="La Ruta del Sabor | ChileBite" 
+      description="Explora los mejores destinos culinarios, historias y recetas locales con La Ruta del Sabor en ChileBite." 
+    />
   </head>
 
   <body class="bg-stone-50 dark:bg-gray-950 text-gray-800 dark:text-gray-200 transition-colors duration-300">
