@@ -4,6 +4,7 @@ interface Props {
   description?: string;
   image?: string;
   canonicalURL?: string;
+  robots?: string;
 }
 
 const {
@@ -11,6 +12,7 @@ const {
   description = "ChileBite es la plataforma gastronómica chilena para explorar recetas paso a paso, calcular macronutrientes, descubrir restaurantes y conectar con una comunidad apasionada por la cocina.",
   image = "https://chilebite.cl/images/Titulo.webp",
   canonicalURL = "https://chilebite.cl/",
+  robots = "index, follow",
 } = Astro.props;
 ---
 
@@ -28,7 +30,7 @@ const {
 <meta name="title" content={title} />
 <meta name="description" content={description} />
 <meta name="author" content="Chrystopher Silva, Miguel Escobar" />
-<meta name="robots" content="index, follow" />
+<meta name="robots" content={robots} />
 <link rel="canonical" href={canonicalURL} />
 
 <!-- ── Open Graph / Facebook ── -->
