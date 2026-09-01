@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
+import { createPortal } from "react-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from '@/lib/supabaseClient';
 import CopilotChat from './CopilotChat';
 import { Sparkles } from 'lucide-react';
@@ -6,6 +8,126 @@ import { AuthProvider } from '@/features/auth/context/AuthContext';
 
 const normalize = (s = "") =>
   s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+const UNIT_OPTIONS = [
+  { val: 'g', label: 'Gramos (g)' },
+  { val: 'unidad', label: 'Unidades (ud)' },
+  { val: 'cda', label: 'Cucharadas (cda)' },
+  { val: 'taza', label: 'Tazas' }
+];
+
+function CustomUnitSelect({ value, onChange, fullWidth = false }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const buttonRef = useRef(null);
+  const [coords, setCoords] = useState({ top: 0, left: 0, width: 155, opensUp: false });
+
+  const toggleOpen = () => {
+    if (!isOpen && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const opensUp = spaceBelow < 180;
+      const dropdownWidth = fullWidth ? rect.width : 155;
+
+      setCoords({
+        top: opensUp ? rect.top - 6 : rect.bottom + 6,
+        left: fullWidth ? rect.left : Math.max(10, rect.right - dropdownWidth),
+        width: dropdownWidth,
+        opensUp
+      });
+    }
+    setIsOpen(!isOpen);
+  };
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleScroll = () => setIsOpen(false);
+    window.addEventListener('scroll', handleScroll, true);
+    window.addEventListener('resize', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll, true);
+      window.removeEventListener('resize', handleScroll);
+    };
+  }, [isOpen]);
+
+  const selectedOption = UNIT_OPTIONS.find(o => o.val === value) || UNIT_OPTIONS[0];
+
+  return (
+    <div className={`relative ${fullWidth ? 'w-full flex-1' : 'shrink-0'}`}>
+      <button
+        ref={buttonRef}
+        type="button"
+        onClick={toggleOpen}
+        className={`flex items-center justify-between gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-sm font-bold text-slate-800 dark:text-slate-200 rounded-2xl outline-none cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm select-none ${
+          fullWidth ? 'w-full px-4 py-3' : 'px-4 py-2.5'
+        }`}
+      >
+        <span className="truncate pr-1">{selectedOption.label}</span>
+        <motion.div
+          animate={{ rotate: isOpen ? 180 : 0 }}
+          transition={{ type: "spring", stiffness: 350, damping: 22 }}
+          className="w-5 h-5 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400 shrink-0"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+          </svg>
+        </motion.div>
+      </button>
+
+      {createPortal(
+        <AnimatePresence>
+          {isOpen && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
+                className="fixed inset-0 z-[99998]"
+                onClick={() => setIsOpen(false)}
+              />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.92, y: coords.opensUp ? 8 : -8 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.92, y: coords.opensUp ? 8 : -8 }}
+                transition={{ type: "spring", stiffness: 420, damping: 28 }}
+                style={{
+                  position: 'fixed',
+                  top: coords.opensUp ? 'auto' : `${coords.top}px`,
+                  bottom: coords.opensUp ? `${window.innerHeight - coords.top}px` : 'auto',
+                  left: `${coords.left}px`,
+                  width: `${coords.width}px`,
+                  zIndex: 99999
+                }}
+                className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl py-2 overflow-hidden"
+              >
+                {UNIT_OPTIONS.map(u => (
+                  <motion.button
+                    key={u.val}
+                    type="button"
+                    whileHover={{ x: 2 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => {
+                      onChange(u.val);
+                      setIsOpen(false);
+                    }}
+                    className={`w-full text-left px-4 py-2.5 text-sm font-bold transition-colors ${
+                      value === u.val
+                        ? 'bg-[#A0522D]/10 text-[#A0522D] dark:bg-[#A0522D]/20 dark:text-[#d4906a]'
+                        : 'text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800'
+                    }`}
+                  >
+                    {u.label}
+                  </motion.button>
+                ))}
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
+    </div>
+  );
+}
 
 // Pill component for macros display
 function MacroPill({ label, value, unit, color }) {
@@ -32,7 +154,7 @@ function IngredientSearch({ onAdd, allIngredients, loadingIngredients }) {
   const [isOpen, setIsOpen] = useState(false);
   const [activeIdx, setActiveIdx] = useState(-1);
   const [selectedIngredient, setSelectedIngredient] = useState(null);
-  const [cantidad, setCantidad] = useState("");
+  const [cantidad, setCantidad] = useState("100");
   const [unidad, setUnidad] = useState("g");
   const [isOpenUnidad, setIsOpenUnidad] = useState(false);
   const inputRef = useRef(null);
@@ -96,14 +218,14 @@ function IngredientSearch({ onAdd, allIngredients, loadingIngredients }) {
     const normText = normalize(text);
     const normQ = normalize(query.trim());
     const idx = normText.indexOf(normQ);
-    if (idx === -1 || !normQ) return <span>{text}</span>;
+    if (idx === -1 || !normQ) return text;
     return (
       <>
-        <span>{text.slice(0, idx)}</span>
+        {text.slice(0, idx)}
         <span className="text-[#A0522D] dark:text-[#d4906a] font-bold">
           {text.slice(idx, idx + normQ.length)}
         </span>
-        <span>{text.slice(idx + normQ.length)}</span>
+        {text.slice(idx + normQ.length)}
       </>
     );
   };
@@ -115,7 +237,7 @@ function IngredientSearch({ onAdd, allIngredients, loadingIngredients }) {
       <div className="relative">
         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
           <svg
-            className="w-5 h-5 text-gray-400"
+            className="w-5 h-5 text-slate-400 dark:text-slate-500"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -148,11 +270,11 @@ function IngredientSearch({ onAdd, allIngredients, loadingIngredients }) {
           }}
           onFocus={() => suggestions.length > 0 && setIsOpen(true)}
           onKeyDown={handleKeyDown}
-          className="w-full pl-12 pr-4 py-4 bg-white dark:bg-[#1a1d24] border-2 border-gray-200 dark:border-gray-700 rounded-2xl outline-none focus:border-[#A0522D] text-gray-900 dark:text-gray-100 placeholder-gray-400 transition-all font-medium text-base disabled:opacity-50 disabled:cursor-wait shadow-sm"
+          className="w-full pl-12 pr-4 py-4 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-2xl outline-none focus:border-[#A0522D] text-slate-800 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-600 transition-all font-medium text-base disabled:opacity-50 disabled:cursor-wait shadow-sm"
         />
 
         {showDrop && (
-          <div className="absolute top-[calc(100%+8px)] left-0 right-0 z-50 bg-white dark:bg-[#1a1d24] border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl overflow-hidden">
+          <div className="absolute top-[calc(100%+8px)] left-0 right-0 z-50 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl overflow-hidden">
             <ul className="py-1 max-h-64 overflow-y-auto">
               {suggestions.map((ing, i) => {
                 const name = ing.nombre;
@@ -164,14 +286,13 @@ function IngredientSearch({ onAdd, allIngredients, loadingIngredients }) {
                       handleSelect(ing);
                     }}
                     onMouseEnter={() => setActiveIdx(i)}
-                    className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors text-sm ${
-                      i === activeIdx
-                        ? "bg-[#A0522D]/10 dark:bg-[#A0522D]/20"
-                        : "hover:bg-gray-50 dark:hover:bg-gray-800/60"
-                    }`}
+                    className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors text-sm ${i === activeIdx
+                      ? "bg-[#A0522D]/10 dark:bg-[#A0522D]/20 text-[#A0522D]"
+                      : "hover:bg-slate-50 dark:hover:bg-slate-800/60"
+                      }`}
                   >
                     <div className="min-w-0 flex-1">
-                      <p className="font-medium text-gray-800 dark:text-gray-200 truncate">
+                      <p className="font-semibold text-slate-800 dark:text-slate-200 truncate">
                         {highlight(name, query)}
                       </p>
                     </div>
@@ -185,51 +306,42 @@ function IngredientSearch({ onAdd, allIngredients, loadingIngredients }) {
 
       {selectedIngredient && (
         <div className="flex gap-2.5 animate-fade-in">
-          <input
-            type="number"
-            min="0.1"
-            step="0.1"
-            placeholder="Cant."
-            value={cantidad}
-            onChange={(e) => setCantidad(e.target.value)}
-            className="w-24 text-center px-4 py-3 bg-white dark:bg-[#1a1d24] border-2 border-gray-200 dark:border-gray-700 rounded-2xl outline-none focus:border-[#A0522D] text-gray-900 dark:text-gray-100 placeholder-gray-400 transition-all font-medium text-base shadow-sm"
-          />
-          <div className="relative flex-1">
+          <div className="flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-1 shadow-sm shrink-0">
             <button
               type="button"
-              onClick={() => setIsOpenUnidad(!isOpenUnidad)}
-              className="w-full flex justify-between items-center px-4 py-3 bg-white dark:bg-[#1a1d24] border-2 border-gray-200 dark:border-gray-700 rounded-2xl outline-none focus:border-[#A0522D] text-gray-900 dark:text-gray-100 font-medium text-base shadow-sm text-left"
+              onClick={() => setCantidad((prev) => Math.max(0.1, Number((Number(prev || 1) - (unidad === 'g' ? 10 : 0.5)).toFixed(1))).toString())}
+              className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold transition-colors active:scale-90"
             >
-              <span className="truncate pr-2">
-                {unidad === 'g' ? 'Gramos (g)' : unidad === 'unidad' ? 'Unidades (ud)' : unidad === 'cda' ? 'Cucharadas (cda)' : 'Tazas'}
-              </span>
-              <svg xmlns="http://www.w3.org/2000/svg" className={`w-4 h-4 text-gray-400 shrink-0 transition-transform duration-300 ${isOpenUnidad ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M20 12H4" />
               </svg>
             </button>
-            {isOpenUnidad && (
-              <>
-                <div className="fixed inset-0 z-40" onClick={() => setIsOpenUnidad(false)}></div>
-                <div className="absolute z-50 w-full mt-2 bg-white dark:bg-[#1a1d24] border border-gray-200 dark:border-gray-700 rounded-2xl shadow-xl py-2 top-full right-0">
-                  {[
-                    { val: 'g', label: 'Gramos (g)' },
-                    { val: 'unidad', label: 'Unidades (ud)' },
-                    { val: 'cda', label: 'Cucharadas (cda)' },
-                    { val: 'taza', label: 'Tazas' }
-                  ].map(u => (
-                    <button
-                      key={u.val}
-                      type="button"
-                      onClick={() => { setUnidad(u.val); setIsOpenUnidad(false); }}
-                      className="w-full text-left px-4 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                    >
-                      {u.label}
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
+
+            <input
+              type="number"
+              min="0.1"
+              step="0.1"
+              placeholder="Cant."
+              value={cantidad}
+              onChange={(e) => setCantidad(e.target.value)}
+              className="w-12 text-center text-sm font-bold bg-transparent border-none outline-none text-slate-800 dark:text-slate-100 placeholder:text-slate-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            />
+
+            <button
+              type="button"
+              onClick={() => setCantidad((prev) => Number(((Number(prev) || 0) + (unidad === 'g' ? 10 : 0.5)).toFixed(1)).toString())}
+              className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold transition-colors active:scale-90"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+              </svg>
+            </button>
           </div>
+          <CustomUnitSelect
+            value={unidad}
+            onChange={setUnidad}
+            fullWidth={true}
+          />
           <button
             type="button"
             onClick={handleAdd}
@@ -256,25 +368,26 @@ const getItemGrams = (item) => {
   return item.cantidad; // 'g'
 };
 
-function IngredientRow({ item, onUpdateQuantity, onUpdateUnit, onRemove }) {
+function IngredientRow({ item, index = 0, totalCount = 1, onUpdateQuantity, onUpdateUnit, onRemove }) {
   const [isOpenUnit, setIsOpenUnit] = useState(false);
   const name = item.nombre;
   const grams = getItemGrams(item);
   const factor = grams / 100;
+  const opensUpward = totalCount >= 2 && index >= totalCount - 2;
 
   const handleAdjust = (val) => {
     onUpdateQuantity(item._uid, Math.max(0.1, item.cantidad + val));
   };
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700/60 group transition-all hover:shadow-sm">
+    <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 bg-white dark:bg-slate-900/60 rounded-2xl border border-slate-200 dark:border-slate-800 group transition-all hover:shadow-sm">
       {/* Name */}
       <div className="flex-1 min-w-0">
-        <p className="font-bold text-gray-800 dark:text-gray-100 text-base truncate">
+        <p className="font-bold text-slate-800 dark:text-slate-100 text-base truncate">
           {name}
         </p>
-        <div className="flex flex-wrap gap-x-2 text-xs text-gray-400 mt-1">
-          <span className="font-medium text-[#A0522D]">{(item.calorias_por_100g * factor).toFixed(0)} kcal</span>
+        <div className="flex flex-wrap gap-x-2 text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">
+          <span className="font-bold text-[#A0522D] dark:text-[#d4906a]">{(item.calorias_por_100g * factor).toFixed(0)} kcal</span>
           <span className="opacity-40">•</span>
           <span>P: {(item.proteinas_por_100g * factor).toFixed(1)}g</span>
           <span className="opacity-40">•</span>
@@ -287,30 +400,32 @@ function IngredientRow({ item, onUpdateQuantity, onUpdateUnit, onRemove }) {
       </div>
 
       {/* Controller: Quantity and Unit Selection */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 shrink-0">
         {/* Quantity Controller Box */}
-        <div className="flex items-center bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-1 shadow-sm">
+        <div className="flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-1 shadow-sm">
           <button
+            type="button"
             onClick={() => handleAdjust(item.unidad === 'g' ? -10 : -0.5)}
-            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 transition-colors active:scale-90"
+            className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold transition-colors active:scale-90"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M20 12H4" />
             </svg>
           </button>
-          
+
           <input
             type="number"
             min={0.1}
             step={item.unidad === 'g' ? 1 : 0.1}
             value={item.cantidad}
             onChange={(e) => onUpdateQuantity(item._uid, Math.max(0.1, Number(e.target.value)))}
-            className="w-12 text-center text-sm font-black bg-transparent border-none outline-none text-gray-900 dark:text-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            className="w-12 text-center text-sm font-bold bg-transparent border-none outline-none text-slate-800 dark:text-slate-100 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
           />
 
           <button
+            type="button"
             onClick={() => handleAdjust(item.unidad === 'g' ? 10 : 0.5)}
-            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 transition-colors active:scale-90"
+            className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold transition-colors active:scale-90"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
@@ -318,51 +433,12 @@ function IngredientRow({ item, onUpdateQuantity, onUpdateUnit, onRemove }) {
           </button>
         </div>
 
-        {/* Custom Dropdown Selector */}
-        <div className="relative">
-          <button
-            type="button"
-            onClick={() => setIsOpenUnit(!isOpenUnit)}
-            className="flex items-center gap-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-xs font-bold text-[#A0522D] dark:text-[#d4906a] rounded-xl px-3 py-2 outline-none cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-all shadow-sm select-none"
-          >
-            <span>
-              {item.unidad === 'g' ? 'Gramos (g)' : item.unidad === 'unidad' ? 'Unidades (ud)' : item.unidad === 'cda' ? 'Cucharadas (cda)' : 'Tazas'}
-            </span>
-            <svg xmlns="http://www.w3.org/2000/svg" className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-300 ${isOpenUnit ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-
-          {isOpenUnit && (
-            <>
-              <div className="fixed inset-0 z-40" onClick={() => setIsOpenUnit(false)}></div>
-              <div className="absolute right-0 top-[calc(100%+6px)] z-50 min-w-[140px] bg-white dark:bg-[#1a1d24] border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl py-1.5 overflow-hidden animate-fade-in">
-                {[
-                  { val: 'g', label: 'Gramos (g)' },
-                  { val: 'unidad', label: 'Unidades (ud)' },
-                  { val: 'cda', label: 'Cucharadas (cda)' },
-                  { val: 'taza', label: 'Tazas' }
-                ].map(u => (
-                  <button
-                    key={u.val}
-                    type="button"
-                    onClick={() => {
-                      onUpdateUnit(item._uid, u.val);
-                      setIsOpenUnit(false);
-                    }}
-                    className={`w-full text-left px-4 py-2.5 text-xs font-semibold transition-colors ${
-                      item.unidad === u.val
-                        ? 'bg-[#A0522D]/10 text-[#A0522D] dark:bg-[#A0522D]/20 dark:text-[#d4906a]'
-                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
-                    }`}
-                  >
-                    {u.label}
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
-        </div>
+        {/* Custom Styled Unit Select Portal */}
+        <CustomUnitSelect
+          value={item.unidad}
+          onChange={(newVal) => onUpdateUnit(item._uid, newVal)}
+          fullWidth={false}
+        />
       </div>
     </div>
   );
@@ -377,6 +453,8 @@ function MacroCalculatorInner() {
   const [selectedItems, setSelectedItems] = useState([]);
   const [isCopilotOpen, setIsCopilotOpen] = useState(false);
   const [recipeName, setRecipeName] = useState(null);
+  const [recipeSteps, setRecipeSteps] = useState([]);
+  const [completedSteps, setCompletedSteps] = useState({});
 
   // Load ingredient catalogue from Supabase
   useEffect(() => {
@@ -393,7 +471,7 @@ function MacroCalculatorInner() {
       .finally(() => setLoadingIngredients(false));
   }, []);
 
-    const handleAdd = (ing, cantidad = 100, unidad = 'g') => {
+  const handleAdd = (ing, cantidad = 100, unidad = 'g') => {
     setSelectedItems((prev) => [
       ...prev,
       { cantidad, unidad, ...ing, _uid: nextUid() },
@@ -419,6 +497,8 @@ function MacroCalculatorInner() {
   const handleClear = () => {
     setSelectedItems([]);
     setRecipeName(null);
+    setRecipeSteps([]);
+    setCompletedSteps({});
   };
 
   // Totals Summation
@@ -465,25 +545,39 @@ function MacroCalculatorInner() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-        {/* LEFT: Management */}
-        <div className="lg:col-span-3 flex flex-col gap-6">
-          {/* Search */}
-          <div className="bg-white dark:bg-[#0f1115] rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800 p-6">
-            <h2 className="text-base font-bold text-gray-700 dark:text-gray-300 mb-4 flex items-center gap-2">
-              <span className="w-6 h-6 bg-[#A0522D] rounded-lg flex items-center justify-center text-white text-xs font-black">1</span>
-              Busca y añade
-            </h2>
-            <IngredientSearch
-              onAdd={handleAdd}
-              allIngredients={allIngredients}
-              loadingIngredients={loadingIngredients}
-            />
-          </div>
+      {/* ROW 1: Search (1) + Total Energy */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-stretch mb-8">
+        {/* Search */}
+        <div className="lg:col-span-3 bg-white dark:bg-[#0f1115] rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 flex flex-col justify-center">
+          <h2 className="text-base font-bold text-gray-700 dark:text-gray-300 mb-4 flex items-center gap-2">
+            <span className="w-6 h-6 bg-[#A0522D] rounded-lg flex items-center justify-center text-white text-xs font-black">1</span>
+            Busca y añade
+          </h2>
+          <IngredientSearch
+            onAdd={handleAdd}
+            allIngredients={allIngredients}
+            loadingIngredients={loadingIngredients}
+          />
+        </div>
 
-          {/* List */}
-          <div className="bg-white dark:bg-[#0f1115] rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 flex flex-col gap-3 min-h-[400px]">
-             <div className="flex items-center justify-between">
+        {/* Calorías (Energía Total) */}
+        <div className="lg:col-span-2 bg-linear-to-br from-[#A0522D] to-[#7a3d20] text-white rounded-3xl p-6 shadow-xl shadow-[#A0522D]/20 flex flex-col justify-center text-center">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] opacity-80 mb-2">Energía Total</p>
+          <div className="flex items-baseline justify-center gap-2">
+            <span className="text-6xl md:text-7xl font-black tabular-nums tracking-tighter">
+              {Math.round(totals.calorias)}
+            </span>
+            <span className="text-xl font-bold opacity-60">kcal</span>
+          </div>
+        </div>
+      </div>
+
+      {/* ROW 2: Ingredients (2) + Nutritional Distribution */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-stretch">
+        {/* List (Ingredientes en el plato) */}
+        <div className="lg:col-span-3 bg-white dark:bg-[#0f1115] rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 flex flex-col justify-between h-full min-h-[300px]">
+          <div className="flex flex-col gap-3 h-full">
+            <div className="flex items-center justify-between">
               <h2 className="text-base font-bold text-gray-700 dark:text-gray-300 flex flex-col gap-1">
                 <div className="flex items-center gap-2">
                   <span className="w-6 h-6 bg-[#A0522D] rounded-lg flex items-center justify-center text-white text-xs font-black">2</span>
@@ -518,11 +612,13 @@ function MacroCalculatorInner() {
                 <p className="text-sm font-medium">El plato está vacío</p>
               </div>
             ) : (
-              <div className="flex flex-col gap-3 mt-4">
-                {selectedItems.map((item) => (
+              <div className="flex flex-col gap-3 mt-4 max-h-[380px] min-h-[220px] overflow-y-auto pr-1 pb-4">
+                {selectedItems.map((item, index) => (
                   <IngredientRow
                     key={item._uid}
                     item={item}
+                    index={index}
+                    totalCount={selectedItems.length}
                     onUpdateQuantity={handleUpdateQuantity}
                     onUpdateUnit={handleUpdateUnit}
                     onRemove={handleRemove}
@@ -533,97 +629,141 @@ function MacroCalculatorInner() {
           </div>
         </div>
 
-        {/* RIGHT: Results */}
-        <div className="lg:col-span-2 flex flex-col gap-6">
-          {/* Calorias */}
-          <div className="bg-linear-to-br from-[#A0522D] to-[#7a3d20] text-white rounded-[2rem] p-8 shadow-xl shadow-[#A0522D]/20 text-center">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] opacity-80 mb-2">Energía Total</p>
-            <div className="flex items-baseline justify-center gap-2">
-              <span className="text-7xl font-black tabular-nums tracking-tighter">
-                {Math.round(totals.calorias)}
-              </span>
-              <span className="text-xl font-bold opacity-60">kcal</span>
+        {/* Breakdown (Distribución Nutricional) */}
+        <div className="lg:col-span-2 bg-white dark:bg-[#0f1115] rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 flex flex-col justify-between h-full min-h-[300px]">
+          <h2 className="text-base font-bold text-gray-700 dark:text-gray-300 mb-4 px-1 text-center">Distribución Nutricional</h2>
+
+          {selectedItems.length > 0 && (
+            <div className="flex justify-center mb-6 relative">
+              <svg width="150" height="150" className="-rotate-90">
+                <circle cx="75" cy="75" r="42" fill="none" stroke="#f3f4f6" strokeWidth="16" className="dark:stroke-gray-800" />
+                {/* Carbs */}
+                <circle
+                  cx="75" cy="75" r="42" fill="none"
+                  stroke="#3b82f6" strokeWidth="16"
+                  strokeDasharray={`${(pctC / 100) * (2 * Math.PI * 42)} ${2 * Math.PI * 42}`}
+                  strokeLinecap="round"
+                  className="transition-all duration-500"
+                />
+                {/* Protein */}
+                <circle
+                  cx="75" cy="75" r="42" fill="none"
+                  stroke="#10b981" strokeWidth="16"
+                  strokeDasharray={`${(pctP / 100) * (2 * Math.PI * 42)} ${2 * Math.PI * 42}`}
+                  strokeDashoffset={-((pctC / 100) * (2 * Math.PI * 42))}
+                  strokeLinecap="round"
+                  className="transition-all duration-500"
+                />
+                {/* Fat */}
+                <circle
+                  cx="75" cy="75" r="42" fill="none"
+                  stroke="#f59e0b" strokeWidth="16"
+                  strokeDasharray={`${(pctF / 100) * (2 * Math.PI * 42)} ${2 * Math.PI * 42}`}
+                  strokeDashoffset={-(((pctC + pctP) / 100) * (2 * Math.PI * 42))}
+                  strokeLinecap="round"
+                  className="transition-all duration-500"
+                />
+                {/* Fiber */}
+                <circle
+                  cx="75" cy="75" r="42" fill="none"
+                  stroke="#8b5cf6" strokeWidth="16"
+                  strokeDasharray={`${(pctFib / 100) * (2 * Math.PI * 42)} ${2 * Math.PI * 42}`}
+                  strokeDashoffset={-(((pctC + pctP + pctF) / 100) * (2 * Math.PI * 42))}
+                  strokeLinecap="round"
+                  className="transition-all duration-500"
+                />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center flex-col pointer-events-none">
+                <span className="text-xs font-bold text-gray-400 uppercase">Kcal</span>
+                <span className="text-xl font-black text-gray-800 dark:text-white">
+                  {Math.round(totals.calorias)}
+                </span>
+              </div>
             </div>
+          )}
+
+          <div className="grid grid-cols-2 gap-3">
+            <MacroPill label="Proteínas" value={totals.proteinas} unit="g" color="border-emerald-100 dark:border-emerald-900/40 bg-emerald-50/50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400" />
+            <MacroPill label="Carbos" value={totals.carbohidratos} unit="g" color="border-blue-100 dark:border-blue-900/40 bg-blue-50/50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400" />
+            <MacroPill label="Grasas" value={totals.grasas} unit="g" color="border-amber-100 dark:border-amber-900/40 bg-amber-50/50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400" />
+            <MacroPill label="Fibra" value={totals.fibra} unit="g" color="border-violet-100 dark:border-violet-900/40 bg-violet-50/50 dark:bg-violet-950/20 text-violet-600 dark:text-violet-400" />
           </div>
 
-          {/* Breakdown */}
-          <div className="bg-white dark:bg-[#0f1115] rounded-[2rem] shadow-sm border border-gray-100 dark:border-gray-800 p-6">
-            <h2 className="text-base font-bold text-gray-700 dark:text-gray-300 mb-6 px-1 text-center">Distribución Nutricional</h2>
-
-            {selectedItems.length > 0 && (
-              <div className="flex justify-center mb-8 relative">
-                 <svg width="160" height="160" className="-rotate-90">
-                  <circle cx="80" cy="80" r="45" fill="none" stroke="#f3f4f6" strokeWidth="18" className="dark:stroke-gray-800" />
-                  {/* Carbs */}
-                  <circle
-                    cx="80" cy="80" r="45" fill="none"
-                    stroke="#3b82f6" strokeWidth="18"
-                    strokeDasharray={`${(pctC / 100) * CIRCUMFERENCE} ${CIRCUMFERENCE}`}
-                    strokeLinecap="round"
-                    className="transition-all duration-500"
-                  />
-                  {/* Protein */}
-                  <circle
-                    cx="80" cy="80" r="45" fill="none"
-                    stroke="#10b981" strokeWidth="18"
-                    strokeDasharray={`${(pctP / 100) * CIRCUMFERENCE} ${CIRCUMFERENCE}`}
-                    strokeDashoffset={-((pctC / 100) * CIRCUMFERENCE)}
-                    strokeLinecap="round"
-                    className="transition-all duration-500"
-                  />
-                  {/* Fat */}
-                  <circle
-                    cx="80" cy="80" r="45" fill="none"
-                    stroke="#f59e0b" strokeWidth="18"
-                    strokeDasharray={`${(pctF / 100) * CIRCUMFERENCE} ${CIRCUMFERENCE}`}
-                    strokeDashoffset={-(((pctC + pctP) / 100) * CIRCUMFERENCE)}
-                    strokeLinecap="round"
-                    className="transition-all duration-500"
-                  />
-                  {/* Fiber */}
-                  <circle
-                    cx="80" cy="80" r="45" fill="none"
-                    stroke="#8b5cf6" strokeWidth="18"
-                    strokeDasharray={`${(pctFib / 100) * CIRCUMFERENCE} ${CIRCUMFERENCE}`}
-                    strokeDashoffset={-(((pctC + pctP + pctF) / 100) * CIRCUMFERENCE)}
-                    strokeLinecap="round"
-                    className="transition-all duration-500"
-                  />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center flex-col pointer-events-none">
-                   <span className="text-xs font-bold text-gray-400 uppercase">Kcal</span>
-                   <span className="text-xl font-black text-gray-800 dark:text-white">
-                    {Math.round(totals.calorias)}
-                   </span>
-                </div>
-              </div>
-            )}
-
-            <div className="grid grid-cols-2 gap-3">
-              <MacroPill label="Proteínas" value={totals.proteinas} unit="g" color="border-emerald-100 dark:border-emerald-900/40 bg-emerald-50/50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400" />
-              <MacroPill label="Carbos" value={totals.carbohidratos} unit="g" color="border-blue-100 dark:border-blue-900/40 bg-blue-50/50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400" />
-              <MacroPill label="Grasas" value={totals.grasas} unit="g" color="border-amber-100 dark:border-amber-900/40 bg-amber-50/50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400" />
-              <MacroPill label="Fibra" value={totals.fibra} unit="g" color="border-violet-100 dark:border-violet-900/40 bg-violet-50/50 dark:bg-violet-950/20 text-violet-600 dark:text-violet-400" />
+          {selectedItems.length > 0 && (
+            <div className="mt-4 flex justify-center flex-wrap gap-4 border-t border-gray-100 dark:border-gray-800 pt-4">
+              {[
+                { color: "bg-blue-500", label: "C" },
+                { color: "bg-emerald-500", label: "P" },
+                { color: "bg-amber-500", label: "G" },
+                { color: "bg-violet-500", label: "F" },
+              ].map((l) => (
+                <span key={l.label} className="flex items-center gap-1.5 text-[10px] font-black uppercase text-gray-400">
+                  <span className={`w-2 h-2 rounded-full ${l.color}`} />
+                  {l.label}
+                </span>
+              ))}
             </div>
-
-            {selectedItems.length > 0 && (
-              <div className="mt-8 flex justify-center flex-wrap gap-4 border-t border-gray-100 dark:border-gray-800 pt-6">
-                {[
-                  { color: "bg-blue-500", label: "C" },
-                  { color: "bg-emerald-500", label: "P" },
-                  { color: "bg-amber-500", label: "G" },
-                  { color: "bg-violet-500", label: "F" },
-                ].map((l) => (
-                  <span key={l.label} className="flex items-center gap-1.5 text-[10px] font-black uppercase text-gray-400">
-                    <span className={`w-2 h-2 rounded-full ${l.color}`} />
-                    {l.label}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
+          )}
         </div>
       </div>
+
+      {/* Preparation Steps Section (Below Ingredients & Macros) */}
+      {recipeSteps && recipeSteps.length > 0 && (
+        <div className="mt-8 bg-white dark:bg-[#0f1115] rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 flex flex-col gap-3 animate-fade-in">
+          <div className="flex items-center justify-between">
+            <h2 className="text-base font-bold text-gray-700 dark:text-gray-300 flex flex-col gap-1">
+              <div className="flex items-center gap-2">
+                <span className="w-6 h-6 bg-[#A0522D] rounded-lg flex items-center justify-center text-white text-xs font-black">
+                  3
+                </span>
+                Pasos de preparación
+              </div>
+              {recipeName && (
+                <span className="text-xs text-[#A0522D] dark:text-[#d4906a] font-black uppercase tracking-wider mt-1 block">
+                  Receta: {recipeName}
+                </span>
+              )}
+            </h2>
+            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-full">
+              {Object.keys(completedSteps).filter(k => completedSteps[k]).length} / {recipeSteps.length} completados
+            </span>
+          </div>
+
+          {/* Scrollable list container with max height limit */}
+          <div className="max-h-[350px] overflow-y-auto pr-1 flex flex-col gap-3 mt-2">
+            {recipeSteps.map((paso, idx) => {
+              const isDone = !!completedSteps[idx];
+              const stepText = paso.replace(/^Paso\s*\d+:\s*/i, '');
+              return (
+                <div
+                  key={idx}
+                  onClick={() => setCompletedSteps(prev => ({ ...prev, [idx]: !prev[idx] }))}
+                  className={`flex items-start gap-4 p-4 rounded-2xl cursor-pointer transition-all border ${isDone
+                    ? 'bg-slate-100/60 dark:bg-slate-900/50 border-slate-200 dark:border-slate-800 opacity-60'
+                    : 'bg-slate-50 dark:bg-slate-900/40 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800'
+                    }`}
+                >
+                  <button
+                    type="button"
+                    className={`mt-0.5 shrink-0 w-7 h-7 rounded-xl border-2 flex items-center justify-center font-bold text-xs transition-colors ${isDone
+                      ? 'bg-[#A0522D] border-[#A0522D] text-white shadow-sm'
+                      : 'border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800'
+                      }`}
+                  >
+                    {isDone ? '✓' : idx + 1}
+                  </button>
+                  <p className={`text-sm leading-relaxed ${isDone
+                    ? 'line-through text-slate-400 dark:text-slate-600'
+                    : 'text-slate-800 dark:text-slate-200 font-semibold'
+                    }`}>
+                    {stepText}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Floating Copilot Toggle Button */}
       <button
@@ -636,12 +776,16 @@ function MacroCalculatorInner() {
       </button>
 
       {/* Copilot Drawer Component */}
-      <CopilotChat 
-        isOpen={isCopilotOpen} 
+      <CopilotChat
+        isOpen={isCopilotOpen}
         onClose={() => setIsCopilotOpen(false)}
         onAdd={handleAdd}
         onClear={handleClear}
         onSetRecipeName={setRecipeName}
+        onSetRecipeSteps={(steps) => {
+          setRecipeSteps(steps);
+          setCompletedSteps({});
+        }}
       />
     </div>
   );

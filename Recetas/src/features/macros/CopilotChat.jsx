@@ -3,9 +3,10 @@ import { useAuth } from '@/features/auth/context/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 import { Sparkles } from 'lucide-react';
 
-export default function CopilotChat({ isOpen, onClose, onAdd, onClear, onSetRecipeName }) {
+export default function CopilotChat({ isOpen, onClose, onAdd, onClear, onSetRecipeName, onSetRecipeSteps }) {
   const { session } = useAuth();
   const [message, setMessage] = useState('');
+  const [expandedRecipeIndex, setExpandedRecipeIndex] = useState({});
   const [history, setHistory] = useState([
     {
       role: 'assistant',
@@ -111,9 +112,10 @@ export default function CopilotChat({ isOpen, onClose, onAdd, onClear, onSetReci
     
     setUsingRecipe(true);
     try {
-      // 1. Limpiar calculadora actual e indicar el nombre de la receta
+      // 1. Limpiar calculadora actual e indicar el nombre y pasos de la receta
       if (onClear) onClear();
       if (onSetRecipeName) onSetRecipeName(recipe.nombre);
+      if (onSetRecipeSteps && recipe.pasos) onSetRecipeSteps(recipe.pasos);
 
       // 2. Por cada ingrediente, buscar en la BD (core_ingrediente)
       for (const ing of recipe.ingredientes) {
@@ -189,7 +191,7 @@ export default function CopilotChat({ isOpen, onClose, onAdd, onClear, onSetReci
             return nameA.length - nameB.length;
           });
 
-                    const foundIng = data[0];
+          const foundIng = data[0];
           // 3. Añadir a la calculadora con la cantidad y unidad sugeridas por la IA
           const qty = ing.cantidad || ing.gramos || 100;
           const unit = ing.unidad || 'g';
@@ -205,6 +207,10 @@ export default function CopilotChat({ isOpen, onClose, onAdd, onClear, onSetReci
     } finally {
       setUsingRecipe(false);
     }
+  };
+
+  const toggleExpandRecipe = (key) => {
+    setExpandedRecipeIndex(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
   return (
@@ -286,19 +292,81 @@ export default function CopilotChat({ isOpen, onClose, onAdd, onClear, onSetReci
                        <p className="text-[15px] leading-relaxed font-['Inter']">{msg.content.mensaje}</p>
                     )}
                     
-                    {msg.content.tipo === 'opciones' && msg.content.opciones?.map((recipe, idx) => (
-                      <div key={idx} className="bg-[#261e1a] p-4 rounded-xl border border-white/5 hover:border-[#A0522D]/50 transition-colors group">
-                        <h4 className="font-bold text-white mb-1">{recipe.nombre}</h4>
-                        <p className="text-xs text-[#dac1b8] mb-3">{recipe.descripcion}</p>
+                    {msg.content.tipo === 'opciones' && msg.content.opciones?.map((recipe, idx) => {
+                      const recipeKey = `${i}-${idx}`;
+                      const isExpanded = expandedRecipeIndex[recipeKey] ?? false;
+
+                      return (
+                      <div key={idx} className="bg-[#261e1a] p-4 rounded-xl border border-white/10 hover:border-[#A0522D]/50 transition-colors group flex flex-col gap-3">
+                        <div>
+                          <h4 className="font-bold text-white mb-1 text-base">{recipe.nombre}</h4>
+                          <p className="text-xs text-[#dac1b8]">{recipe.descripcion}</p>
+                        </div>
+
+                        {/* Toggle expand btn */}
+                        <button 
+                          type="button"
+                          onClick={() => toggleExpandRecipe(recipeKey)}
+                          className="flex items-center justify-between text-xs font-semibold text-[#b08968] hover:text-[#d4906a] transition-colors pt-1 border-t border-white/5"
+                        >
+                          <span>{isExpanded ? 'Ocultar receta' : 'Ver ingredientes y preparación'}</span>
+                          <svg className={`w-4 h-4 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </button>
+
+                        {isExpanded && (
+                          <div className="flex flex-col gap-3 pt-1 border-t border-white/5 animate-fade-in text-xs">
+                            {/* Ingredients list */}
+                            {recipe.ingredientes && recipe.ingredientes.length > 0 && (
+                              <div className="bg-[#19120f]/80 p-3 rounded-lg border border-white/5">
+                                <h5 className="font-bold text-[#b08968] mb-1.5 flex items-center gap-1.5">
+                                  Ingredientes:
+                                </h5>
+                                <ul className="space-y-1 text-[#dac1b8]">
+                                  {recipe.ingredientes.map((ing, ingIdx) => (
+                                    <li key={ingIdx} className="flex justify-between items-center gap-2">
+                                      <span className="font-medium text-white/90">{ing.nombre}</span>
+                                      <span className="text-white/60 text-[11px] shrink-0 font-mono">
+                                        {ing.cantidad} {ing.unidad}
+                                      </span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+
+                            {/* Steps list */}
+                            {recipe.pasos && recipe.pasos.length > 0 && (
+                              <div className="bg-[#19120f]/80 p-3 rounded-lg border border-white/5">
+                                <h5 className="font-bold text-[#b08968] mb-2 flex items-center gap-1.5">
+                                  Pasos de preparación:
+                                </h5>
+                                <ol className="space-y-2 text-[#dac1b8]">
+                                  {recipe.pasos.map((paso, pasoIdx) => (
+                                    <li key={pasoIdx} className="flex items-start gap-2 leading-relaxed">
+                                      <span className="w-4 h-4 bg-[#A0522D] text-white text-[10px] font-black rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                                        {pasoIdx + 1}
+                                      </span>
+                                      <span className="flex-1">{paso.replace(/^Paso\s*\d+:\s*/i, '')}</span>
+                                    </li>
+                                  ))}
+                                </ol>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
                         <button 
                           onClick={() => handleUseRecipe(recipe)}
                           disabled={usingRecipe}
-                          className="w-full py-2 bg-[#A0522D] hover:bg-[#944925] disabled:opacity-50 disabled:cursor-wait active:scale-[0.98] text-white text-xs font-bold rounded-lg transition-all shadow-[0_4px_14px_0_rgba(160,82,45,0.39)] disabled:shadow-none"
+                          className="w-full py-2.5 bg-[#A0522D] hover:bg-[#944925] disabled:opacity-50 disabled:cursor-wait active:scale-[0.98] text-white text-xs font-bold rounded-lg transition-all shadow-[0_4px_14px_0_rgba(160,82,45,0.39)] disabled:shadow-none mt-1"
                         >
                           {usingRecipe ? 'Cargando ingredientes...' : 'Usar esta receta →'}
                         </button>
                       </div>
-                    ))}
+                    );
+                    })}
                   </div>
                 )}
               </div>
