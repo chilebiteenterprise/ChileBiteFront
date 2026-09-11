@@ -238,11 +238,11 @@ function NavbarContent() {
             </button>
 
             {isLoginOpen && (
-              <div className="absolute top-14 right-0 w-80 bg-overlay rounded-3xl shadow-2xl p-6 z-50 border border-border animate-in fade-in slide-in-from-top-4 duration-200">
+              <div className="absolute top-14 right-0 w-80 bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl p-6 z-50 border border-zinc-200 dark:border-zinc-800 animate-in fade-in slide-in-from-top-4 duration-200">
                 {/* Opciones Generales (Dark Mode) */}
-                <div className="flex justify-between items-center mb-4 pb-4 border-b border-divider">
-                  <span className="text-sm font-bold text-default-500 uppercase tracking-wider">Apariencia</span>
-                  <button onClick={toggleDarkMode} aria-label="Alternar modo oscuro" className="flex items-center justify-center p-2 rounded-full bg-default hover:bg-default-hover transition-colors text-default-600">
+                <div className="flex justify-between items-center mb-4 pb-4 border-b border-zinc-100 dark:border-zinc-800">
+                  <span className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Apariencia</span>
+                  <button onClick={toggleDarkMode} aria-label="Alternar modo oscuro" className="flex items-center justify-center p-2 rounded-full bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors text-zinc-700 dark:text-zinc-300">
                     {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
                   </button>
                 </div>
@@ -251,14 +251,14 @@ function NavbarContent() {
                   isForgotPwOpen ? (
                     <>
                       <h3 className="text-xl font-black mb-2 dark:text-white" style={{ color: "#b08968" }}>Recuperar Acceso</h3>
-                      <p className="text-xs text-default-500 mb-4">Ingresa tu correo y te enviaremos un enlace mágico.</p>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-4">Ingresa tu correo y te enviaremos un enlace mágico.</p>
 
                       <form onSubmit={handleResetPassword} className="space-y-4">
                         <div>
-                          <label className="block text-xs font-bold text-default-600 mb-1 ml-1 uppercase tracking-wide">Email</label>
+                          <label className="block text-xs font-bold text-zinc-600 dark:text-zinc-300 mb-1 ml-1 uppercase tracking-wide">Email</label>
                           <div className="relative">
                             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: "#b08968" }} />
-                            <input type="email" name="email" required className="w-full pl-10 pr-4 py-3 border-2 border-border rounded-xl outline-none bg-field text-foreground placeholder-default-500 focus:border-[#b08968] focus:bg-default transition-colors font-medium" placeholder="tu@email.com" />
+                            <input type="email" name="email" required className="w-full pl-10 pr-4 py-3 border-2 border-zinc-200 dark:border-zinc-700 rounded-xl outline-none bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:border-[#b08968] transition-colors font-medium" placeholder="tu@email.com" />
                           </div>
                         </div>
 
@@ -274,7 +274,7 @@ function NavbarContent() {
                         </button>
                       </form>
 
-                      <div className="mt-5 pt-5 border-t border-divider">
+                      <div className="mt-5 pt-5 border-t border-zinc-100 dark:border-zinc-800">
                         <button type="button" onClick={() => setIsForgotPwOpen(false)} className="w-full text-center text-sm font-extrabold hover:underline" style={{ color: "#b08968" }}>
                           Volver al inicio de sesión
                         </button>
@@ -293,22 +293,22 @@ function NavbarContent() {
                           <>
                             {/* Email */}
                             <div>
-                              <label className="block text-xs font-bold text-default-600 mb-1 ml-1 uppercase tracking-wide">Email</label>
+                              <label className="block text-xs font-bold text-zinc-600 dark:text-zinc-300 mb-1 ml-1 uppercase tracking-wide">Email</label>
                               <div className="relative">
                                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: "#b08968" }} />
-                                <input type="email" name="email" required className="w-full pl-10 pr-4 py-3 border-2 border-border rounded-xl outline-none bg-field text-foreground placeholder-default-500 focus:border-[#b08968] focus:bg-default transition-colors font-medium" placeholder="tu@email.com" />
+                                <input type="email" name="email" required className="w-full pl-10 pr-4 py-3 border-2 border-zinc-200 dark:border-zinc-700 rounded-xl outline-none bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:border-[#b08968] transition-colors font-medium" placeholder="tu@email.com" />
                               </div>
                             </div>
 
                             {/* Password */}
                             <div>
                               <div className="flex justify-between items-end mb-1 ml-1">
-                                <label className="block text-xs font-bold text-default-600 uppercase tracking-wide">Contraseña</label>
+                                <label className="block text-xs font-bold text-zinc-600 dark:text-zinc-300 uppercase tracking-wide">Contraseña</label>
                                 <button type="button" onClick={() => setIsForgotPwOpen(true)} className="text-[10px] font-bold text-[#b08968] hover:underline focus:outline-none">¿Olvidaste tu contraseña?</button>
                               </div>
                               <div className="relative">
                                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: "#b08968" }} />
-                                <input type="password" name="password" required className="w-full pl-10 pr-4 py-3 border-2 border-border rounded-xl outline-none bg-field text-foreground placeholder-default-500 focus:border-[#b08968] focus:bg-default transition-colors font-medium" placeholder="••••••••" />
+                                <input type="password" name="password" required className="w-full pl-10 pr-4 py-3 border-2 border-zinc-200 dark:border-zinc-700 rounded-xl outline-none bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:border-[#b08968] transition-colors font-medium" placeholder="••••••••" />
                               </div>
                             </div>
                           </>
@@ -334,9 +334,9 @@ function NavbarContent() {
                           </button>
                         ) : (
                           <>
-                            <div className="relative my-5"><div className="absolute inset-0 flex items-center"><span className="w-full border-t border-divider"></span></div><div className="relative flex justify-center text-xs uppercase"><span className="bg-overlay px-2 text-default-500 font-bold">O</span></div></div>
+                            <div className="relative my-5"><div className="absolute inset-0 flex items-center"><span className="w-full border-t border-zinc-200 dark:border-zinc-800"></span></div><div className="relative flex justify-center text-xs uppercase"><span className="bg-white dark:bg-zinc-900 px-2 text-zinc-400 font-bold">O</span></div></div>
 
-                            <button type="button" onClick={() => loginWithGoogle()} className="w-full flex items-center justify-center space-x-3 py-3 border-2 border-border text-foreground-700 rounded-xl hover:bg-default-hover transition-colors font-bold truncate">
+                            <button type="button" onClick={() => loginWithGoogle()} className="w-full flex items-center justify-center space-x-3 py-3 border-2 border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-200 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors font-bold truncate">
                               <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-5 h-5 bg-white rounded-full p-0.5" alt="Google" />
                               <span>Continuar con Google</span>
                             </button>
@@ -344,21 +344,21 @@ function NavbarContent() {
                         )}
                       </form>
 
-                      {!mfaChallenge && <div className="mt-5 pt-5 border-t border-divider space-y-2">
-                        <p className="text-center text-sm font-medium text-default-500">¿No tienes cuenta? <a href="/auth/register" className="font-extrabold hover:underline ml-1" style={{ color: "#b08968" }}>Regístrate</a></p>
+                      {!mfaChallenge && <div className="mt-5 pt-5 border-t border-zinc-100 dark:border-zinc-800 space-y-2">
+                        <p className="text-center text-sm font-medium text-zinc-500 dark:text-zinc-400">¿No tienes cuenta? <a href="/auth/register" className="font-extrabold hover:underline ml-1" style={{ color: "#b08968" }}>Regístrate</a></p>
                       </div>}
                     </>
                   )
                 ) : (
                   <div className="space-y-4">
                     {/* Avatar + info */}
-                    <div className="flex items-center space-x-3 pb-4 border-b border-divider">
+                    <div className="flex items-center space-x-3 pb-4 border-b border-zinc-100 dark:border-zinc-800">
                       <div className="w-14 h-14 rounded-full flex items-center justify-center overflow-hidden border-2 p-0.5" style={{ borderColor: "#b08968" }}>
                         <img src={currentAvatar} alt="Avatar" className="w-full h-full object-cover rounded-full" />
                       </div>
                       <div className="overflow-hidden">
-                        <p className="font-extrabold text-foreground truncate text-lg">{profile?.username || user?.user_metadata?.user_name || user?.user_metadata?.full_name || "Usuario"}</p>
-                        <p className="text-xs font-medium text-default-500 truncate w-40">{user.email}</p>
+                        <p className="font-extrabold text-zinc-900 dark:text-zinc-100 truncate text-lg">{profile?.username || user?.user_metadata?.user_name || user?.user_metadata?.full_name || "Usuario"}</p>
+                        <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 truncate w-40">{user.email}</p>
                       </div>
                     </div>
 
@@ -375,7 +375,7 @@ function NavbarContent() {
                     </button>
 
                     {/* Logout */}
-                    <button onClick={handleLogout} className="w-full py-3 text-center rounded-xl text-default-600 font-bold hover:bg-danger-soft hover:text-danger flex items-center justify-center transition-colors">
+                    <button onClick={handleLogout} className="w-full py-3 text-center rounded-xl text-zinc-600 dark:text-zinc-400 font-bold hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-600 dark:hover:text-rose-400 flex items-center justify-center transition-colors">
                       Cerrar sesión
                     </button>
                   </div>
