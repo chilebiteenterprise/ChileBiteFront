@@ -244,6 +244,7 @@ export default function CopilotChat({ isOpen, onClose, onAdd, onClear, onSetReci
               }}
               className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors text-gray-400 hover:text-white"
               title="Limpiar chat"
+              aria-label="Limpiar chat"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -252,6 +253,8 @@ export default function CopilotChat({ isOpen, onClose, onAdd, onClear, onSetReci
             <button 
               onClick={onClose}
               className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors text-white"
+              title="Cerrar Chef IA"
+              aria-label="Cerrar Chef IA"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -420,6 +423,8 @@ export default function CopilotChat({ isOpen, onClose, onAdd, onClear, onSetReci
             <button 
               onClick={handleSend}
               disabled={!session || loading || usage.current >= usage.max || !message.trim()}
+              title="Enviar mensaje"
+              aria-label="Enviar mensaje al Chef IA"
               className="absolute right-2 w-10 h-10 bg-[#A0522D] hover:bg-[#944925] disabled:bg-[#54433c] disabled:opacity-50 text-white rounded-xl flex items-center justify-center transition-all shadow-[0_0_15px_rgba(160,82,45,0.4)] disabled:shadow-none"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

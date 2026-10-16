@@ -44,11 +44,13 @@ const ContenedorFire = ({ selectedDifficulty, setSelectedDifficulty }) => {
                 return (
                     <button
                         key={level}
+                        type="button"
                         className={`p-1 rounded-full transition-all duration-300 transform 
                                     ${isActive ? 'scale-110 drop-shadow-md' : 'hover:scale-105'} 
                                     focus:outline-none`}
                         onClick={() => handleFireClick(level)}
                         title={`Nivel de dificultad ${level}`}
+                        aria-label={`Seleccionar nivel de dificultad ${level}`}
                     >
                         <FireIconSolid 
                             className={`w-7 h-7 transition-colors duration-300 ${!isActive ? 'text-gray-300 dark:text-gray-700' : ''}`}

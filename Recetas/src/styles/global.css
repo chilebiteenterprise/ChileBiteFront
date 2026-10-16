@@ -78,19 +78,19 @@
     --surface-input: #ffffff;       /* Inputs, campos de texto y selects */
     --surface-muted: #efe6d9;       /* Hovers suaves, tags inactivos */
 
-    /* Tipografía y Contraste */
-    --text-main: #2b2623;           /* Títulos, nombres de receta y texto principal */
-    --text-muted: #6e635b;          /* Subtítulos, metadatos y descripciones */
-    --text-subtle: #9c8e84;         /* Placeholders e indicaciones de atajos */
+    /* Tipografía y Contraste WCAG AA compliant */
+    --text-main: #201b18;           /* Títulos, nombres de receta y texto principal */
+    --text-muted: #544942;          /* Subtítulos, metadatos y descripciones (> 6.5:1) */
+    --text-subtle: #73655c;         /* Placeholders e indicaciones (> 4.8:1) */
 
     /* Bordes y Separadores */
     --border-subtle: #e3d8cc;       /* Bordes de tarjetas y divisores */
     --border-strong: #cfc2b3;       /* Bordes activos o al enfocar/hover */
 
     /* Color de Acento / Marca */
-    --brand-primary: #b08969;       /* Terracota/Cobre insignia */
-    --brand-hover: #8d6e53;         /* Hover de botones y enlaces */
-    --brand-subtle: rgba(176, 137, 105, 0.12); /* Fondo suave de selección */
+    --brand-primary: #8c5828;       /* Terracota profundo de alto contraste (> 4.8:1) */
+    --brand-hover: #73451d;         /* Hover de botones y enlaces */
+    --brand-subtle: rgba(140, 88, 40, 0.12); /* Fondo suave de selección */
 
     background-color: var(--bg-page);
     color: var(--text-main);

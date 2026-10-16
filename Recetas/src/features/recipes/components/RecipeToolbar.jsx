@@ -123,12 +123,14 @@ function SearchAutocomplete({ searchQuery, setSearchQuery, allRecipeNames }) {
                     ref={inputRef}
                     id="recipe-search-input"
                     type="text"
+                    aria-label="Buscar recetas"
                     autoComplete="off"
                     spellCheck={false}
                     role="searchbox"
                     aria-autocomplete="list"
-                    aria-controls="recipe-suggestions-list"
+                    aria-controls={showDropdown ? "recipe-suggestions-list" : undefined}
                     aria-activedescendant={activeIndex >= 0 ? `suggestion-${activeIndex}` : undefined}
+                    aria-expanded={showDropdown}
                     placeholder="Buscar recetas..."
                     value={inputValue}
                     onChange={handleInputChange}
@@ -274,6 +276,7 @@ export default function RecipeToolbar({
                     onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
                     className="h-12 w-12 flex items-center justify-center bg-surface-input border border-border-subtle rounded-2xl hover:bg-surface-muted transition-colors text-text-muted shadow-sm"
                     title={sortOrder === "asc" ? "Orden Ascendente" : "Orden Descendente"}
+                    aria-label={sortOrder === "asc" ? "Cambiar a orden descendente" : "Cambiar a orden ascendente"}
                 >
                     <svg
                         className={`w-5 h-5 transition-transform duration-300 ${sortOrder === "desc" ? "rotate-180" : ""}`}
@@ -289,6 +292,7 @@ export default function RecipeToolbar({
                         onClick={() => setFilterSaved(!filterSaved)}
                         className={`h-12 w-12 flex items-center justify-center border rounded-2xl transition-all shadow-sm ${filterSaved ? 'bg-brand-subtle border-brand-primary text-brand-primary shadow-brand-primary/20' : 'bg-surface-input border-border-subtle text-text-subtle hover:text-text-main hover:bg-surface-muted'}`}
                         title={filterSaved ? "Mostrar Todas" : "Mis Favoritos"}
+                        aria-label={filterSaved ? "Mostrar todas las recetas" : "Filtrar por mis recetas favoritas"}
                     >
                         <svg className={`w-5 h-5 ${filterSaved ? 'fill-current' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
@@ -301,6 +305,7 @@ export default function RecipeToolbar({
                     href="/calculadora"
                     className="h-12 px-3.5 sm:px-4 flex items-center gap-2 bg-surface-input border border-border-subtle hover:border-brand-primary/50 hover:bg-surface-muted text-text-main rounded-2xl transition-all shadow-sm font-semibold text-sm group shrink-0"
                     title="Calculadora de Macronutrientes y Porciones"
+                    aria-label="Ir a la Calculadora de Macronutrientes"
                 >
                     <svg className="w-5 h-5 text-brand-primary transition-transform group-hover:scale-110 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <rect x="4" y="2" width="16" height="20" rx="2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>

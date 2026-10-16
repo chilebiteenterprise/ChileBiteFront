@@ -57,6 +57,8 @@ function CustomUnitSelect({ value, onChange, fullWidth = false }) {
         ref={buttonRef}
         type="button"
         onClick={toggleOpen}
+        aria-label="Seleccionar unidad de medida"
+        aria-expanded={isOpen}
         className={`flex items-center justify-between gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-sm font-bold text-slate-800 dark:text-slate-200 rounded-2xl outline-none cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm select-none ${
           fullWidth ? 'w-full px-4 py-3' : 'px-4 py-2.5'
         }`}
@@ -139,7 +141,7 @@ function MacroPill({ label, value, unit, color }) {
         {value.toFixed(1)}
         <span className="text-sm font-semibold ml-0.5">{unit}</span>
       </span>
-      <span className="text-xs font-semibold uppercase tracking-wider opacity-70">
+      <span className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
         {label}
       </span>
     </div>
@@ -254,6 +256,7 @@ function IngredientSearch({ onAdd, allIngredients, loadingIngredients }) {
           ref={inputRef}
           id="macro-ingredient-search"
           type="text"
+          aria-label="Buscar ingrediente por nombre"
           autoComplete="off"
           placeholder={
             loadingIngredients
@@ -311,6 +314,7 @@ function IngredientSearch({ onAdd, allIngredients, loadingIngredients }) {
               type="button"
               onClick={() => setCantidad((prev) => Math.max(0.1, Number((Number(prev || 1) - (unidad === 'g' ? 10 : 0.5)).toFixed(1))).toString())}
               className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold transition-colors active:scale-90"
+              aria-label="Disminuir cantidad"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M20 12H4" />
@@ -324,6 +328,7 @@ function IngredientSearch({ onAdd, allIngredients, loadingIngredients }) {
               placeholder="Cant."
               value={cantidad}
               onChange={(e) => setCantidad(e.target.value)}
+              aria-label="Cantidad de ingrediente"
               className="w-12 text-center text-sm font-bold bg-transparent border-none outline-none text-slate-800 dark:text-slate-100 placeholder:text-slate-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
 
@@ -331,6 +336,7 @@ function IngredientSearch({ onAdd, allIngredients, loadingIngredients }) {
               type="button"
               onClick={() => setCantidad((prev) => Number(((Number(prev) || 0) + (unidad === 'g' ? 10 : 0.5)).toFixed(1)).toString())}
               className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold transition-colors active:scale-90"
+              aria-label="Aumentar cantidad"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
@@ -347,6 +353,7 @@ function IngredientSearch({ onAdd, allIngredients, loadingIngredients }) {
             onClick={handleAdd}
             disabled={!cantidad}
             className="bg-[#A0522D] text-white px-5 rounded-2xl hover:bg-[#944925] disabled:opacity-50 transition-all shadow-md flex items-center justify-center shrink-0"
+            aria-label="Agregar ingrediente al plato"
           >
             <svg className="w-6 h-6 font-bold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
@@ -407,6 +414,7 @@ function IngredientRow({ item, index = 0, totalCount = 1, onUpdateQuantity, onUp
             type="button"
             onClick={() => handleAdjust(item.unidad === 'g' ? -10 : -0.5)}
             className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold transition-colors active:scale-90"
+            aria-label={`Disminuir cantidad de ${name}`}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M20 12H4" />
@@ -419,6 +427,7 @@ function IngredientRow({ item, index = 0, totalCount = 1, onUpdateQuantity, onUp
             step={item.unidad === 'g' ? 1 : 0.1}
             value={item.cantidad}
             onChange={(e) => onUpdateQuantity(item._uid, Math.max(0.1, Number(e.target.value)))}
+            aria-label={`Cantidad de ${name}`}
             className="w-12 text-center text-sm font-bold bg-transparent border-none outline-none text-slate-800 dark:text-slate-100 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
           />
 
@@ -426,6 +435,7 @@ function IngredientRow({ item, index = 0, totalCount = 1, onUpdateQuantity, onUp
             type="button"
             onClick={() => handleAdjust(item.unidad === 'g' ? 10 : 0.5)}
             className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold transition-colors active:scale-90"
+            aria-label={`Aumentar cantidad de ${name}`}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
@@ -439,6 +449,17 @@ function IngredientRow({ item, index = 0, totalCount = 1, onUpdateQuantity, onUp
           onChange={(newVal) => onUpdateUnit(item._uid, newVal)}
           fullWidth={false}
         />
+
+        <button
+          type="button"
+          onClick={() => onRemove(item._uid)}
+          aria-label={`Eliminar ${name} del plato`}
+          className="w-8 h-8 flex items-center justify-center rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+        </button>
       </div>
     </div>
   );
@@ -608,8 +629,8 @@ function MacroCalculatorInner() {
             </div>
 
             {selectedItems.length === 0 ? (
-              <div className="flex-1 flex flex-col items-center justify-center py-10 opacity-30">
-                <p className="text-sm font-medium">El plato está vacío</p>
+              <div className="flex-1 flex flex-col items-center justify-center py-10">
+                <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">El plato está vacío</p>
               </div>
             ) : (
               <div className="flex flex-col gap-3 mt-4 max-h-[380px] min-h-[220px] overflow-y-auto pr-1 pb-4">

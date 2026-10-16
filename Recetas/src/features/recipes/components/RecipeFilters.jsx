@@ -132,6 +132,7 @@ const RecipeFilters = ({
             <button 
               onClick={(e) => { e.stopPropagation(); setIsOpen(!isOpen); }} 
               className="text-text-subtle hover:text-text-main p-1.5 rounded-full hover:bg-surface-muted transition-colors hidden md:block"
+              aria-label={isOpen ? "Colapsar filtros" : "Expandir filtros"}
             >
               <svg className={`w-5 h-5 transition-transform duration-300 ${isOpen ? '' : 'rotate-180'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -142,6 +143,7 @@ const RecipeFilters = ({
             <button 
               onClick={(e) => { e.stopPropagation(); setIsOpen(false); }} 
               className="md:hidden text-text-subtle hover:text-text-main p-2 rounded-full hover:bg-surface-muted transition-colors"
+              aria-label="Cerrar filtros"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
@@ -320,6 +322,7 @@ const RecipeFilters = ({
                 className="text-gray-400 hover:text-red-600 transition-colors p-2 rounded-full hover:bg-red-50 dark:hover:bg-red-950/30"
                 onClick={(e) => { e.stopPropagation(); resetFilters(); }}
                 title="Limpiar filtros"
+                aria-label="Limpiar filtros"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />

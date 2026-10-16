@@ -314,7 +314,7 @@ const RecetarioContent = ({ collectionId, collectionTitle }) => {
                 resetFilters={resetFilters}
             />
 
-            <main className="flex-1 overflow-y-auto px-4 lg:px-6 relative min-h-0 pb-6 rounded-l-2xl">
+            <section className="flex-1 px-4 lg:px-6 relative min-h-0 pb-6 rounded-l-2xl">
                 {collectionTitle && (
                     <div className="mb-6 pt-2">
                         <h1 className="text-3xl font-black text-foreground">{collectionTitle}</h1>
@@ -338,18 +338,19 @@ const RecetarioContent = ({ collectionId, collectionTitle }) => {
                 {loading ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-6 mt-4">
                         {Array.from({ length: 9 }).map((_, i) => (
-                            <div key={i} className="receta-card-wrapper h-[450px]">
+                            <div key={i} className="receta-card-wrapper h-[450px] overflow-hidden">
                                 <RecipeSkeleton />
                             </div>
                         ))}
                     </div>
                 ) : paginatedRecipes.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-6 mt-4">
-                        {paginatedRecipes.map((r) => (
-                            <div key={r.id} className="receta-card-wrapper h-[450px]">
+                        {paginatedRecipes.map((r, i) => (
+                            <div key={r.id} className="receta-card-wrapper h-[450px] overflow-hidden flex flex-col">
                                 {/* PASAR LA FUNCIÓN DE CALLBACK PARA ELIMINACIÓN */}
                                 <RecipeCard 
                                     receta={r} 
+                                    index={i}
                                     usuarioEsAdmin={usuarioEsAdmin} 
                                     isSelected={selectedRecipes.includes(r.id)}
                                     onToggleSelect={handleToggleSelect}
@@ -384,6 +385,7 @@ const RecetarioContent = ({ collectionId, collectionTitle }) => {
                             <>
                                 <button 
                                     onClick={() => setCurrentPage(1)} 
+                                    aria-label="Ir a la página 1"
                                     className="size-9 sm:size-10 flex items-center justify-center rounded-full text-text-muted hover:text-text-main hover:bg-surface-muted/60 font-medium text-sm transition-colors"
                                 >
                                     1
@@ -399,6 +401,7 @@ const RecetarioContent = ({ collectionId, collectionTitle }) => {
                                 <button
                                     key={num}
                                     onClick={() => setCurrentPage(num)}
+                                    aria-label={`Ir a la página ${num}`}
                                     className={`size-9 sm:size-10 flex items-center justify-center rounded-full text-sm transition-all ${
                                         isCurrent 
                                             ? 'bg-brand-primary text-white font-bold shadow-sm shadow-brand-primary/30' 
@@ -417,6 +420,7 @@ const RecetarioContent = ({ collectionId, collectionTitle }) => {
                                 {getPaginationGroup()[getPaginationGroup().length - 1] < totalPages - 1 && <span className="text-text-subtle font-medium px-1">…</span>}
                                 <button 
                                     onClick={() => setCurrentPage(totalPages)} 
+                                    aria-label={`Ir a la página ${totalPages}`}
                                     className="size-9 sm:size-10 flex items-center justify-center rounded-full text-text-muted hover:text-text-main hover:bg-surface-muted/60 font-medium text-sm transition-colors"
                                 >
                                     {totalPages}
@@ -447,7 +451,7 @@ const RecetarioContent = ({ collectionId, collectionTitle }) => {
                         onClearSelection={handleClearSelection}
                     />
                 )}
-            </main>
+            </section>
         </div>
     );
 };

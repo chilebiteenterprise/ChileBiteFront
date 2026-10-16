@@ -70,8 +70,8 @@ const PRODUCTOS = [
   }
 ];
 
-// Extendemos el array para el efecto infinito (7 copias para evitar bordes en scroll ultrasónico)
-const EXTENDED_PRODUCTS = [...PRODUCTOS, ...PRODUCTOS, ...PRODUCTOS, ...PRODUCTOS, ...PRODUCTOS, ...PRODUCTOS, ...PRODUCTOS];
+// Extendemos el array para el efecto suave de carrusel (2 copias en vez de 7 para reducir DOM en 70%)
+const EXTENDED_PRODUCTS = [...PRODUCTOS, ...PRODUCTOS];
 const CARD_WIDTH = 180; 
 const GAP = 12; 
 const TOTAL_WIDTH_SINGLE = PRODUCTOS.length * (CARD_WIDTH + GAP);
@@ -93,6 +93,10 @@ const ProductCard = ({ item }) => {
           <img
             src={item.image}
             alt={item.title}
+            width={154}
+            height={112}
+            loading="lazy"
+            decoding="async"
             className="max-w-full max-h-full object-contain group-hover/card:scale-105 transition-transform duration-500 ease-out"
           />
           

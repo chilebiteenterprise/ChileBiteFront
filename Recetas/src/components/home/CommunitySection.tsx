@@ -55,6 +55,7 @@ export const CommunitySection: React.FC = () => {
               height="432"
               className="rounded-2xl mx-auto w-full object-contain group-hover:scale-102 transition-transform duration-500"
               loading="lazy"
+              decoding="async"
             />
           </div>
         </motion.div>

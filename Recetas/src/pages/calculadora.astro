@@ -14,6 +14,8 @@ import BaseHead from "@/shared/layout/BaseHead.astro";
       title="Calculadora de Macros – ChileBite" 
       description="Calcula los macronutrientes de tu plato combinando ingredientes de nuestra base de datos normalizada USDA. Proteínas, carbohidratos, grasas y calorías en tiempo real."
     />
+    <link rel="preconnect" href="https://tnzpojvhsxjzfachozid.supabase.co" crossorigin />
+    <link rel="dns-prefetch" href="https://tnzpojvhsxjzfachozid.supabase.co" />
   </head>
 
   <body class="transition-colors duration-300">
@@ -23,12 +25,12 @@ import BaseHead from "@/shared/layout/BaseHead.astro";
       <MacroCalculator client:load />
 
       <!-- ── Monetización: Carrusel Premium ── -->
-      <AffiliateCarousel client:load />
+      <AffiliateCarousel client:visible />
       
       <div class="max-w-4xl mx-auto px-4 mt-8">
         <div className="flex justify-center">
           <AdSenseBanner 
-            client:load 
+            client:visible 
             slot="9961213164" 
             className="w-full max-w-2xl"
           />

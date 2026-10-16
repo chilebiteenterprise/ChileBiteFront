@@ -63,6 +63,7 @@ export const GallerySection: React.FC = () => {
               height="384"
               className="rounded-2xl mx-auto w-full max-w-lg object-cover transition-transform duration-500 group-hover:scale-102"
               loading="lazy"
+              decoding="async"
             />
           </motion.div>
         </motion.div>

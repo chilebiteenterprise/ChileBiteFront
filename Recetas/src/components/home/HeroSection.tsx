@@ -10,10 +10,17 @@ export const HeroSection: React.FC = () => {
   return (
     <section className="relative min-h-[92vh] flex items-center justify-center pt-24 pb-16 px-4 overflow-hidden bg-[#111317]">
       {/* Background Image with Ambient Overlay */}
-      <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-1000 scale-105"
-        style={{ backgroundImage: `url('/images/Titulo.webp')` }}
-      >
+      <div className="absolute inset-0 overflow-hidden">
+        <img
+          src="/images/Titulo.webp"
+          alt="ChileBite Portada Gastronómica"
+          width="1920"
+          height="1080"
+          fetchPriority="high"
+          loading="eager"
+          decoding="async"
+          className="w-full h-full object-cover transition-transform duration-1000 scale-105"
+        />
         <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-black/60 to-[#111317]" />
       </div>
 

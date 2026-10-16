@@ -6,7 +6,7 @@ import { useAuth } from '@/features/auth/context/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 import CollectionPickerModal from "./CollectionPickerModal.jsx";
 
-export default function RecipeCard({ receta, usuarioEsAdmin = false, isSelected = false, onToggleSelect }) {
+export default function RecipeCard({ receta, index = 0, usuarioEsAdmin = false, isSelected = false, onToggleSelect }) {
   const { session } = useAuth();
   const [liked, setLiked] = useState(false);
   const [likes, setLikes] = useState(receta.likes ?? receta.contador_likes ?? 0);
@@ -172,6 +172,9 @@ export default function RecipeCard({ receta, usuarioEsAdmin = false, isSelected 
           alt={receta.nombre} 
           width="400"
           height="224"
+          loading={index < 3 ? "eager" : "lazy"}
+          decoding="async"
+          fetchpriority={index === 0 ? "high" : undefined}
           className={`w-full h-full object-cover transition-transform duration-700 ease-in-out ${isSelected ? 'scale-110' : 'group-hover:scale-110'}`} 
           src={receta.imagen_url || "https://placehold.co/800x600?text=Receta"}
           onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/800x600?text=No+Image"; }}
