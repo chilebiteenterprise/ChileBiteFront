@@ -49,7 +49,7 @@ export const CommunitySection: React.FC = () => {
         >
           <div className="relative rounded-3xl overflow-hidden border border-zinc-800 bg-[#191c24] p-2.5">
             <img
-              src="/images/Carta.png"
+              src="/images/Carta.webp"
               alt="Carta de recetas ChileBite"
               width="576"
               height="432"

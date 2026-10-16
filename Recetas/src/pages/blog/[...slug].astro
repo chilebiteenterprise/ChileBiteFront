@@ -51,11 +51,11 @@ const components = {
           </h1>
           <div class="flex items-center space-x-6 text-sm text-gray-400 font-medium">
              <div class="flex items-center space-x-2">
-                <i class="fa-solid fa-calendar-days text-[#b08968]"></i>
+                <svg class="w-4 h-4 text-[#b08968]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                 <time>{new Intl.DateTimeFormat('es-CL', { dateStyle: 'long' }).format(post.data.pubDate)}</time>
              </div>
              <div class="flex items-center space-x-2">
-                <i class="fa-solid fa-location-dot text-[#b08968]"></i>
+                <svg class="w-4 h-4 text-[#b08968]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"/><circle cx="12" cy="10" r="3"/></svg>
                 <span>{post.data.location.label}</span>
              </div>
           </div>
@@ -88,7 +88,7 @@ const components = {
         {/* Back Link */}
         <div class="mt-20 pt-10 border-t border-gray-200 dark:border-white/10">
           <a href="/blog" class="inline-flex items-center space-x-3 text-gray-900 dark:text-white font-black hover:text-[#b08968] transition-all group">
-            <i class="fa-solid fa-arrow-left group-hover:-translate-x-1 transition-transform"></i>
+            <svg class="w-4 h-4 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19 12H5m7 7l-7-7 7-7"/></svg>
             <span>Volver a la Ruta</span>
           </a>
         </div>

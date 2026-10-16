@@ -57,7 +57,7 @@ export const GallerySection: React.FC = () => {
             className="relative rounded-3xl overflow-hidden border border-zinc-800 bg-[#191c24] p-2.5 group"
           >
             <img
-              src="/images/Sitio.png"
+              src="/images/Sitio.webp"
               alt="Interfaz Galería ChileBite"
               width="512"
               height="384"

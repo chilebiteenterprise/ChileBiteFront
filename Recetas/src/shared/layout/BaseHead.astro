@@ -5,6 +5,7 @@ interface Props {
   image?: string;
   canonicalURL?: string;
   robots?: string;
+  preloadImage?: string;
 }
 
 const {
@@ -13,12 +14,17 @@ const {
   image = "https://chilebite.cl/images/Titulo.webp",
   canonicalURL = Astro.props.canonicalURL || (Astro.site ? new URL(Astro.url.pathname, Astro.site).toString() : Astro.url.href),
   robots = "index, follow",
+  preloadImage,
 } = Astro.props;
 ---
 
 <!-- ── Caracteres & Viewport ── -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+{preloadImage && (
+  <link rel="preload" as="image" href={preloadImage} type="image/webp" fetchpriority="high" />
+)}
 
 <!-- ── Favicon ── -->
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -49,18 +55,30 @@ const {
 <meta property="twitter:description" content={description} />
 <meta property="twitter:image" content={image} />
 
-<!-- ── Estilos & Fuentes Externas ── -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-
 <!-- ── Theme & PWA hints ── -->
 <meta name="theme-color" content="#b08968" />
 
-<!-- ── Google AdSense ── -->
+<!-- ── Google AdSense (Carga diferida inteligente para maximizar rendimiento y TBT) ── -->
 <meta name="google-adsense-account" content="ca-pub-8451477510853664" />
-<script
-  async
-  src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8451477510853664"
-  crossorigin="anonymous"></script>
+<script is:inline>
+  function initAdSense() {
+    if (window.__adsenseLoaded) return;
+    window.__adsenseLoaded = true;
+    const s = document.createElement("script");
+    s.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8451477510853664";
+    s.async = true;
+    s.crossOrigin = "anonymous";
+    document.head.appendChild(s);
+  }
+  if ("requestIdleCallback" in window) {
+    requestIdleCallback(() => setTimeout(initAdSense, 800));
+  } else {
+    window.addEventListener("load", () => setTimeout(initAdSense, 1000));
+  }
+  ["scroll", "pointerdown", "touchstart"].forEach((evt) =>
+    window.addEventListener(evt, initAdSense, { once: true, passive: true })
+  );
+</script>
 
 <!-- ── FOUC (Flash of Unstyled Content) Prevention ── -->
 <script is:inline>

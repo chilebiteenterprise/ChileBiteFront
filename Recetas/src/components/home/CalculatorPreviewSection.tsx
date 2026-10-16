@@ -42,9 +42,9 @@ export const CalculatorPreviewSection: React.FC = () => {
                   <Utensils className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-white text-base md:text-lg">
+                  <h3 className="font-bold text-white text-base md:text-lg">
                     Selección de Ingredientes
-                  </h4>
+                  </h3>
                   <p className="text-zinc-400 text-sm md:text-base">
                     Ingresa lo que tienes en tu despensa y deja que nuestro motor
                     descubra las mejores recetas.
@@ -61,9 +61,9 @@ export const CalculatorPreviewSection: React.FC = () => {
                   <Scale className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-white text-base md:text-lg">
+                  <h3 className="font-bold text-white text-base md:text-lg">
                     Cálculo Nutricional de Precisión
-                  </h4>
+                  </h3>
                   <p className="text-zinc-400 text-sm md:text-base">
                     Obtén el desglose automático de calorías, proteínas,
                     carbohidratos y grasas por porción.
@@ -80,9 +80,9 @@ export const CalculatorPreviewSection: React.FC = () => {
                   <Sparkles className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-white text-base md:text-lg">
+                  <h3 className="font-bold text-white text-base md:text-lg">
                     Sugerencias Inteligentes Adaptadas
-                  </h4>
+                  </h3>
                   <p className="text-zinc-400 text-sm md:text-base">
                     IA entrenada para recomendarte alternativas deliciosas de la
                     cocina chilena e internacional.
@@ -118,8 +118,10 @@ export const CalculatorPreviewSection: React.FC = () => {
               className="relative w-full rounded-3xl overflow-hidden border border-zinc-800 bg-[#191c24] p-2.5 group"
             >
               <img
-                src="/images/calculadora_ia.png"
+                src="/images/calculadora_ia.webp"
                 alt="Vista previa de la Calculadora de Recetas con IA"
+                width={586}
+                height={356}
                 className="w-full h-auto object-cover rounded-2xl group-hover:scale-102 transition-transform duration-500"
                 loading="lazy"
               />
