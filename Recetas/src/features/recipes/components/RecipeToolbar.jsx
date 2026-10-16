@@ -113,7 +113,7 @@ function SearchAutocomplete({ searchQuery, setSearchQuery, allRecipeNames }) {
     const showDropdown = isOpen && suggestions.length > 0;
 
     return (
-        <div ref={containerRef} className="relative w-full max-w-md" role="combobox" aria-expanded={showDropdown}>
+        <div ref={containerRef} className="relative w-full max-w-md">
             {/* Input */}
             <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-text-subtle">
@@ -122,15 +122,16 @@ function SearchAutocomplete({ searchQuery, setSearchQuery, allRecipeNames }) {
                 <input
                     ref={inputRef}
                     id="recipe-search-input"
-                    type="text"
+                    type="search"
                     aria-label="Buscar recetas"
                     autoComplete="off"
                     spellCheck={false}
-                    role="searchbox"
+                    role="combobox"
                     aria-autocomplete="list"
+                    aria-expanded={showDropdown}
+                    aria-haspopup="listbox"
                     aria-controls={showDropdown ? "recipe-suggestions-list" : undefined}
                     aria-activedescendant={activeIndex >= 0 ? `suggestion-${activeIndex}` : undefined}
-                    aria-expanded={showDropdown}
                     placeholder="Buscar recetas..."
                     value={inputValue}
                     onChange={handleInputChange}

@@ -206,7 +206,7 @@ function NavbarContent() {
   const renderMfaChallengeForm = () => (
     <>
       <div className="flex items-start gap-3 p-3 rounded-xl bg-default border border-border">
-        <ShieldCheck className="w-5 h-5 shrink-0 mt-0.5" style={{ color: "#b08968" }} />
+        <ShieldCheck className="w-5 h-5 shrink-0 mt-0.5 text-brand-primary dark:text-[#f0a262]" />
         <div className="min-w-0">
           <p className="text-sm font-bold text-foreground">Verificación 2FA</p>
           <p className="text-xs text-default-500 truncate">{mfaChallenge?.email}</p>
@@ -225,7 +225,7 @@ function NavbarContent() {
             setLoginError(null);
           }}
           placeholder="000000"
-          className="w-full px-5 py-3.5 border-2 border-border rounded-xl outline-none bg-field text-foreground placeholder-default-500 focus:border-[#b08968] focus:bg-default transition-colors font-mono text-center text-lg tracking-[0.35em]"
+          className="w-full px-5 py-3.5 border-2 border-border rounded-xl outline-none bg-field text-foreground placeholder-default-500 focus:border-brand-primary focus:bg-default transition-colors font-mono text-center text-lg tracking-[0.35em]"
         />
       </div>
     </>
@@ -238,12 +238,12 @@ function NavbarContent() {
         <div className="flex items-center justify-between h-20">
 
           {/* Logo */}
-          <a href="/" className="flex items-center space-x-3 group cursor-pointer">
+          <a href="/" className="flex items-center space-x-3 group cursor-pointer" aria-label="ChileBite Inicio">
             <div className="relative">
-              <div className="absolute inset-0 rounded-full opacity-20 group-hover:opacity-30 transition-opacity duration-300" style={{ backgroundColor: "#b08968" }} />
-              <ChefHat className="w-8 h-8 relative z-10 transition-transform duration-300 group-hover:rotate-12" style={{ color: "#b08968" }} />
+              <div className="absolute inset-0 rounded-full opacity-20 group-hover:opacity-30 transition-opacity duration-300 bg-brand-primary" />
+              <ChefHat className="w-8 h-8 relative z-10 transition-transform duration-300 group-hover:rotate-12 text-brand-primary dark:text-[#f0a262]" />
             </div>
-            <span className="text-2xl font-bold tracking-tight transition-all duration-300 group-hover:tracking-wide dark:text-white" style={{ color: "#b08968" }}>
+            <span className="text-2xl font-bold tracking-tight transition-all duration-300 group-hover:tracking-wide text-brand-primary dark:text-white">
               Chilebite
             </span>
           </a>
@@ -256,12 +256,11 @@ function NavbarContent() {
                 window.location.pathname === link.href || 
                 (link.href !== '/' && window.location.pathname.startsWith(link.href))
               );
-              const linkColor = isActive ? "#b08968" : (isDarkMode ? "#d1d5db" : "#4b5563");
               return (
                 <a key={link.id} href={link.href} className="relative px-4 py-2 rounded-lg transition-all duration-300 group">
                   <div className="flex items-center space-x-2">
-                    <Icon className={`w-5 h-5 transition-all duration-300 ${isActive ? "scale-110" : "group-hover:scale-110"}`} style={{ color: linkColor }} />
-                    <span className={`font-medium transition-colors duration-300 ${isActive ? "font-semibold" : ""}`} style={{ color: linkColor }}>{link.label}</span>
+                    <Icon className={`w-5 h-5 transition-all duration-300 ${isActive ? "scale-110 text-brand-primary dark:text-[#f0a262]" : "text-zinc-600 dark:text-zinc-300 group-hover:scale-110 group-hover:text-brand-primary"}`} />
+                    <span className={`font-medium transition-colors duration-300 ${isActive ? "font-bold text-brand-primary dark:text-[#f0a262]" : "text-zinc-700 dark:text-zinc-200 group-hover:text-brand-primary"}`}>{link.label}</span>
                   </div>
                 </a>
               );
@@ -270,7 +269,7 @@ function NavbarContent() {
 
           {/* User actions desktop */}
           <div className="hidden md:flex items-center relative" ref={loginRef}>
-            <button onClick={handleUserClick} aria-label="Menú de usuario" className={`p-1.5 rounded-full transition-all duration-300 hover:scale-110 flex items-center justify-center overflow-hidden border-2 ${isLoggedIn ? "border-[#b08968]" : "bg-[#b08968] border-transparent"}`}>
+            <button onClick={handleUserClick} aria-label="Menú de usuario" className={`p-1.5 rounded-full transition-all duration-300 hover:scale-110 flex items-center justify-center overflow-hidden border-2 ${isLoggedIn ? "border-brand-primary" : "bg-brand-primary border-transparent"}`}>
               {isLoggedIn ? (
                 <img src={currentAvatar} alt="Avatar" className="w-7 h-7 object-cover rounded-full" />
               ) : (
@@ -293,15 +292,15 @@ function NavbarContent() {
                 {!isLoggedIn ? (
                   isForgotPwOpen ? (
                     <>
-                      <h3 className="text-xl font-black mb-2 dark:text-white" style={{ color: "#b08968" }}>Recuperar Acceso</h3>
+                      <h3 className="text-xl font-black mb-2 text-brand-primary dark:text-white">Recuperar Acceso</h3>
                       <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-4">Ingresa tu correo y te enviaremos un enlace mágico.</p>
 
                       <form onSubmit={handleResetPassword} className="space-y-4">
                         <div>
                           <label className="block text-xs font-bold text-zinc-600 dark:text-zinc-300 mb-1 ml-1 uppercase tracking-wide">Email</label>
                           <div className="relative">
-                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: "#b08968" }} />
-                            <input type="email" name="email" required className="w-full pl-10 pr-4 py-3 border-2 border-zinc-200 dark:border-zinc-700 rounded-xl outline-none bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:border-[#b08968] transition-colors font-medium" placeholder="tu@email.com" />
+                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-primary dark:text-[#f0a262]" />
+                            <input type="email" name="email" required className="w-full pl-10 pr-4 py-3 border-2 border-zinc-200 dark:border-zinc-700 rounded-xl outline-none bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:border-brand-primary transition-colors font-medium" placeholder="tu@email.com" />
                           </div>
                         </div>
 
@@ -312,20 +311,20 @@ function NavbarContent() {
                           </Alert>
                         )}
 
-                        <button type="submit" disabled={isSendingReset} className="w-full py-3 mt-2 rounded-xl text-white font-extrabold hover:opacity-90 hover:scale-[1.02] transition-all shadow-lg disabled:opacity-50" style={{ backgroundColor: "#b08968", shadowColor: "rgba(176, 137, 104, 0.4)" }}>
+                        <button type="submit" disabled={isSendingReset} className="w-full py-3 mt-2 rounded-xl text-white font-extrabold bg-brand-primary hover:bg-brand-hover hover:scale-[1.02] transition-all shadow-lg disabled:opacity-50">
                           {isSendingReset ? "Enviando..." : "Enviar enlace mágico"}
                         </button>
                       </form>
 
                       <div className="mt-5 pt-5 border-t border-zinc-100 dark:border-zinc-800">
-                        <button type="button" onClick={() => setIsForgotPwOpen(false)} className="w-full text-center text-sm font-extrabold hover:underline" style={{ color: "#b08968" }}>
+                        <button type="button" onClick={() => setIsForgotPwOpen(false)} className="w-full text-center text-sm font-extrabold hover:underline text-brand-primary dark:text-[#f0a262]">
                           Volver al inicio de sesión
                         </button>
                       </div>
                     </>
                   ) : (
                     <>
-                      <h3 className="text-xl font-black mb-4 dark:text-white" style={{ color: "#b08968" }}>
+                      <h3 className="text-xl font-black mb-4 text-brand-primary dark:text-white">
                         {mfaChallenge ? "Verifica tu acceso" : "Iniciar Sesión"}
                       </h3>
 
@@ -338,8 +337,8 @@ function NavbarContent() {
                             <div>
                               <label className="block text-xs font-bold text-zinc-600 dark:text-zinc-300 mb-1 ml-1 uppercase tracking-wide">Email</label>
                               <div className="relative">
-                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: "#b08968" }} />
-                                <input type="email" name="email" required className="w-full pl-10 pr-4 py-3 border-2 border-zinc-200 dark:border-zinc-700 rounded-xl outline-none bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:border-[#b08968] transition-colors font-medium" placeholder="tu@email.com" />
+                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-primary dark:text-[#f0a262]" />
+                                <input type="email" name="email" required className="w-full pl-10 pr-4 py-3 border-2 border-zinc-200 dark:border-zinc-700 rounded-xl outline-none bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:border-brand-primary transition-colors font-medium" placeholder="tu@email.com" />
                               </div>
                             </div>
 
@@ -347,15 +346,15 @@ function NavbarContent() {
                             <div>
                               <div className="flex justify-between items-end mb-1 ml-1">
                                 <label className="block text-xs font-bold text-zinc-600 dark:text-zinc-300 uppercase tracking-wide">Contraseña</label>
-                                <button type="button" onClick={() => setIsForgotPwOpen(true)} className="text-[10px] font-bold text-[#b08968] hover:underline focus:outline-none">¿Olvidaste tu contraseña?</button>
+                                <button type="button" onClick={() => setIsForgotPwOpen(true)} className="text-[10px] font-bold text-brand-primary dark:text-[#f0a262] hover:underline focus:outline-none">¿Olvidaste tu contraseña?</button>
                               </div>
                               <div className="relative">
-                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: "#b08968" }} />
+                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-primary dark:text-[#f0a262]" />
                                 <input 
                                   type={showPassword ? "text" : "password"} 
                                   name="password" 
                                   required 
-                                  className="w-full pl-10 pr-11 py-3 border-2 border-zinc-200 dark:border-zinc-700 rounded-xl outline-none bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:border-[#b08968] transition-colors font-medium" 
+                                  className="w-full pl-10 pr-11 py-3 border-2 border-zinc-200 dark:border-zinc-700 rounded-xl outline-none bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:border-brand-primary transition-colors font-medium" 
                                   placeholder="••••••••" 
                                 />
                                 <button
@@ -384,8 +383,7 @@ function NavbarContent() {
                         <button 
                           type="submit" 
                           disabled={isVerifyingMfa || isLoggingIn} 
-                          className="w-full py-3 mt-2 rounded-xl text-white font-extrabold hover:opacity-90 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg disabled:opacity-60 flex items-center justify-center space-x-2" 
-                          style={{ backgroundColor: "#b08968", shadowColor: "rgba(176, 137, 104, 0.4)" }}
+                          className="w-full py-3 mt-2 rounded-xl text-white font-extrabold bg-brand-primary hover:bg-brand-hover hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg disabled:opacity-60 flex items-center justify-center space-x-2" 
                         >
                           {isLoggingIn ? (
                             <>
@@ -403,7 +401,7 @@ function NavbarContent() {
                         </button>
 
                         {mfaChallenge ? (
-                          <button type="button" onClick={cancelMfaChallenge} className="w-full text-center text-sm font-extrabold hover:underline" style={{ color: "#b08968" }}>
+                          <button type="button" onClick={cancelMfaChallenge} className="w-full text-center text-sm font-extrabold hover:underline text-brand-primary dark:text-[#f0a262]">
                             Volver al inicio de sesión
                           </button>
                         ) : (
@@ -426,7 +424,7 @@ function NavbarContent() {
                       </form>
 
                       {!mfaChallenge && <div className="mt-5 pt-5 border-t border-zinc-100 dark:border-zinc-800 space-y-2">
-                        <p className="text-center text-sm font-medium text-zinc-500 dark:text-zinc-400">¿No tienes cuenta? <a href="/auth/register" className="font-extrabold hover:underline ml-1" style={{ color: "#b08968" }}>Regístrate</a></p>
+                        <p className="text-center text-sm font-medium text-zinc-500 dark:text-zinc-400">¿No tienes cuenta? <a href="/auth/register" className="font-extrabold hover:underline ml-1 text-brand-primary dark:text-[#f0a262]">Regístrate</a></p>
                       </div>}
                     </>
                   )
@@ -434,7 +432,7 @@ function NavbarContent() {
                   <div className="space-y-4">
                     {/* Avatar + info */}
                     <div className="flex items-center space-x-3 pb-4 border-b border-zinc-100 dark:border-zinc-800">
-                      <div className="w-14 h-14 rounded-full flex items-center justify-center overflow-hidden border-2 p-0.5" style={{ borderColor: "#b08968" }}>
+                      <div className="w-14 h-14 rounded-full flex items-center justify-center overflow-hidden border-2 border-brand-primary p-0.5">
                         <img src={currentAvatar} alt="Avatar" className="w-full h-full object-cover rounded-full" />
                       </div>
                       <div className="overflow-hidden">
@@ -449,8 +447,7 @@ function NavbarContent() {
                         window.location.href = "/profile";
                         setIsLoginOpen(false);
                       }}
-                      className="block w-full py-3 text-center rounded-xl text-white font-bold hover:scale-[1.02] transition-all shadow-md"
-                      style={{ backgroundColor: "#b08968" }}
+                      className="block w-full py-3 text-center rounded-xl text-white font-bold bg-brand-primary hover:opacity-95 hover:scale-[1.02] transition-all shadow-md"
                     >
                       Ver mi perfil
                     </button>
@@ -497,8 +494,8 @@ function NavbarContent() {
                     onClick={() => setIsMobileMenuOpen(false)}
                     className={`flex items-center space-x-3 px-4 py-3.5 rounded-2xl transition-all duration-300 ${isActive ? "bg-default" : "hover:bg-default-hover"}`}
                   >
-                    <Icon className="w-5 h-5" style={{ color: isActive ? "#b08968" : "var(--color-default-500)" }} />
-                    <span className={`font-medium ${isActive ? "font-bold text-[#b08968]" : "text-foreground-600"}`}>{link.label}</span>
+                    <Icon className={`w-5 h-5 ${isActive ? "text-brand-primary dark:text-[#f0a262]" : "text-default-500"}`} />
+                    <span className={`font-medium ${isActive ? "font-bold text-brand-primary dark:text-[#f0a262]" : "text-foreground-600"}`}>{link.label}</span>
                   </a>
                 );
               })}
@@ -511,13 +508,13 @@ function NavbarContent() {
                       renderMfaChallengeForm()
                     ) : (
                       <>
-                        <input type="email" name="email" placeholder="Email" className="w-full px-5 py-3.5 border-2 border-transparent bg-field text-foreground placeholder-default-500 focus:border-[#b08968] focus:bg-default rounded-xl outline-none transition-all font-medium" />
+                        <input type="email" name="email" placeholder="Email" className="w-full px-5 py-3.5 border-2 border-transparent bg-field text-foreground placeholder-default-500 focus:border-brand-primary focus:bg-default rounded-xl outline-none transition-all font-medium" />
                         <div className="relative">
                           <input 
                             type={showPassword ? "text" : "password"} 
                             name="password" 
                             placeholder="Contraseña" 
-                            className="w-full px-5 pr-12 py-3.5 border-2 border-transparent bg-field text-foreground placeholder-default-500 focus:border-[#b08968] focus:bg-default rounded-xl outline-none transition-all font-medium" 
+                            className="w-full px-5 pr-12 py-3.5 border-2 border-transparent bg-field text-foreground placeholder-default-500 focus:border-brand-primary focus:bg-default rounded-xl outline-none transition-all font-medium" 
                           />
                           <button
                             type="button"
@@ -541,8 +538,7 @@ function NavbarContent() {
                     <button 
                       type="submit" 
                       disabled={isVerifyingMfa || isLoggingIn} 
-                      className="w-full py-4 rounded-xl text-white font-extrabold text-lg shadow-lg disabled:opacity-60 flex items-center justify-center space-x-2" 
-                      style={{ backgroundColor: "#b08968" }}
+                      className="w-full py-4 rounded-xl text-white font-extrabold text-lg shadow-lg bg-brand-primary hover:opacity-95 disabled:opacity-60 flex items-center justify-center space-x-2" 
                     >
                       {isLoggingIn ? (
                         <>
@@ -560,7 +556,7 @@ function NavbarContent() {
                     </button>
                   </form>
                   {mfaChallenge ? (
-                    <button type="button" onClick={cancelMfaChallenge} className="w-full text-center text-sm font-extrabold" style={{ color: "#b08968" }}>
+                    <button type="button" onClick={cancelMfaChallenge} className="w-full text-center text-sm font-extrabold text-brand-primary dark:text-[#f0a262]">
                       Volver al inicio de sesión
                     </button>
                   ) : (
@@ -572,7 +568,7 @@ function NavbarContent() {
                         <span>Continuar con Google</span>
                       </button>
                       <div className="flex justify-between items-center text-sm pt-4 px-2">
-                        <a href="/auth/register" onClick={() => setIsMobileMenuOpen(false)} className="font-extrabold" style={{ color: "#b08968" }}>Crear cuenta</a>
+                        <a href="/auth/register" onClick={() => setIsMobileMenuOpen(false)} className="font-extrabold text-brand-primary dark:text-[#f0a262] hover:underline">Crear cuenta</a>
                         <a href="/auth/login" onClick={() => setIsMobileMenuOpen(false)} className="text-default-500 font-medium hover:text-default-700">¿Olvidaste tu contraseña?</a>
                       </div>
                     </>
@@ -588,7 +584,7 @@ function NavbarContent() {
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-3 mt-2">
-                    <a href="/profile" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center justify-center w-full py-3.5 rounded-xl text-white font-bold transition-transform active:scale-95" style={{ backgroundColor: "#b08968" }}>Perfil</a>
+                    <a href="/profile" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center justify-center w-full py-3.5 rounded-xl text-white font-bold bg-brand-primary hover:opacity-95 transition-transform active:scale-95">Perfil</a>
                     <button onClick={() => { logout(); setIsMobileMenuOpen(false); }} className="flex items-center justify-center w-full py-3.5 rounded-xl font-bold bg-danger-soft active:scale-95 transition-transform text-danger">Salir</button>
                   </div>
                 </div>

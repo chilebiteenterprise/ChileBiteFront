@@ -80,17 +80,17 @@
 
     /* Tipografía y Contraste WCAG AA compliant */
     --text-main: #201b18;           /* Títulos, nombres de receta y texto principal */
-    --text-muted: #544942;          /* Subtítulos, metadatos y descripciones (> 6.5:1) */
-    --text-subtle: #73655c;         /* Placeholders e indicaciones (> 4.8:1) */
+    --text-muted: #4e433d;          /* Subtítulos, metadatos y descripciones (> 7:1) */
+    --text-subtle: #594c44;         /* Placeholders e indicaciones (> 6.2:1) */
 
     /* Bordes y Separadores */
     --border-subtle: #e3d8cc;       /* Bordes de tarjetas y divisores */
     --border-strong: #cfc2b3;       /* Bordes activos o al enfocar/hover */
 
     /* Color de Acento / Marca */
-    --brand-primary: #8c5828;       /* Terracota profundo de alto contraste (> 4.8:1) */
-    --brand-hover: #73451d;         /* Hover de botones y enlaces */
-    --brand-subtle: rgba(140, 88, 40, 0.12); /* Fondo suave de selección */
+    --brand-primary: #7a461b;       /* Terracota profundo de alto contraste (> 5.8:1) */
+    --brand-hover: #633612;         /* Hover de botones y enlaces */
+    --brand-subtle: rgba(122, 70, 27, 0.12); /* Fondo suave de selección */
 
     background-color: var(--bg-page);
     color: var(--text-main);
@@ -107,19 +107,19 @@
     --surface-input: #1b1612;       /* Inputs y campos de formulario */
     --surface-muted: #382d25;       /* Hovers y estados secundarios */
 
-    /* Tipografía y Contraste */
+    /* Tipografía y Contraste (> 6.5:1) */
     --text-main: #faede1;           /* Marfil cálido de alto contraste */
-    --text-muted: #cbb7a6;          /* Café con leche suave */
-    --text-subtle: #8e7b6c;         /* Placeholders y textos de ayuda */
+    --text-muted: #d8c7b8;          /* Café con leche suave */
+    --text-subtle: #b39f8f;         /* Placeholders y textos de ayuda */
 
     /* Bordes y Separadores */
     --border-subtle: #382c23;       /* Bordes sutiles en tono arcilla */
     --border-strong: #544133;       /* Bordes reforzados */
 
     /* Color de Acento / Marca */
-    --brand-primary: #e09553;       /* Ámbar caramelo llamativo */
-    --brand-hover: #f0a768;         /* Ámbar hover brillante */
-    --brand-subtle: rgba(224, 149, 83, 0.22); /* Resaltado tenue */
+    --brand-primary: #f0a262;       /* Ámbar caramelo llamativo (> 7:1) */
+    --brand-hover: #ffb87a;         /* Ámbar hover brillante */
+    --brand-subtle: rgba(240, 162, 98, 0.22); /* Resaltado tenue */
 
     background-color: var(--bg-page);
     color: var(--text-main);

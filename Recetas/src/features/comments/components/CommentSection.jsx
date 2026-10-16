@@ -166,7 +166,7 @@ function CommentItem({ comment, currentUserId, currentUserRole, onReply, onEdit,
     };
 
     return (
-        <div className="group animate-in fade-in duration-300">
+        <div className="group transition-opacity duration-300">
             <div className="flex gap-4">
                 <div className="flex-shrink-0">
                     {comment.usuario_avatar ? (
@@ -189,17 +189,17 @@ function CommentItem({ comment, currentUserId, currentUserRole, onReply, onEdit,
                 <div className="flex-1 min-w-0">
                     <div className={`premium-glass-panel p-4 rounded-2xl shadow-sm border relative overflow-hidden ${isHidden ? 'border-red-500/40 bg-red-500/10 opacity-80' : isAdminComment ? 'border-brand-primary/40 hover:border-brand-primary/60' : 'border-border-subtle hover:border-border-strong'} transition-all`}>
                         {isHidden && (
-                            <div className="absolute top-0 right-0 bg-red-600 text-white text-[10px] uppercase font-bold px-3 py-1 rounded-bl-xl shadow-sm">
+                            <div className="absolute top-0 right-0 bg-red-700 text-white text-[10px] uppercase font-bold px-3 py-1 rounded-bl-xl shadow-sm">
                                 Oculto al público
                             </div>
                         )}
                         <div className="flex items-center gap-3 mb-2 flex-wrap">
-                            <span className={`font-bold ${isAdminComment ? 'text-brand-primary' : 'text-text-main'} text-sm`}>
+                            <span className={`font-bold ${isAdminComment ? 'text-brand-primary dark:text-[#f0a262]' : 'text-text-main'} text-sm`}>
                                 {comment.usuario_nombre}
                             </span>
                             
                             {isAdminComment && (
-                                <span className="flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider text-brand-primary bg-brand-subtle px-2.5 py-0.5 rounded-full border border-brand-primary/25">
+                                <span className="flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider text-brand-primary dark:text-[#f0a262] bg-brand-subtle px-2.5 py-0.5 rounded-full border border-brand-primary/25">
                                     <ShieldCheck size={12} /> Admin
                                 </span>
                             )}
@@ -233,7 +233,7 @@ function CommentItem({ comment, currentUserId, currentUserRole, onReply, onEdit,
                             </div>
                         ) : (
                             <>
-                                <p className={`leading-relaxed whitespace-pre-wrap text-sm ${isHidden ? 'text-red-500 italic font-medium' : isAdminComment ? 'text-text-main font-medium' : 'text-text-muted'}`}>
+                                <p className={`leading-relaxed whitespace-pre-wrap text-sm ${isHidden ? 'text-red-700 dark:text-red-300 italic font-medium' : isAdminComment ? 'text-text-main font-medium' : 'text-text-muted'}`}>
                                     {comment.texto}
                                 </p>
                                 
@@ -674,16 +674,16 @@ function CommentSectionContent({ recipeId }) {
                             <button
                                 onClick={() => setSortType('recent')}
                                 className={`flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-full transition-all ${sortType === 'recent' 
-                                    ? 'bg-surface-card text-brand-primary font-bold shadow-sm' 
-                                    : 'text-text-muted hover:text-text-main'}`}
+                                    ? 'bg-brand-primary text-white font-bold shadow-sm' 
+                                    : 'text-text-main font-semibold hover:bg-surface-card/60'}`}
                             >
                                 <Clock size={14} /> Recientes
                             </button>
                             <button
                                 onClick={() => setSortType('popularity')}
                                 className={`flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-full transition-all ${sortType === 'popularity' 
-                                    ? 'bg-surface-card text-brand-primary font-bold shadow-sm' 
-                                    : 'text-text-muted hover:text-text-main'}`}
+                                    ? 'bg-brand-primary text-white font-bold shadow-sm' 
+                                    : 'text-text-main font-semibold hover:bg-surface-card/60'}`}
                             >
                                 <Users size={14} /> Populares
                             </button>

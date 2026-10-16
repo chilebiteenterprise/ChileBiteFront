@@ -29,6 +29,9 @@ try {
 export default defineConfig({
   site: 'https://chilebite.cl',
   adapter: vercel(),
+  build: {
+    inlineStylesheets: 'always',
+  },
   devToolbar: {
     enabled: false
   },

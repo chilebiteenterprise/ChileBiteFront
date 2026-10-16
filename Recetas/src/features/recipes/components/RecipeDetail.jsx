@@ -367,10 +367,10 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
               <div className="premium-glass-panel rounded-[2rem] p-8 border border-border-subtle relative overflow-hidden shadow-sm">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 relative z-10 gap-4">
                   <div>
-                    <h3 className="text-2xl font-serif font-bold text-text-main flex items-center gap-3">
+                    <h2 className="text-2xl font-serif font-bold text-text-main flex items-center gap-3">
                       <Flame className="w-7 h-7 text-brand-primary" />
                       Valor Nutricional
-                    </h3>
+                    </h2>
                     <p className="text-text-muted text-sm mt-1">Tabla de información nutricional de la receta</p>
                   </div>
                   <span className="text-xs font-bold text-white bg-brand-primary px-4 py-2 rounded-full tracking-wide uppercase shadow-md shadow-brand-primary/20">1 porción</span>
@@ -410,7 +410,7 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
                   <Users className="w-7 h-7 text-brand-primary" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-2xl text-text-main mb-1">Calculadora de Porciones</h3>
+                  <h2 className="font-bold text-2xl text-text-main mb-1">Calculadora de Porciones</h2>
                   <p className="text-sm text-text-muted">Ajusta las cantidades para tus invitados</p>
                 </div>
               </div>
