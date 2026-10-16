@@ -122,7 +122,7 @@ function SearchAutocomplete({ searchQuery, setSearchQuery, allRecipeNames }) {
                 <input
                     ref={inputRef}
                     id="recipe-search-input"
-                    type="search"
+                    type="text"
                     aria-label="Buscar recetas"
                     autoComplete="off"
                     spellCheck={false}
@@ -137,7 +137,7 @@ function SearchAutocomplete({ searchQuery, setSearchQuery, allRecipeNames }) {
                     onChange={handleInputChange}
                     onFocus={() => { if (suggestions.length > 0) setIsOpen(true); }}
                     onKeyDown={handleKeyDown}
-                    className="w-full h-12 pl-11 pr-10 bg-surface-input border border-border-subtle rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent text-text-main placeholder:text-text-subtle transition-all font-medium text-sm"
+                    className="w-full h-12 pl-11 pr-10 bg-surface-input border border-border-subtle rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent text-text-main placeholder:text-text-subtle transition-all font-medium text-sm [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
                 />
                 {/* Clear button */}
                 {inputValue && (
