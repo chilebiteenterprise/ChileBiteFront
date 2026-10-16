@@ -30,7 +30,7 @@ export const LocalesFilter: React.FC<LocalesFilterProps> = ({
           
           {/* Region Dropdown Selector */}
           <div className="flex items-center gap-3">
-            <label htmlFor="region-select" className="text-xs font-black uppercase tracking-widest text-[#b08968]">
+            <label htmlFor="region-select" className="text-xs font-black uppercase tracking-widest text-brand-primary">
               Filtrar por Región:
             </label>
             <select
@@ -38,7 +38,7 @@ export const LocalesFilter: React.FC<LocalesFilterProps> = ({
               aria-label="Región"
               value={selectedRegion}
               onChange={(e) => setSelectedRegion(e.target.value)}
-              className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-full px-6 py-2.5 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#b08968]/50 text-zinc-800 dark:text-zinc-200 cursor-pointer transition-all duration-300 shadow-sm dark:shadow-md hover:border-[#b08968] dark:hover:border-[#b08968]"
+              className="bg-surface-input border border-border-subtle rounded-full px-6 py-2.5 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand-primary text-text-main cursor-pointer transition-all duration-300 shadow-sm hover:border-brand-primary"
             >
               <option value="Todas">Todas las Regiones</option>
               <option value="Metropolitana de Santiago">Región Metropolitana</option>

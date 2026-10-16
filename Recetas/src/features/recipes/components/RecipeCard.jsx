@@ -147,7 +147,7 @@ export default function RecipeCard({ receta, usuarioEsAdmin = false, isSelected 
 
   return (
     <div 
-      className={`group relative bg-white dark:bg-[#0f1115] border rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 ease-out cursor-pointer flex flex-col h-full ${isSelected ? "border-[#b08969] ring-2 ring-[#b08969]/50" : "border-slate-200 dark:border-slate-800"}`}
+      className={`group relative bg-surface-card border rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 ease-out cursor-pointer flex flex-col h-full ${isSelected ? "border-brand-primary ring-2 ring-brand-primary/50" : "border-border-subtle"}`}
       onClick={handleCardClick}
     >
       {/* Admin Multi-Select Checkbox Overlay */}
@@ -159,7 +159,7 @@ export default function RecipeCard({ receta, usuarioEsAdmin = false, isSelected 
           <button 
             onClick={(e) => { e.stopPropagation(); onToggleSelect && onToggleSelect(idToUse); }}
             aria-label="Seleccionar receta"
-            className={`w-8 h-8 rounded-lg flex items-center justify-center border-2 transition-all backdrop-blur-md shadow-lg ${isSelected ? "bg-[#b08969] border-[#b08969] text-white" : "bg-black/30 border-white/40 text-transparent hover:border-white"}`}
+            className={`w-8 h-8 rounded-lg flex items-center justify-center border-2 transition-all backdrop-blur-md shadow-lg ${isSelected ? "bg-brand-primary border-brand-primary text-white" : "bg-black/30 border-white/40 text-transparent hover:border-white"}`}
           >
             <Check className={`w-5 h-5 ${isSelected ? "opacity-100" : "opacity-0"}`} strokeWidth={3} />
           </button>
@@ -193,7 +193,7 @@ export default function RecipeCard({ receta, usuarioEsAdmin = false, isSelected 
               onClick={(e) => { e.stopPropagation(); window.open(`/recipes/${idToUse}`, "_blank"); }}
               title="Ver Receta"
               aria-label="Ver Receta"
-              className="w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-md transition-colors border shadow-md bg-black/40 text-white border-white/20 hover:bg-[#b08969]"
+              className="w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-md transition-colors border shadow-md bg-black/40 text-white border-white/20 hover:bg-brand-primary"
             >
               <Eye className="w-5 h-5" />
             </button>
@@ -212,20 +212,20 @@ export default function RecipeCard({ receta, usuarioEsAdmin = false, isSelected 
 
       {/* Middle Content */}
       <div className="p-5 flex flex-col gap-3">
-        <h3 className="text-xl font-bold text-slate-900 dark:text-white leading-tight tracking-tight line-clamp-2">
+        <h3 className="text-xl font-bold text-text-main leading-tight tracking-tight line-clamp-2">
           {receta.nombre}
         </h3>
-        <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed line-clamp-2 italic">
+        <p className="text-text-muted text-sm leading-relaxed line-clamp-2 italic">
             {receta.descripcion_corta}
         </p>
       </div>
 
       {/* Footer */}
-      <div className="px-5 py-4 flex items-center justify-between border-t border-slate-200/50 dark:border-slate-800/50 mt-auto">
+      <div className="px-5 py-4 flex items-center justify-between border-t border-border-subtle mt-auto">
         {/* Left: Flame Icons + Media */}
         <div className="flex items-center gap-2">
           <FireContainer selectedDifficulty={dificultadNum} setSelectedDifficulty={() => {}} />
-          <span className="text-[11px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">
+          <span className="text-[11px] font-bold uppercase tracking-widest text-text-muted">
             {receta.dificultad}
           </span>
         </div>
@@ -239,8 +239,8 @@ export default function RecipeCard({ receta, usuarioEsAdmin = false, isSelected 
             aria-label={liked ? "Quitar de favoritos" : "Añadir a favoritos"}
             className="flex items-center gap-2 group/heart bg-transparent border-none p-1 cursor-pointer transition-transform active:scale-90"
           >
-            <Heart className={`w-6 h-6 transition-transform group-hover/heart:scale-125 ${liked ? "fill-[#ff4757] text-[#ff4757]" : "text-slate-400"}`} />
-            <span className="text-sm font-bold text-slate-700 dark:text-slate-300 pointer-events-none">
+            <Heart className={`w-6 h-6 transition-transform group-hover/heart:scale-125 ${liked ? "fill-[#ff4757] text-[#ff4757]" : "text-text-subtle"}`} />
+            <span className="text-sm font-bold text-text-muted pointer-events-none">
               {likes}
             </span>
           </button>

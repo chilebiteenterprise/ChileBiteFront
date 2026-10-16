@@ -4,7 +4,7 @@ import { Heart, MapPin, Bookmark } from "lucide-react";
 
 export default function RecipeSkeleton() {
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-[#0f1115] border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
+    <div className="flex flex-col h-full bg-surface-card border border-border-subtle rounded-2xl overflow-hidden shadow-sm">
       {/* Upper Zone (Multimedia) */}
       <div className="relative h-56 shrink-0 overflow-hidden w-full">
         <Skeleton className="w-full h-full rounded-none" />
@@ -33,7 +33,7 @@ export default function RecipeSkeleton() {
       </div>
 
       {/* Footer */}
-      <div className="px-5 py-4 flex items-center justify-between border-t border-slate-200/50 dark:border-slate-800/50 mt-auto">
+      <div className="px-5 py-4 flex items-center justify-between border-t border-border-subtle mt-auto">
         {/* Left: Flame Icons Fake */}
         <div className="flex items-center gap-2">
           {/* Fakes the FireContainer space */}

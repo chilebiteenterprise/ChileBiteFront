@@ -83,10 +83,10 @@ const ProductCard = ({ item }) => {
         href={item.link}
         target="_blank"
         rel="noopener noreferrer"
-        className="block group/card relative bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 rounded-[1.5rem] overflow-hidden h-full"
+        className="block group/card relative bg-surface-card border border-border-subtle shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 rounded-[1.5rem] overflow-hidden h-full"
       >
         {/* Banner de Gradiente sutil en hover */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#b08968]/0 via-transparent to-[#b08968]/0 group-hover/card:from-[#b08968]/5 group-hover/card:to-[#b08968]/10 transition-all duration-700 -z-0" />
+        <div className="absolute inset-0 bg-gradient-to-br from-brand-primary/0 via-transparent to-brand-primary/0 group-hover/card:from-brand-primary/5 group-hover/card:to-brand-primary/10 transition-all duration-700 -z-0" />
 
         {/* Imagen Wrapper */}
         <div className="h-28 overflow-hidden relative bg-white flex items-center justify-center p-3 z-10">
@@ -97,7 +97,7 @@ const ProductCard = ({ item }) => {
           />
           
           <div className="absolute top-2 right-2 translate-y-2 opacity-0 group-hover/card:translate-y-0 group-hover/card:opacity-100 transition-all duration-300">
-            <div className="bg-[#b08968] text-white p-2 rounded-full shadow-lg ring-2 ring-[#b08968]/10">
+            <div className="bg-brand-primary text-white p-2 rounded-full shadow-lg ring-2 ring-brand-primary/10">
               <ShoppingCart size={12} />
             </div>
           </div>
@@ -105,19 +105,19 @@ const ProductCard = ({ item }) => {
 
         {/* Info Area */}
         <div className="p-3 z-10 relative">
-          <h4 className="text-xs font-bold text-gray-900 dark:text-zinc-100 leading-tight mb-2 min-h-[2rem] group-hover/card:text-[#b08968] transition-colors duration-300 line-clamp-2">
+          <h4 className="text-xs font-bold text-text-main leading-tight mb-2 min-h-[2rem] group-hover/card:text-brand-primary transition-colors duration-300 line-clamp-2">
             {item.title}
           </h4>
 
-          <div className="flex items-center justify-between pt-2 border-t border-gray-50 dark:border-zinc-800/50">
-            <span className="text-[9px] font-black text-gray-400 group-hover/card:text-[#b08968] transition-colors duration-300 tracking-wide">
+          <div className="flex items-center justify-between pt-2 border-t border-border-subtle">
+            <span className="text-[9px] font-black text-text-subtle group-hover/card:text-brand-primary transition-colors duration-300 tracking-wide">
               VER
             </span>
             <motion.div
               animate={{ x: [0, 3, 0] }}
               transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
             >
-               <ArrowRight size={12} className="text-[#b08968]" />
+               <ArrowRight size={12} className="text-brand-primary" />
             </motion.div>
           </div>
         </div>
@@ -171,22 +171,22 @@ const AffiliateCarousel = () => {
       <div className="max-w-7xl mx-auto px-4 md:px-8">
         {/* Header Widget */}
         <div className="flex items-center justify-between gap-4 mb-6">
-          <h3 className="text-xl md:text-2xl font-black text-gray-900 dark:text-zinc-50 tracking-tight flex items-center gap-2">
-            <span className="w-1.5 h-6 bg-[#b08968] rounded-full inline-block"></span>
-            Equipa tu <span className="text-[#b08968]">Cocina</span>
+          <h3 className="text-xl md:text-2xl font-black text-text-main tracking-tight flex items-center gap-2">
+            <span className="w-1.5 h-6 bg-brand-primary rounded-full inline-block"></span>
+            Equipa tu <span className="text-brand-primary">Cocina</span>
           </h3>
 
           <div className="flex gap-2">
             <button
               onClick={() => scroll('left')}
-              className="p-2.5 rounded-xl bg-white dark:bg-zinc-800 shadow-sm border border-gray-100 dark:border-zinc-700 hover:bg-[#b08968] hover:text-white transition-all duration-300 group active:scale-95"
+              className="p-2.5 rounded-xl bg-surface-card shadow-sm border border-border-subtle hover:bg-brand-primary hover:text-white text-text-main transition-all duration-300 group active:scale-95"
               aria-label="Anterior"
             >
               <ChevronLeft size={18} className="group-hover:-translate-x-0.5 transition-transform" />
             </button>
             <button
               onClick={() => scroll('right')}
-              className="p-2.5 rounded-xl bg-white dark:bg-zinc-800 shadow-sm border border-gray-100 dark:border-zinc-700 hover:bg-[#b08968] hover:text-white transition-all duration-300 group active:scale-95"
+              className="p-2.5 rounded-xl bg-surface-card shadow-sm border border-border-subtle hover:bg-brand-primary hover:text-white text-text-main transition-all duration-300 group active:scale-95"
               aria-label="Siguiente"
             >
               <ChevronRight size={18} className="group-hover:translate-x-0.5 transition-transform" />
@@ -195,12 +195,18 @@ const AffiliateCarousel = () => {
         </div>
       </div>
 
-      {/* Carousel Track (Native CSS Scroll) */}
-      <div className="relative w-full">
+      {/* Carousel Track con máscara de transparencia real (sin fondos falsos ni cortes duros) */}
+      <div 
+        className="relative w-full"
+        style={{
+          maskImage: 'linear-gradient(to right, transparent 0%, black 48px, black calc(100% - 48px), transparent 100%)',
+          WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 48px, black calc(100% - 48px), transparent 100%)',
+        }}
+      >
         <div
             ref={containerRef}
             onScroll={handleScroll}
-            className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-4 scrollbar-hide select-none"
+            className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-4 scrollbar-hide select-none px-4 md:px-8"
             style={{ 
               scrollbarWidth: 'none', // Firefox
               msOverflowStyle: 'none' // IE/Edge
@@ -216,10 +222,6 @@ const AffiliateCarousel = () => {
             ))}
           </div>
         </div>
-      
-      {/* Decorative Fade Edges */}
-      <div className="absolute top-0 left-0 w-32 h-full bg-gradient-to-r from-stone-50 dark:from-gray-900 to-transparent pointer-events-none z-10" />
-      <div className="absolute top-0 right-0 w-32 h-full bg-gradient-to-l from-stone-50 dark:from-gray-900 to-transparent pointer-events-none z-10" />
     </div>
   );
 };

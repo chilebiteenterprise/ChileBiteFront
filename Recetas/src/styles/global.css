@@ -1,10 +1,30 @@
+/* =============================================================================
+   CHILEBITE - SISTEMA GLOBAL DE ESTILOS & TOKENS DE DISEÑO
+   =============================================================================
+   Estructura del archivo:
+   1. DIRECTIVAS & CAPAS DE FRAMEWORK (Tailwind v4, HeroUI)
+   2. CONFIGURACIÓN DE TEMA & DESIGN TOKENS (@theme)
+   3. PALETAS POR MODO (@layer base: :root Claro & html.dark Oscuro)
+   4. ARMONIZACIÓN DE FORMULARIOS & SELECTS
+   5. EFECTOS DE CRISTAL / GLASSMORPHISM
+   6. SCROLLBARS PERSONALIZADOS
+   7. CONTENEDORES & UTILIDADES ESPECÍFICAS
+   ============================================================================= */
+
+/* -----------------------------------------------------------------------------
+   1. DIRECTIVAS & CAPAS DE FRAMEWORK
+   ----------------------------------------------------------------------------- */
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
 @import "@heroui/styles";
 
 @layer theme, base, components, utilities;
 
+/* -----------------------------------------------------------------------------
+   2. CONFIGURACIÓN DE TEMA & DESIGN TOKENS (@theme)
+   ----------------------------------------------------------------------------- */
 @theme {
+  /* Paleta Base Cobre / Tierra */
   --color-copper-50: #fdfaf8;
   --color-copper-100: #f5ece8;
   --color-copper-200: #eabe9b;
@@ -16,55 +36,181 @@
   --color-copper-800: #463729;
   --color-copper-900: #231b14;
 
+  /* Colores Clásicos de Marca */
   --color-sienna: #b08969;
   --color-obsidian: #1c1916;
-  
+
+  /* Tipografía */
   --font-inter: "Inter", sans-serif;
+
+  /* Tokens Semánticos Dinámicos (vinculados a variables de :root y html.dark) */
+  --color-bg-page: var(--bg-page);
+  --color-surface-card: var(--surface-card);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-surface-input: var(--surface-input);
+  --color-surface-muted: var(--surface-muted);
+
+  --color-text-main: var(--text-main);
+  --color-text-muted: var(--text-muted);
+  --color-text-subtle: var(--text-subtle);
+
+  --color-border-subtle: var(--border-subtle);
+  --color-border-strong: var(--border-strong);
+
+  --color-brand-primary: var(--brand-primary);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-subtle: var(--brand-subtle);
 }
 
+/* -----------------------------------------------------------------------------
+   3. PALETAS POR MODO (@layer base)
+   ----------------------------------------------------------------------------- */
 @layer base {
-  /* Light mode defaults */
+
+  /* --- MODO CLARO (LIGHT MODE) --- */
   :root {
     color-scheme: light;
-    background-color: #fafaf9;
-    color: #1c1917;
+
+    /* Superficies y Fondos */
+    --bg-page: #f7eddf;             /* Fondo cálido general */
+    --surface-card: #ffffffc8;      /* Tarjetas de recetas y paneles principales */
+    --surface-elevated: #ffffff;    /* Modales, dropdowns y tooltips */
+    --surface-input: #ffffff;       /* Inputs, campos de texto y selects */
+    --surface-muted: #efe6d9;       /* Hovers suaves, tags inactivos */
+
+    /* Tipografía y Contraste */
+    --text-main: #2b2623;           /* Títulos, nombres de receta y texto principal */
+    --text-muted: #6e635b;          /* Subtítulos, metadatos y descripciones */
+    --text-subtle: #9c8e84;         /* Placeholders e indicaciones de atajos */
+
+    /* Bordes y Separadores */
+    --border-subtle: #e3d8cc;       /* Bordes de tarjetas y divisores */
+    --border-strong: #cfc2b3;       /* Bordes activos o al enfocar/hover */
+
+    /* Color de Acento / Marca */
+    --brand-primary: #b08969;       /* Terracota/Cobre insignia */
+    --brand-hover: #8d6e53;         /* Hover de botones y enlaces */
+    --brand-subtle: rgba(176, 137, 105, 0.12); /* Fondo suave de selección */
+
+    background-color: var(--bg-page);
+    color: var(--text-main);
   }
 
-  /* Dark mode: only when .dark class is present on <html> */
+  /* --- MODO OSCURO (DARK MODE - Opción 3: Greda Criolla & Caramelo Ámbar) --- */
   html.dark {
     color-scheme: dark;
-    background-color: #111827;
-    color: #f1f5f9;
+
+    /* Superficies y Fondos */
+    --bg-page: #171310;             /* Tierra negra tostada */
+    --surface-card: #231d18;        /* Arcilla pulida */
+    --surface-elevated: #2d251f;    /* Dropdowns y modales */
+    --surface-input: #1b1612;       /* Inputs y campos de formulario */
+    --surface-muted: #382d25;       /* Hovers y estados secundarios */
+
+    /* Tipografía y Contraste */
+    --text-main: #faede1;           /* Marfil cálido de alto contraste */
+    --text-muted: #cbb7a6;          /* Café con leche suave */
+    --text-subtle: #8e7b6c;         /* Placeholders y textos de ayuda */
+
+    /* Bordes y Separadores */
+    --border-subtle: #382c23;       /* Bordes sutiles en tono arcilla */
+    --border-strong: #544133;       /* Bordes reforzados */
+
+    /* Color de Acento / Marca */
+    --brand-primary: #e09553;       /* Ámbar caramelo llamativo */
+    --brand-hover: #f0a768;         /* Ámbar hover brillante */
+    --brand-subtle: rgba(224, 149, 83, 0.22); /* Resaltado tenue */
+
+    background-color: var(--bg-page);
+    color: var(--text-main);
   }
 
-  /* Ensure body follows html theme */
+  /* Reset y herencia del body */
   body {
-    background-color: inherit;
-    color: inherit;
+    background-color: var(--bg-page);
+    color: var(--text-main);
   }
 }
 
-
-/* Estilos personalizados del contenedor */
-.detalle-receta-contenedor {
-  width: 100%;
-  padding: 5rem 0;
-  margin: 0 auto;
-  overflow-x: hidden;
+/* -----------------------------------------------------------------------------
+   4. ARMONIZACIÓN DE FORMULARIOS & SELECTS
+   ----------------------------------------------------------------------------- */
+.select__trigger {
+  background-color: var(--surface-input) !important;
+  color: var(--text-main) !important;
+  border-color: var(--border-subtle) !important;
+  transition: all 150ms ease-in-out;
 }
 
-.detalle-receta-contenedor > * {
-  width: 100%;
+.select__trigger:hover,
+.select__trigger[data-hovered="true"] {
+  background-color: var(--surface-muted) !important;
+  border-color: var(--border-strong) !important;
 }
 
-.detalle-receta-contenedor p,
-.detalle-receta-contenedor li {
-  margin-bottom: 0.5rem;
-  font-family: "Georgia", serif;
-  line-height: 1.5;
+.select__trigger[data-focused="true"],
+.select__trigger:focus-visible {
+  border-color: var(--brand-primary) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 2px var(--brand-subtle) !important;
 }
 
-/* Premium Custom Scrollbar */
+.select__trigger [data-slot="value"],
+.select__value {
+  color: var(--text-main) !important;
+}
+
+.select__value[data-placeholder="true"] {
+  color: var(--text-subtle) !important;
+}
+
+.select__indicator {
+  color: var(--text-muted) !important;
+}
+
+.select__popover {
+  background-color: var(--surface-elevated) !important;
+  border-color: var(--border-subtle) !important;
+  color: var(--text-main) !important;
+}
+
+/* Selects nativos */
+select {
+  background-color: var(--surface-input);
+  color: var(--text-main);
+  border-color: var(--border-subtle);
+}
+
+/* -----------------------------------------------------------------------------
+   5. EFECTOS DE CRISTAL / GLASSMORPHISM
+   ----------------------------------------------------------------------------- */
+.premium-glass-panel {
+  background-color: #ffffff;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+html.dark .premium-glass-panel {
+  background-color: rgba(9, 9, 11, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.premium-glass-wrapper {
+  background-color: #ffffff;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+html.dark .premium-glass-wrapper {
+  background-color: rgba(9, 9, 11, 0.5);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+}
+
+/* -----------------------------------------------------------------------------
+   6. SCROLLBARS PERSONALIZADOS
+   ----------------------------------------------------------------------------- */
 ::-webkit-scrollbar {
   width: 12px;
   height: 12px;
@@ -85,7 +231,7 @@
   background-color: rgba(107, 114, 128, 0.8);
 }
 
-/* Dark mode scrollbar support */
+/* Modo oscuro scrollbar */
 html.dark ::-webkit-scrollbar-thumb {
   background-color: rgba(75, 85, 99, 0.5);
 }
@@ -94,25 +240,23 @@ html.dark ::-webkit-scrollbar-thumb:hover {
   background-color: rgba(156, 163, 175, 0.8);
 }
 
-/* Custom CSS for flawless light/dark glassmorphism */
-.premium-glass-panel {
-  background-color: #ffffff;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-}
-html.dark .premium-glass-panel {
-  background-color: rgba(9, 9, 11, 0.6); /* zinc-950/60 */
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+/* -----------------------------------------------------------------------------
+   7. CONTENEDORES & UTILIDADES ESPECÍFICAS
+   ----------------------------------------------------------------------------- */
+.detalle-receta-contenedor {
+  width: 100%;
+  padding: 5rem 0;
+  margin: 0 auto;
+  overflow-x: hidden;
 }
 
-.premium-glass-wrapper {
-  background-color: #ffffff;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
+.detalle-receta-contenedor > * {
+  width: 100%;
 }
-html.dark .premium-glass-wrapper {
-  background-color: rgba(9, 9, 11, 0.5); /* zinc-950/50 */
-  backdrop-filter: blur(40px);
-  -webkit-backdrop-filter: blur(40px);
+
+.detalle-receta-contenedor p,
+.detalle-receta-contenedor li {
+  margin-bottom: 0.5rem;
+  font-family: "Georgia", serif;
+  line-height: 1.5;
 }

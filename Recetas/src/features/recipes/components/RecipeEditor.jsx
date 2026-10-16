@@ -3,7 +3,7 @@ import { useAuth, AuthProvider } from '@/features/auth/context/AuthContext';
 import RecipeCard from './RecipeCard';
 import RecetaDetalle from './RecipeDetail'; 
 import IngredientSelector from './IngredientSelector';
-import { addToast, ToastProvider } from "@heroui/toast";
+import { toast as addToast, ToastProvider } from "@heroui/react";
 import DOMPurify from 'dompurify';
 import { Youtube, Smartphone, Video } from 'lucide-react';
 import { useRateLimit } from '@/hooks/useRateLimit';

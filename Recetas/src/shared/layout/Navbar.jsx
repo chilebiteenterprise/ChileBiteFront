@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { ChefHat, BookOpen, MapPin, User, Menu, X, Mail, Lock, Moon, Sun, ShieldCheck } from "lucide-react";
+import { ChefHat, BookOpen, MapPin, User, Menu, X, Mail, Lock, Moon, Sun, ShieldCheck, Eye, EyeOff } from "lucide-react";
 import { supabase } from '@/lib/supabaseClient';
 import { AuthProvider, useAuth } from '@/features/auth/context/AuthContext';
 import { Toast, toast, Alert } from "@heroui/react";
@@ -14,6 +14,8 @@ function NavbarContent() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isForgotPwOpen, setIsForgotPwOpen] = useState(false);
   const [isSendingReset, setIsSendingReset] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [mfaChallenge, setMfaChallenge] = useState(null);
   const [mfaCode, setMfaCode] = useState("");
   const [isVerifyingMfa, setIsVerifyingMfa] = useState(false);
@@ -50,6 +52,18 @@ function NavbarContent() {
     }
   };
 
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isMobileMenuOpen]);
+
   useEffect(() => {
     window.abrirLoginNavbar = () => setIsLoginOpen(true);
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -59,6 +73,20 @@ function NavbarContent() {
         setIsLoginOpen(false);
         setLoginError(null);
         setIsForgotPwOpen(false);
+        setShowPassword(false);
+        if (mfaChallenge) {
+          cancelMfaChallenge();
+        }
+      }
+    };
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        setIsLoginOpen(false);
+        setIsMobileMenuOpen(false);
+        setLoginError(null);
+        setIsForgotPwOpen(false);
+        setShowPassword(false);
         if (mfaChallenge) {
           cancelMfaChallenge();
         }
@@ -67,9 +95,11 @@ function NavbarContent() {
 
     window.addEventListener("scroll", handleScroll);
     document.addEventListener("mousedown", handleClickOutside);
+    window.addEventListener("keydown", handleKeyDown);
     return () => {
       window.removeEventListener("scroll", handleScroll);
       document.removeEventListener("mousedown", handleClickOutside);
+      window.removeEventListener("keydown", handleKeyDown);
     };
   }, [mfaChallenge]);
 
@@ -82,9 +112,9 @@ function NavbarContent() {
     e.preventDefault();
     setLoginError(null);
     const form = e.target;
-    setIsVerifyingMfa(true);
-    try {
-      if (mfaChallenge) {
+    if (mfaChallenge) {
+      setIsVerifyingMfa(true);
+      try {
         if (!/^\d{6}$/.test(mfaCode)) {
           setLoginError("Ingresa el código de 6 dígitos de tu app autenticadora.");
           return;
@@ -96,8 +126,16 @@ function NavbarContent() {
         setIsLoginOpen(false);
         toast.success("¡Sesión verificada! Bienvenido de nuevo.");
         return;
+      } catch (error) {
+        setLoginError(error.message || "Credenciales incorrectas");
+      } finally {
+        setIsVerifyingMfa(false);
       }
+      return;
+    }
 
+    setIsLoggingIn(true);
+    try {
       const { error, mfaRequired, factorId } = await loginWithEmail(
         form.email.value,
         form.password.value,
@@ -118,7 +156,7 @@ function NavbarContent() {
     } catch (error) {
       setLoginError(error.message || "Credenciales incorrectas");
     } finally {
-      setIsVerifyingMfa(false);
+      setIsLoggingIn(false);
     }
   };
 
@@ -194,7 +232,7 @@ function NavbarContent() {
   );
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${isScrolled ? "bg-background/95 backdrop-blur-md shadow-lg" : "bg-transparent"}`}>
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? "bg-background/95 backdrop-blur-md shadow-lg border-b border-zinc-200/60 dark:border-white/10" : "bg-background/85 backdrop-blur-md border-b border-zinc-200/40 dark:border-white/5"}`}>
       <Toast.Provider placement="bottom end" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
@@ -214,8 +252,11 @@ function NavbarContent() {
           <div className="hidden md:flex items-center space-x-1">
             {navLinks.map((link) => {
               const Icon = link.icon;
-              const isActive = typeof window !== 'undefined' && window.location.pathname === link.href;
-              const linkColor = isActive ? "#b08968" : (isScrolled ? "#6b7280" : (isDarkMode || isHomePage ? "#e5e7eb" : "#4b5563"));
+              const isActive = typeof window !== 'undefined' && (
+                window.location.pathname === link.href || 
+                (link.href !== '/' && window.location.pathname.startsWith(link.href))
+              );
+              const linkColor = isActive ? "#b08968" : (isDarkMode ? "#d1d5db" : "#4b5563");
               return (
                 <a key={link.id} href={link.href} className="relative px-4 py-2 rounded-lg transition-all duration-300 group">
                   <div className="flex items-center space-x-2">
@@ -239,6 +280,8 @@ function NavbarContent() {
 
             {isLoginOpen && (
               <div className="absolute top-14 right-0 w-80 bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl p-6 z-50 border border-zinc-200 dark:border-zinc-800 animate-in fade-in slide-in-from-top-4 duration-200">
+                {/* Popover Arrow / Notch */}
+                <div className="absolute -top-2 right-4 w-4 h-4 bg-white dark:bg-[#18181b] border-t border-l border-zinc-200 dark:border-[#27272a] rotate-45 rounded-tl-sm pointer-events-none z-10" />
                 {/* Opciones Generales (Dark Mode) */}
                 <div className="flex justify-between items-center mb-4 pb-4 border-b border-zinc-100 dark:border-zinc-800">
                   <span className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Apariencia</span>
@@ -308,7 +351,21 @@ function NavbarContent() {
                               </div>
                               <div className="relative">
                                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: "#b08968" }} />
-                                <input type="password" name="password" required className="w-full pl-10 pr-4 py-3 border-2 border-zinc-200 dark:border-zinc-700 rounded-xl outline-none bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:border-[#b08968] transition-colors font-medium" placeholder="••••••••" />
+                                <input 
+                                  type={showPassword ? "text" : "password"} 
+                                  name="password" 
+                                  required 
+                                  className="w-full pl-10 pr-11 py-3 border-2 border-zinc-200 dark:border-zinc-700 rounded-xl outline-none bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:border-[#b08968] transition-colors font-medium" 
+                                  placeholder="••••••••" 
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => setShowPassword(!showPassword)}
+                                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 focus:outline-none transition-colors"
+                                  aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                                >
+                                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                </button>
                               </div>
                             </div>
                           </>
@@ -324,8 +381,25 @@ function NavbarContent() {
                           </Alert>
                         )}
 
-                        <button type="submit" disabled={isVerifyingMfa} className="w-full py-3 mt-2 rounded-xl text-white font-extrabold hover:opacity-90 hover:scale-[1.02] transition-all shadow-lg disabled:opacity-50" style={{ backgroundColor: "#b08968", shadowColor: "rgba(176, 137, 104, 0.4)" }}>
-                          {mfaChallenge ? mfaSubmitLabel : "Entrar"}
+                        <button 
+                          type="submit" 
+                          disabled={isVerifyingMfa || isLoggingIn} 
+                          className="w-full py-3 mt-2 rounded-xl text-white font-extrabold hover:opacity-90 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg disabled:opacity-60 flex items-center justify-center space-x-2" 
+                          style={{ backgroundColor: "#b08968", shadowColor: "rgba(176, 137, 104, 0.4)" }}
+                        >
+                          {isLoggingIn ? (
+                            <>
+                              <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                              </svg>
+                              <span>Iniciando sesión...</span>
+                            </>
+                          ) : mfaChallenge ? (
+                            mfaSubmitLabel
+                          ) : (
+                            <span>Entrar</span>
+                          )}
                         </button>
 
                         {mfaChallenge ? (
@@ -334,7 +408,14 @@ function NavbarContent() {
                           </button>
                         ) : (
                           <>
-                            <div className="relative my-5"><div className="absolute inset-0 flex items-center"><span className="w-full border-t border-zinc-200 dark:border-zinc-800"></span></div><div className="relative flex justify-center text-xs uppercase"><span className="bg-white dark:bg-zinc-900 px-2 text-zinc-400 font-bold">O</span></div></div>
+                            <div className="relative my-5">
+                              <div className="absolute inset-0 flex items-center">
+                                <span className="w-full border-t border-zinc-200 dark:border-zinc-800"></span>
+                              </div>
+                              <div className="relative flex justify-center text-xs uppercase">
+                                <span className="bg-white dark:bg-[#18181b] px-3 text-zinc-400 font-bold">O</span>
+                              </div>
+                            </div>
 
                             <button type="button" onClick={() => loginWithGoogle()} className="w-full flex items-center justify-center space-x-3 py-3 border-2 border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-200 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors font-bold truncate">
                               <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-5 h-5 bg-white rounded-full p-0.5" alt="Google" />
@@ -385,7 +466,11 @@ function NavbarContent() {
           </div>
 
           {/* Mobile menu button */}
-          <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} aria-label="Menú móvil" className={`md:hidden p-2 rounded-lg ${isScrolled || (!isDarkMode && !isHomePage) ? "text-gray-800 dark:text-white" : "text-white"}`}>
+          <button 
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} 
+            aria-label="Menú móvil" 
+            className="md:hidden p-2 rounded-lg text-zinc-800 dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 transition-colors"
+          >
             {isMobileMenuOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
           </button>
 
@@ -401,9 +486,17 @@ function NavbarContent() {
 
               {navLinks.map((link) => {
                 const Icon = link.icon;
-                const isActive = typeof window !== 'undefined' && window.location.pathname === link.href;
+                const isActive = typeof window !== 'undefined' && (
+                  window.location.pathname === link.href || 
+                  (link.href !== '/' && window.location.pathname.startsWith(link.href))
+                );
                 return (
-                  <a key={link.id} href={link.href} className={`flex items-center space-x-3 px-4 py-3.5 rounded-2xl transition-all duration-300 ${isActive ? "bg-default" : "hover:bg-default-hover"}`}>
+                  <a 
+                    key={link.id} 
+                    href={link.href} 
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={`flex items-center space-x-3 px-4 py-3.5 rounded-2xl transition-all duration-300 ${isActive ? "bg-default" : "hover:bg-default-hover"}`}
+                  >
                     <Icon className="w-5 h-5" style={{ color: isActive ? "#b08968" : "var(--color-default-500)" }} />
                     <span className={`font-medium ${isActive ? "font-bold text-[#b08968]" : "text-foreground-600"}`}>{link.label}</span>
                   </a>
@@ -419,7 +512,22 @@ function NavbarContent() {
                     ) : (
                       <>
                         <input type="email" name="email" placeholder="Email" className="w-full px-5 py-3.5 border-2 border-transparent bg-field text-foreground placeholder-default-500 focus:border-[#b08968] focus:bg-default rounded-xl outline-none transition-all font-medium" />
-                        <input type="password" name="password" placeholder="Contraseña" className="w-full px-5 py-3.5 border-2 border-transparent bg-field text-foreground placeholder-default-500 focus:border-[#b08968] focus:bg-default rounded-xl outline-none transition-all font-medium" />
+                        <div className="relative">
+                          <input 
+                            type={showPassword ? "text" : "password"} 
+                            name="password" 
+                            placeholder="Contraseña" 
+                            className="w-full px-5 pr-12 py-3.5 border-2 border-transparent bg-field text-foreground placeholder-default-500 focus:border-[#b08968] focus:bg-default rounded-xl outline-none transition-all font-medium" 
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-4 top-1/2 -translate-y-1/2 p-1 text-default-400 hover:text-default-600 focus:outline-none transition-colors"
+                            aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                          >
+                            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                          </button>
+                        </div>
                       </>
                     )}
                     {loginError && (
@@ -430,8 +538,25 @@ function NavbarContent() {
                         </Alert.Content>
                       </Alert>
                     )}
-                    <button type="submit" disabled={isVerifyingMfa} className="w-full py-4 rounded-xl text-white font-extrabold text-lg shadow-lg disabled:opacity-50" style={{ backgroundColor: "#b08968" }}>
-                      {mfaChallenge ? mfaSubmitLabel : "Iniciar sesión"}
+                    <button 
+                      type="submit" 
+                      disabled={isVerifyingMfa || isLoggingIn} 
+                      className="w-full py-4 rounded-xl text-white font-extrabold text-lg shadow-lg disabled:opacity-60 flex items-center justify-center space-x-2" 
+                      style={{ backgroundColor: "#b08968" }}
+                    >
+                      {isLoggingIn ? (
+                        <>
+                          <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                          </svg>
+                          <span>Iniciando sesión...</span>
+                        </>
+                      ) : mfaChallenge ? (
+                        mfaSubmitLabel
+                      ) : (
+                        <span>Iniciar sesión</span>
+                      )}
                     </button>
                   </form>
                   {mfaChallenge ? (
@@ -447,8 +572,8 @@ function NavbarContent() {
                         <span>Continuar con Google</span>
                       </button>
                       <div className="flex justify-between items-center text-sm pt-4 px-2">
-                        <a href="/auth/register" className="font-extrabold" style={{ color: "#b08968" }}>Crear cuenta</a>
-                        <a href="/auth/login" className="text-default-500 font-medium hover:text-default-700">¿Olvidaste tu contraseña?</a>
+                        <a href="/auth/register" onClick={() => setIsMobileMenuOpen(false)} className="font-extrabold" style={{ color: "#b08968" }}>Crear cuenta</a>
+                        <a href="/auth/login" onClick={() => setIsMobileMenuOpen(false)} className="text-default-500 font-medium hover:text-default-700">¿Olvidaste tu contraseña?</a>
                       </div>
                     </>
                   )}
@@ -463,8 +588,8 @@ function NavbarContent() {
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-3 mt-2">
-                    <a href="/profile" className="flex items-center justify-center w-full py-3.5 rounded-xl text-white font-bold transition-transform active:scale-95" style={{ backgroundColor: "#b08968" }}>Perfil</a>
-                    <button onClick={logout} className="flex items-center justify-center w-full py-3.5 rounded-xl font-bold bg-danger-soft active:scale-95 transition-transform text-danger">Salir</button>
+                    <a href="/profile" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center justify-center w-full py-3.5 rounded-xl text-white font-bold transition-transform active:scale-95" style={{ backgroundColor: "#b08968" }}>Perfil</a>
+                    <button onClick={() => { logout(); setIsMobileMenuOpen(false); }} className="flex items-center justify-center w-full py-3.5 rounded-xl font-bold bg-danger-soft active:scale-95 transition-transform text-danger">Salir</button>
                   </div>
                 </div>
               )}

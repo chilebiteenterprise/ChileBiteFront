@@ -358,47 +358,69 @@ const RecetarioContent = ({ collectionId, collectionTitle }) => {
                         ))}
                     </div>
                 ) : (
-                    <div className="flex-1 flex items-center justify-center text-gray-700 font-semibold py-20">
+                    <div className="flex-1 flex items-center justify-center text-text-muted font-semibold py-20">
                         No se encontraron recetas.
                     </div>
                 )}
 
-                {/* Paginación Moderna */}
+                {/* Paginación Minimalista Editorial */}
                 {!loading && totalPages > 1 && (
-                    <div className="mt-10 flex justify-center items-center gap-2 mb-8 select-none">
+                    <div className="mt-12 flex justify-center items-center gap-1 sm:gap-2 mb-10 select-none">
                         {/* Prev Button */}
                         <button
                             onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                             disabled={currentPage === 1}
-                            className="size-10 flex items-center justify-center rounded-xl bg-white dark:bg-[#0f1115] border border-slate-200 dark:border-slate-800 text-slate-500 hover:text-[#b08969] hover:border-[#b08969]/50 transition-all disabled:opacity-50 disabled:pointer-events-none shadow-sm"
+                            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold text-text-muted hover:text-brand-primary hover:bg-brand-subtle/50 transition-all disabled:opacity-30 disabled:pointer-events-none group"
+                            aria-label="Página anterior"
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" className="size-4 transition-transform group-hover:-translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                            </svg>
+                            <span className="hidden sm:inline">Anterior</span>
                         </button>
 
                         {/* First Page + Ellipsis */}
                         {getPaginationGroup()[0] > 1 && (
                             <>
-                                <button onClick={() => setCurrentPage(1)} className="size-10 rounded-xl bg-white dark:bg-[#0f1115] border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 font-bold hover:text-[#b08969] hover:border-[#b08969]/50 transition-all">1</button>
-                                {getPaginationGroup()[0] > 2 && <span className="text-slate-400 font-bold tracking-widest px-1">...</span>}
+                                <button 
+                                    onClick={() => setCurrentPage(1)} 
+                                    className="size-9 sm:size-10 flex items-center justify-center rounded-full text-text-muted hover:text-text-main hover:bg-surface-muted/60 font-medium text-sm transition-colors"
+                                >
+                                    1
+                                </button>
+                                {getPaginationGroup()[0] > 2 && <span className="text-text-subtle font-medium px-1">…</span>}
                             </>
                         )}
 
                         {/* Dynamic Pages */}
-                        {getPaginationGroup().map(num => (
-                            <button
-                                key={num}
-                                onClick={() => setCurrentPage(num)}
-                                className={`size-10 rounded-xl font-bold transition-all shadow-sm ${num === currentPage ? 'bg-[#b08969] text-white border-transparent scale-110 shadow-md shadow-[#b08969]/30' : 'bg-white dark:bg-[#0f1115] border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-[#b08969] hover:border-[#b08969]/50'}`}
-                            >
-                                {num}
-                            </button>
-                        ))}
+                        {getPaginationGroup().map(num => {
+                            const isCurrent = num === currentPage;
+                            return (
+                                <button
+                                    key={num}
+                                    onClick={() => setCurrentPage(num)}
+                                    className={`size-9 sm:size-10 flex items-center justify-center rounded-full text-sm transition-all ${
+                                        isCurrent 
+                                            ? 'bg-brand-primary text-white font-bold shadow-sm shadow-brand-primary/30' 
+                                            : 'text-text-muted hover:text-text-main hover:bg-surface-muted/60 font-medium'
+                                    }`}
+                                    aria-current={isCurrent ? "page" : undefined}
+                                >
+                                    {num}
+                                </button>
+                            );
+                        })}
 
                         {/* Last Page + Ellipsis */}
                         {getPaginationGroup()[getPaginationGroup().length - 1] < totalPages && (
                             <>
-                                {getPaginationGroup()[getPaginationGroup().length - 1] < totalPages - 1 && <span className="text-slate-400 font-bold tracking-widest px-1">...</span>}
-                                <button onClick={() => setCurrentPage(totalPages)} className="size-10 rounded-xl bg-white dark:bg-[#0f1115] border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 font-bold hover:text-[#b08969] hover:border-[#b08969]/50 transition-all">{totalPages}</button>
+                                {getPaginationGroup()[getPaginationGroup().length - 1] < totalPages - 1 && <span className="text-text-subtle font-medium px-1">…</span>}
+                                <button 
+                                    onClick={() => setCurrentPage(totalPages)} 
+                                    className="size-9 sm:size-10 flex items-center justify-center rounded-full text-text-muted hover:text-text-main hover:bg-surface-muted/60 font-medium text-sm transition-colors"
+                                >
+                                    {totalPages}
+                                </button>
                             </>
                         )}
 
@@ -406,9 +428,13 @@ const RecetarioContent = ({ collectionId, collectionTitle }) => {
                         <button
                             onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                             disabled={currentPage === totalPages}
-                            className="size-10 flex items-center justify-center rounded-xl bg-white dark:bg-[#0f1115] border border-slate-200 dark:border-slate-800 text-slate-500 hover:text-[#b08969] hover:border-[#b08969]/50 transition-all disabled:opacity-50 disabled:pointer-events-none shadow-sm"
+                            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold text-text-muted hover:text-brand-primary hover:bg-brand-subtle/50 transition-all disabled:opacity-30 disabled:pointer-events-none group"
+                            aria-label="Página siguiente"
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                            <span className="hidden sm:inline">Siguiente</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" className="size-4 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
                         </button>
                     </div>
                 )}
