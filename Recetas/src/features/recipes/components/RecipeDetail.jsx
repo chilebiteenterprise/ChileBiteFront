@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabaseClient';
 import AdSenseBanner from '@/shared/ui/AdSenseBanner';
 import CollectionPickerModal from './CollectionPickerModal.jsx';
 import VideoEmbed from '@/shared/ui/VideoEmbed.jsx';
+import { trackRecipeView, trackRecipeDwellTime } from '../services/recommendationEngine';
 
 
 const parseTextToList = (text) => {
@@ -27,6 +28,47 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
   const [error, setError] = useState(null);
   const [isCollectionModalOpen, setIsCollectionModalOpen] = useState(false);
 
+  // Dwell Time tracking (Señal implícita de tiempo de lectura e interacción)
+  useEffect(() => {
+    const targetId = idReceta || recetaProp?.id;
+    if (!targetId) return;
+
+    let accumulatedSeconds = 0;
+    let isVisible = !document.hidden;
+    let lastResumeTime = Date.now();
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        if (isVisible) {
+          accumulatedSeconds += (Date.now() - lastResumeTime) / 1000;
+          isVisible = false;
+        }
+      } else {
+        lastResumeTime = Date.now();
+        isVisible = true;
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Registro periódico cada 20s
+    const interval = setInterval(() => {
+      if (isVisible) {
+        const currentSecs = accumulatedSeconds + ((Date.now() - lastResumeTime) / 1000);
+        trackRecipeDwellTime(targetId, currentSecs);
+      }
+    }, 20000);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      clearInterval(interval);
+      if (isVisible) {
+        accumulatedSeconds += (Date.now() - lastResumeTime) / 1000;
+      }
+      trackRecipeDwellTime(targetId, accumulatedSeconds);
+    };
+  }, [idReceta, recetaProp?.id]);
+
   useEffect(() => {
     if (modoLocal && recetaProp) {
       setReceta(recetaProp);
@@ -45,6 +87,7 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
     }
 
     if (!idReceta) return;
+    trackRecipeView(idReceta);
 
     const fetchReceta = async () => {
       try {

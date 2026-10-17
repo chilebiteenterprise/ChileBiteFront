@@ -5,6 +5,7 @@ import { toast } from "@heroui/react";
 import { useAuth } from '@/features/auth/context/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 import CollectionPickerModal from "./CollectionPickerModal.jsx";
+import { trackRecipeView } from "../services/recommendationEngine";
 
 export default function RecipeCard({ receta, index = 0, usuarioEsAdmin = false, isSelected = false, onToggleSelect }) {
   const { session } = useAuth();
@@ -135,6 +136,9 @@ export default function RecipeCard({ receta, index = 0, usuarioEsAdmin = false, 
 
   const handleCardClick = (e) => {
     if (e.target.closest("[data-receta-ignore='true']")) return;
+    if (idToUse) {
+      trackRecipeView(idToUse);
+    }
     if (usuarioEsAdmin && onToggleSelect) {
       onToggleSelect(idToUse);
     } else {

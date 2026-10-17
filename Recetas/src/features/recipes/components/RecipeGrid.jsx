@@ -6,6 +6,8 @@ import RecipeSkeleton from "./RecipeSkeleton";
 import RecipeToolbar from "./RecipeToolbar";
 import AdminFloatingMenu from "./AdminFloatingMenu";
 import { supabase } from "../../../lib/supabaseClient";
+import { buildUserProfile, rankRecipesForYou, getLocalViewHistory, getLocalDwellTimes } from "../services/recommendationEngine";
+
 const RecetarioContent = ({ collectionId, collectionTitle }) => {
     const { profile, user } = useAuth();
     // === LÓGICA DE ADMINISTRADOR: ESTADOS INICIALES ===
@@ -14,6 +16,7 @@ const RecetarioContent = ({ collectionId, collectionTitle }) => {
 
     const [filterSaved, setFilterSaved] = useState(false);
     const [savedRecipeIds, setSavedRecipeIds] = useState(new Set());
+    const [likedRecipeIds, setLikedRecipeIds] = useState(new Set());
 
     const [selectedRecipes, setSelectedRecipes] = useState([]);
 
@@ -32,7 +35,7 @@ const RecetarioContent = ({ collectionId, collectionTitle }) => {
     const [selectedDifficulty, setSelectedDifficulty] = useState(0);
     const [searchQuery, setSearchQuery] = useState("");
     const [sortField, setSortField] = useState("");
-    const [sortOrder, setSortOrder] = useState("asc");
+    const [sortOrder, setSortOrder] = useState("desc");
     const [currentPage, setCurrentPage] = useState(1);
     const perPage = 12;
 
@@ -44,16 +47,23 @@ const RecetarioContent = ({ collectionId, collectionTitle }) => {
     useEffect(() => {
         if (!user?.id) {
              setSavedRecipeIds(new Set());
+             setLikedRecipeIds(new Set());
              return;
         }
-        const fetchSavedIds = async () => {
+        const fetchUserInteractions = async () => {
+             // 1. Colecciones guardadas
              const { data: cols } = await supabase.from('core_coleccion').select('id').eq('user_id', user.id);
              if (cols && cols.length > 0) {
                  const { data: recs } = await supabase.from('core_coleccion_receta').select('receta_id').in('coleccion_id', cols.map(c => c.id));
                  if (recs) setSavedRecipeIds(new Set(recs.map(r => r.receta_id)));
              }
+             // 2. Likes del usuario para personalización escalable
+             const { data: likes } = await supabase.from('core_recetalike').select('receta_id').eq('user_id', user.id);
+             if (likes) {
+                 setLikedRecipeIds(new Set(likes.map(l => l.receta_id)));
+             }
         };
-        fetchSavedIds();
+        fetchUserInteractions();
     }, [user?.id]);
 
     // === LÓGICA DE ADMINISTRADOR: EFECTOS ===
@@ -188,6 +198,19 @@ const RecetarioContent = ({ collectionId, collectionTitle }) => {
         }
     };
     
+    // Memo del perfil de afinidad del usuario (Calculado en O(K) de forma pura y escalable)
+    const userProfile = useMemo(() => {
+        const viewedIds = getLocalViewHistory();
+        const dwellTimes = getLocalDwellTimes();
+        return buildUserProfile({
+            likedRecipeIds,
+            savedRecipeIds,
+            viewedRecipeIds: viewedIds,
+            dwellTimes,
+            recipesCatalog: recipes
+        });
+    }, [likedRecipeIds, savedRecipeIds, recipes]);
+
     // función resetFilters ...
     const resetFilters = () => {
         setSelectedCategories([]);
@@ -196,7 +219,7 @@ const RecetarioContent = ({ collectionId, collectionTitle }) => {
         setSelectedDifficulty(0);
         setSearchQuery("");
         setSortField("");
-        setSortOrder("asc");
+        setSortOrder("desc");
         setCurrentPage(1);
     };
 
@@ -234,8 +257,20 @@ const RecetarioContent = ({ collectionId, collectionTitle }) => {
                 r.nombre.toLowerCase().includes(searchQuery.toLowerCase())
             );
 
-        // Ordenamiento
-        if (sortField) {
+        // Algoritmo de Ordenamiento
+        if (!sortField) {
+            // Por defecto: Algoritmo Para Ti (Recomendaciones inteligentes de forma natural)
+            result = rankRecipesForYou(result, userProfile);
+            if (sortOrder === "asc") {
+                result = [...result].reverse();
+            }
+        } else if (sortField === "creado_en" || sortField === "fecha_creacion") {
+            result.sort((a, b) => {
+                const dateA = new Date(a.creado_en || a.fecha_creacion || 0).getTime();
+                const dateB = new Date(b.creado_en || b.fecha_creacion || 0).getTime();
+                return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
+            });
+        } else if (sortField) {
             result.sort((a, b) => {
                 const aValue =
                     sortField === "dificultad"
@@ -261,7 +296,8 @@ const RecetarioContent = ({ collectionId, collectionTitle }) => {
         sortField,
         sortOrder,
         filterSaved,
-        savedRecipeIds
+        savedRecipeIds,
+        userProfile
     ]);
     // ---------------------------------------------------------------------------------------------------
 
@@ -271,6 +307,21 @@ const RecetarioContent = ({ collectionId, collectionTitle }) => {
         (currentPage - 1) * perPage,
         currentPage * perPage
     );
+
+    // Pre-fetching silencioso de imágenes de la siguiente página (Paginación instantánea)
+    useEffect(() => {
+        if (currentPage >= totalPages) return;
+        const nextStart = currentPage * perPage;
+        const nextPageRecipes = filteredRecipes.slice(nextStart, nextStart + perPage);
+
+        nextPageRecipes.forEach((r) => {
+            const imgUrl = r.portada || r.imagen_url;
+            if (imgUrl && typeof window !== 'undefined') {
+                const img = new Image();
+                img.src = imgUrl;
+            }
+        });
+    }, [currentPage, totalPages, filteredRecipes]);
 
     const getPaginationGroup = () => {
         let start = Math.max(1, currentPage - 2);

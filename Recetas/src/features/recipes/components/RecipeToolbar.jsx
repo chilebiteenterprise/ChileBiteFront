@@ -250,28 +250,48 @@ export default function RecipeToolbar({
             </div>
 
             {/* Right: Sort controls */}
-            <div className="flex items-center gap-3 shrink-0">
-                <Select
-                    className="w-48 lg:w-56"
-                    placeholder="Ordenar por..."
-                    value={sortField || null}
-                    onChange={(val) => {
-                        if (val) setSortField(val);
-                    }}
-                    disallowEmptySelection
-                >
-                    <Label className="sr-only">Ordenar</Label>
-                    <Select.Trigger className="h-12 w-full bg-surface-input border border-border-subtle hover:border-border-strong text-text-main rounded-2xl px-4 flex items-center justify-between transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-primary">
-                        <Select.Value className="text-sm font-medium text-text-main truncate" />
-                        <Select.Indicator className="text-text-muted shrink-0" />
-                    </Select.Trigger>
-                    <Select.Popover className="bg-surface-elevated text-text-main border border-border-subtle rounded-2xl p-1 shadow-xl">
-                        <ListBox className="bg-surface-elevated text-text-main rounded-xl p-1">
-                            <ListBox.Item id="contador_likes" key="contador_likes" textValue="Popularidad" className="hover:bg-surface-muted text-text-main rounded-xl px-3 py-2.5 cursor-pointer text-sm font-medium">Popularidad</ListBox.Item>
-                            <ListBox.Item id="dificultad" key="dificultad" textValue="Dificultad" className="hover:bg-surface-muted text-text-main rounded-xl px-3 py-2.5 cursor-pointer text-sm font-medium">Dificultad</ListBox.Item>
-                        </ListBox>
-                    </Select.Popover>
-                </Select>
+            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                <div className="relative flex items-center">
+                    <Select
+                        className="w-48 lg:w-56"
+                        placeholder="Ordenar por..."
+                        value={sortField || null}
+                        onChange={(val) => {
+                            setSortField(val || "");
+                        }}
+                    >
+                        <Label className="sr-only">Ordenar</Label>
+                        <Select.Trigger className={`h-12 w-full bg-surface-input border border-border-subtle hover:border-border-strong text-text-main rounded-2xl ${sortField ? 'pl-4 pr-12' : 'px-4'} flex items-center justify-between transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-primary`}>
+                            <Select.Value className="text-sm font-medium text-text-main truncate" />
+                            <Select.Indicator className="text-text-muted shrink-0" />
+                        </Select.Trigger>
+                        <Select.Popover className="bg-surface-elevated text-text-main border border-border-subtle rounded-2xl p-1 shadow-xl">
+                            <ListBox className="bg-surface-elevated text-text-main rounded-xl p-1">
+                                <ListBox.Item id="creado_en" key="creado_en" textValue="Más Recientes" className="hover:bg-surface-muted text-text-main rounded-xl px-3 py-2.5 cursor-pointer text-sm font-medium">Más Recientes</ListBox.Item>
+                                <ListBox.Item id="contador_likes" key="contador_likes" textValue="Popularidad" className="hover:bg-surface-muted text-text-main rounded-xl px-3 py-2.5 cursor-pointer text-sm font-medium">Popularidad</ListBox.Item>
+                                <ListBox.Item id="dificultad" key="dificultad" textValue="Dificultad" className="hover:bg-surface-muted text-text-main rounded-xl px-3 py-2.5 cursor-pointer text-sm font-medium">Dificultad</ListBox.Item>
+                            </ListBox>
+                        </Select.Popover>
+                    </Select>
+
+                    {/* Botón de deselección rápida para volver a la recomendación por defecto */}
+                    {sortField && (
+                        <button
+                            type="button"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setSortField("");
+                            }}
+                            className="absolute right-8 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full flex items-center justify-center text-text-muted hover:text-text-main hover:bg-surface-muted transition-colors z-10"
+                            title="Volver a recomendación inteligente"
+                            aria-label="Restablecer orden a Para Ti"
+                        >
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    )}
+                </div>
 
                 <button
                     onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
