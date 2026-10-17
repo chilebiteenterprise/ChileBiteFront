@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Plus, Trash2 } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
+import { getAvailableUnitsForIngredient, ALL_UNIT_OPTIONS } from '@/shared/utils/unitRules';
 
 const IngredientSelector = ({ ingredientes_detalle = [], onChange }) => {
   const [search, setSearch] = useState('');
@@ -21,7 +22,7 @@ const IngredientSelector = ({ ingredientes_detalle = [], onChange }) => {
       try {
         const { data, error } = await supabase
           .from('core_ingrediente')
-          .select('id, nombre, calorias_por_100g, proteinas_por_100g, carbohidratos_por_100g, grasas_por_100g, peso_por_unidad_gramos')
+          .select('id, nombre, categoria, tipo_medida, calorias_por_100g, proteinas_por_100g, carbohidratos_por_100g, grasas_por_100g, peso_por_unidad_gramos, peso_por_taza_gramos, peso_por_cucharada_gramos')
           .ilike('nombre', `%${search}%`)
           .limit(20);
         if (error) throw error;
@@ -57,6 +58,16 @@ const IngredientSelector = ({ ingredientes_detalle = [], onChange }) => {
     newItems.splice(index, 1);
     onChange(newItems);
   };
+
+  const UNIT_LIST = [
+    { val: 'g', label: 'Gramos (g)' },
+    { val: 'kg', label: 'Kilos (kg)' },
+    { val: 'ml', label: 'Mililitros (ml)' },
+    { val: 'l', label: 'Litros (l)' },
+    { val: 'unidad', label: 'Unidades (ud)' },
+    { val: 'cda', label: 'Cucharadas (cda)' },
+    { val: 'taza', label: 'Tazas' }
+  ];
 
   return (
     <div className="bg-transparent rounded-xl w-full">
@@ -98,6 +109,24 @@ const IngredientSelector = ({ ingredientes_detalle = [], onChange }) => {
                     setSelectedIngredient(ing);
                     setSearch(ing.nombre);
                     setResults([]);
+                    const allowed = getAvailableUnitsForIngredient(ing);
+                    let defaultUnit = 'g';
+                    let defaultQty = '100';
+                    if (allowed.some(u => u.val === 'unidad')) {
+                      defaultUnit = 'unidad';
+                      defaultQty = '1';
+                    } else if (allowed.some(u => u.val === 'ml')) {
+                      defaultUnit = 'ml';
+                      defaultQty = '200';
+                    } else if (allowed.some(u => u.val === 'cda') && !allowed.some(u => u.val === 'kg')) {
+                      defaultUnit = 'cda';
+                      defaultQty = '1';
+                    } else {
+                      defaultUnit = allowed[0]?.val || 'g';
+                      defaultQty = defaultUnit === 'kg' ? '0.5' : defaultUnit === 'cda' ? '1' : '100';
+                    }
+                    setUnidad(defaultUnit);
+                    setCantidad(defaultQty);
                   }}
                 >
                   <span className="font-semibold text-slate-800 dark:text-slate-200 text-sm leading-tight text-balance group-hover:text-[#b08969]">{ing.nombre}</span>
@@ -112,49 +141,54 @@ const IngredientSelector = ({ ingredientes_detalle = [], onChange }) => {
           <input 
             type="number"
             min="0"
-            step="0.1"
+            step={['g', 'ml'].includes(unidad) ? 1 : 0.1}
             placeholder="Cant."
-            className="w-28 text-center px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:border-[#b08969] focus:ring-1 focus:ring-[#b08969] outline-none shadow-sm transition-all text-sm text-slate-800 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-600"
+            className="w-28 text-center px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:border-[#b08969] focus:ring-1 focus:ring-[#b08969] outline-none shadow-sm transition-all text-sm text-slate-800 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-600 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             value={cantidad}
             onChange={(e) => setCantidad(e.target.value)}
           />
           <div className="relative flex-1">
-            <button 
-                type="button"
-                onClick={() => setIsOpenUnidad(!isOpenUnidad)}
-                className="w-full flex justify-between items-center px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:border-[#b08969] focus:ring-1 focus:ring-[#b08969] outline-none shadow-sm transition-all text-sm text-slate-800 dark:text-slate-200"
-            >
-                <span className="truncate pr-2">
-                  {unidad === 'g' ? 'Gramos (g)' : unidad === 'ml' ? 'Mililitros (ml)' : unidad === 'unidad' ? 'Unidades' : unidad === 'cda' ? 'Cucharadas' : 'Tazas'}
-                </span>
-                <svg xmlns="http://www.w3.org/2000/svg" className={`size-4 text-slate-400 shrink-0 transition-transform duration-300 ${isOpenUnidad ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-            </button>
-            
-            {isOpenUnidad && (
+            {(() => {
+              const currentUnitList = getAvailableUnitsForIngredient(selectedIngredient);
+              return (
                 <>
-                    <div className="fixed inset-0 z-40" onClick={() => setIsOpenUnidad(false)}></div>
-                    <div className="absolute z-50 w-full mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl max-h-48 overflow-y-auto py-2 top-full right-0">
-                        {[
-                          { val: 'g', label: 'Gramos (g)' },
-                          { val: 'ml', label: 'Mililitros (ml)' },
-                          { val: 'unidad', label: 'Unidades' },
-                          { val: 'cda', label: 'Cucharadas' },
-                          { val: 'taza', label: 'Tazas' }
-                        ].map(u => (
-                            <button
-                                key={u.val}
-                                type="button"
-                                onClick={() => { setUnidad(u.val); setIsOpenUnidad(false); }}
-                                className="w-full text-left px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-950 hover:text-[#b08969] transition-colors"
-                            >
-                                {u.label}
-                            </button>
-                        ))}
-                    </div>
+                  <button 
+                      type="button"
+                      onClick={() => setIsOpenUnidad(!isOpenUnidad)}
+                      className="w-full flex justify-between items-center px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:border-[#b08969] focus:ring-1 focus:ring-[#b08969] outline-none shadow-sm transition-all text-sm text-slate-800 dark:text-slate-200"
+                  >
+                      <span className="truncate pr-2">
+                        {currentUnitList.find(u => u.val === unidad)?.label || ALL_UNIT_OPTIONS.find(u => u.val === unidad)?.label || unidad}
+                      </span>
+                      <svg xmlns="http://www.w3.org/2000/svg" className={`size-4 text-slate-400 shrink-0 transition-transform duration-300 ${isOpenUnidad ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                  </button>
+                  
+                  {isOpenUnidad && (
+                      <>
+                          <div className="fixed inset-0 z-40" onClick={() => setIsOpenUnidad(false)}></div>
+                          <div className="absolute z-50 w-full mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl max-h-56 overflow-y-auto py-2 top-full right-0">
+                              {currentUnitList.map(u => (
+                                  <button
+                                      key={u.val}
+                                      type="button"
+                                      onClick={() => { setUnidad(u.val); setIsOpenUnidad(false); }}
+                                      className={`w-full text-left px-4 py-2.5 text-sm font-semibold transition-colors ${
+                                        unidad === u.val 
+                                          ? 'bg-[#b08969]/10 text-[#b08969]' 
+                                          : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-950 hover:text-[#b08969]'
+                                      }`}
+                                  >
+                                      {u.label}
+                                  </button>
+                              ))}
+                          </div>
+                      </>
+                  )}
                 </>
-            )}
+              );
+            })()}
           </div>
           <button 
             type="button"

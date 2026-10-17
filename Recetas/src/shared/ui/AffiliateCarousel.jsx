@@ -70,8 +70,8 @@ const PRODUCTOS = [
   }
 ];
 
-// Extendemos el array para el efecto suave de carrusel (2 copias en vez de 7 para reducir DOM en 70%)
-const EXTENDED_PRODUCTS = [...PRODUCTOS, ...PRODUCTOS];
+// Extendemos el array para el efecto suave de carrusel (3 copias para ciclo infinito perfecto)
+const EXTENDED_PRODUCTS = [...PRODUCTOS, ...PRODUCTOS, ...PRODUCTOS];
 const CARD_WIDTH = 180; 
 const GAP = 12; 
 const TOTAL_WIDTH_SINGLE = PRODUCTOS.length * (CARD_WIDTH + GAP);
@@ -132,13 +132,11 @@ const ProductCard = ({ item }) => {
 
 const AffiliateCarousel = () => {
   const containerRef = useRef(null);
-  const isScrolling = useRef(false);
 
   // Initialize scroll position to the middle block
   useEffect(() => {
     if (containerRef.current) {
-      // Iniciamos en el bloque central (índice 3 de los 7 bloques)
-      containerRef.current.scrollLeft = TOTAL_WIDTH_SINGLE * 3;
+      containerRef.current.scrollLeft = TOTAL_WIDTH_SINGLE;
     }
   }, []);
 
@@ -147,18 +145,15 @@ const AffiliateCarousel = () => {
     const el = containerRef.current;
     if (!el) return;
 
-    // Tenemos un margen gigante de arrastre (1 bloque entero = ~1920px extra a cada lado)
-    // Si caemos por debajo de 1 bloque (entramos a la zona de peligro izquierda)
-    if (el.scrollLeft <= TOTAL_WIDTH_SINGLE) {
-      el.style.scrollBehavior = 'auto'; // Desactivar smooth para salto instantáneo
-      el.scrollLeft += TOTAL_WIDTH_SINGLE * 3; // Saltamos 3 bloques hacia la derecha
-    } 
-    // Si pasamos el bloque 5 (entramos a la zona de peligro derecha)
-    else if (el.scrollLeft >= TOTAL_WIDTH_SINGLE * 5) {
+    if (el.scrollLeft <= 20) {
       el.style.scrollBehavior = 'auto';
-      el.scrollLeft -= TOTAL_WIDTH_SINGLE * 3; // Saltamos 3 bloques hacia la izquierda
+      el.scrollLeft += TOTAL_WIDTH_SINGLE;
+    } else if (el.scrollLeft >= TOTAL_WIDTH_SINGLE * 2 - 20) {
+      el.style.scrollBehavior = 'auto';
+      el.scrollLeft -= TOTAL_WIDTH_SINGLE;
     }
   };
+
 
   const scroll = (direction) => {
     const el = containerRef.current;

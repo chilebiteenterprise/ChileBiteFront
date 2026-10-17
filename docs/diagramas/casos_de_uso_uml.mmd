@@ -1,0 +1,65 @@
+flowchart LR
+    actor_visitante["Visitante Anónimo"]
+    actor_usuario["Usuario Registrado"]
+    actor_admin["Administrador de Contenido"]
+    actor_supabase["Proveedor Auth (Supabase / Google)"]
+
+    actor_usuario -.->|Generaliza| actor_visitante
+
+    subgraph Front_App ["Sistema ChileBiteFront (Plataforma de Recetas Chilenas)"]
+        %% Exploración y Consulta
+        UC1["CU01: Explorar Catálogo de Recetas"]
+        UC2["CU02: Filtrar por Categoría, Tiempo y Dificultad"]
+        UC3["CU03: Ver Detalle, Ingredientes y Pasos"]
+        UC4["CU04: Ajustar Porciones de la Receta"]
+        
+        %% Calculadora y Nutrición
+        UC5["CU05: Calcular Macronutrientes por Ingredientes"]
+        UC6["CU06: Consultar Chef IA Copilot (Qué cocinar según el refri)"]
+
+        %% Autenticación e Identidad
+        UC7["CU07: Registrarse con Email y Contraseña"]
+        UC8["CU08: Iniciar Sesión con Google OAuth"]
+        UC9["CU09: Gestionar Perfil (Nombres y Biografía)"]
+        UC10["CU10: Subir Foto de Avatar Personal"]
+        UC11["CU11: Eliminar Cuenta de Usuario (Edge Function)"]
+
+        %% Social y Colecciones
+        UC12["CU12: Crear Colección de Recetas"]
+        UC13["CU13: Guardar / Quitar Receta de Colección"]
+        UC14["CU14: Publicar Comentario en Receta"]
+        UC15["CU15: Sanitizar Contenido HTML (DOMPurify XSS)"]
+
+        %% Gestión Editorial
+        UC16["CU16: Crear / Modificar Receta en Catálogo"]
+    end
+
+    %% Relaciones Actor -> UC
+    actor_visitante --> UC1
+    actor_visitante --> UC2
+    actor_visitante --> UC3
+    actor_visitante --> UC4
+    actor_visitante --> UC5
+    actor_visitante --> UC6
+    actor_visitante --> UC7
+    actor_visitante --> UC8
+
+    actor_usuario --> UC9
+    actor_usuario --> UC10
+    actor_usuario --> UC11
+    actor_usuario --> UC12
+    actor_usuario --> UC13
+    actor_usuario --> UC14
+
+    actor_admin --> UC16
+
+    actor_supabase -.-> UC7
+    actor_supabase -.-> UC8
+
+    %% Relaciones include / extend
+    UC1 -.->|<<extend>>| UC2
+    UC3 -.->|<<extend>>| UC4
+    UC5 -.->|<<extend>>| UC6
+    UC14 -.->|<<include>>| UC15
+    UC13 -.->|<<include>>| UC12
+    UC10 -.->|<<include>>| UC9

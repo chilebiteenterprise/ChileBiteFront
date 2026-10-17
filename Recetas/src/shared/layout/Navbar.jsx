@@ -205,16 +205,16 @@ function NavbarContent() {
 
   const renderMfaChallengeForm = () => (
     <>
-      <div className="flex items-start gap-3 p-3 rounded-xl bg-default border border-border">
+      <div className="flex items-start gap-3 p-3 rounded-xl bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700">
         <ShieldCheck className="w-5 h-5 shrink-0 mt-0.5 text-brand-primary dark:text-[#f0a262]" />
         <div className="min-w-0">
-          <p className="text-sm font-bold text-foreground">Verificación 2FA</p>
-          <p className="text-xs text-default-500 truncate">{mfaChallenge?.email}</p>
+          <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Verificación 2FA</p>
+          <p className="text-xs text-zinc-600 dark:text-zinc-400 font-medium truncate">{mfaChallenge?.email}</p>
         </div>
       </div>
 
       <div>
-        <label className="block text-xs font-bold text-default-600 mb-1 ml-1 uppercase tracking-wide">Código autenticador</label>
+        <label className="block text-xs font-bold text-zinc-600 dark:text-zinc-300 mb-1 ml-1 uppercase tracking-wide">Código autenticador</label>
         <input
           type="text"
           inputMode="numeric"
@@ -225,7 +225,7 @@ function NavbarContent() {
             setLoginError(null);
           }}
           placeholder="000000"
-          className="w-full px-5 py-3.5 border-2 border-border rounded-xl outline-none bg-field text-foreground placeholder-default-500 focus:border-brand-primary focus:bg-default transition-colors font-mono text-center text-lg tracking-[0.35em]"
+          className="w-full px-5 py-3.5 border-2 border-zinc-200 dark:border-zinc-700 rounded-xl outline-none bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:border-brand-primary transition-colors font-mono text-center text-lg tracking-[0.35em]"
         />
       </div>
     </>

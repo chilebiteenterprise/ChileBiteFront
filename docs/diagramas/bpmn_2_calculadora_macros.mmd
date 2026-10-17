@@ -1,0 +1,54 @@
+flowchart TD
+    subgraph Pool_Calculadora ["Pool: Cálculo Nutricional y Asistente Chef IA (ChileBiteFront)"]
+        
+        subgraph Lane_Usuario ["Lane: Comensal / Usuario Web"]
+            M1((Inicio: Ingreso a /calculadora)) --> M2{"¿Cómo desea armar su preparación?"}
+            
+            %% Flujo Manual
+            M2 -- "Búsqueda Manual" --> M3["Escribir ingrediente en buscador (ej: pollo, arroz, palta)"]
+            M3 --> M4["Seleccionar ingrediente sugerido del catálogo"]
+            M4 --> M5["Definir cantidad y unidad: Gramos, Unidades, Cucharadas o Tazas"]
+            M5 --> M6["Presionar 'Agregar' al plato"]
+            M6 --> M7["Visualizar píldoras de macros acumuladas (Kcal, Proteínas, Carbs, Grasas)"]
+            
+            %% Flujo Asistente Chef IA
+            M2 -- "Chef IA Copilot" --> M8["Abrir modal de Chef IA (CopilotChat)"]
+            M8 --> M9["Escribir qué ingredientes tiene en el refrigerador o qué desea comer"]
+            M9 --> M10["Recibir sugerencias de recetas saludables con pasos e ingredientes"]
+            M10 --> M11{"¿Desea transferir la receta a la calculadora?"}
+            M11 -- Sí --> M12["Pulsar 'Usar Receta' en la tarjeta sugerida"]
+            M12 --> M13["Ver ingredientes cargados automáticamente en la calculadora"]
+            M13 --> M7
+            M11 -- No --> M14["Continuar conversando o cerrar chat"]
+            M14 --> M7
+            
+            M7 --> M15{"¿Desea ajustar ingredientes?"}
+            M15 -- Sí --> M16["Modificar cantidades o eliminar ingredientes del plato"]
+            M16 --> M7
+            M15 -- No --> M17((Fin: Información nutricional del plato obtenida))
+        end
+
+        subgraph Lane_CalculadoraEngine ["Lane: Calculadora de Macros (MacroCalculator.jsx)"]
+            M3 -.-> C1["Búsqueda predictiva con normalize() en lista de ingredientes"]
+            C1 -.-> M4
+            M6 -.-> C2["Convertir unidad seleccionada a gramos base"]
+            C2 --> C3["Calcular aporte proporcional de calorías, proteínas, carbohidratos y grasas"]
+            C3 --> C4["Sumar al total acumulado y renderizar MacroPill reactivos"]
+            C4 -.-> M7
+            M12 -.-> C5["onClear(): Limpiar plato actual"]
+            C5 --> C6["onSetRecipeName() y onSetRecipeSteps(): Asignar nombre y pasos"]
+            C6 --> C7["Iterar ingredientes y agregarlos síncronamente al plato"]
+            C7 -.-> M13
+        end
+
+        subgraph Lane_ChefIA ["Lane: Chef IA y Base de Datos (CopilotChat.jsx & Supabase)"]
+            M9 -.-> I1["Enviar historial de conversación a /api/copilot"]
+            I1 --> I2["Generar propuesta culinaria adaptada a los ingredientes disponibles"]
+            I2 -.-> M10
+            M12 -.-> I3["handleUseRecipe: Mapear ingredientes devueltos"]
+            I3 --> I4["Consultar tabla core_ingrediente con ilike() y filtro stop-words"]
+            I4 --> I5["Obtener datos nutricionales exactos de cada ingrediente coincidente"]
+            I5 -.-> C7
+        end
+
+    end

@@ -1,0 +1,36 @@
+flowchart TD
+    subgraph Pool_Recetario ["Pool: Exploración y Consulta de Recetas Chilenas (ChileBiteFront)"]
+        
+        subgraph Lane_Usuario ["Lane: Comensal / Usuario Web"]
+            U1((Inicio: Ingreso a la plataforma)) --> U2["Navegar a Galería de Recetas (/recipes)"]
+            U2 --> U3["Ingresar término de búsqueda o aplicar filtros"]
+            U3 --> U4{"¿Existen recetas coincidentes?"}
+            U4 -- No --> U5["Ver mensaje de 'Sin resultados' y sugerencias"]
+            U5 --> U3
+            U4 -- Sí --> U6["Visualizar tarjetas de recetas (RecipeCard)"]
+            U6 --> U7["Seleccionar una receta típica chilena"]
+            U7 --> U8["Ver página detallada con ingredientes y pasos"]
+            U8 --> U9["Ajustar número de porciones deseadas"]
+            U9 --> U10((Fin: Receta lista para cocinar))
+        end
+
+        subgraph Lane_Front ["Lane: Frontend Astro + React Islands"]
+            U3 -.-> F1["RecipeToolbar & RecipeFilters capturan estado"]
+            F1 --> F2["Aplicar debounce en búsqueda y filtrar por tags"]
+            F2 --> F3["Solicitar catálogo a base de datos"]
+            F4 --> F5["Renderizar RecipeGrid con transiciones suaves"]
+            F5 -.-> U6
+            U9 -.-> F6["Recalcular dinámicamente gramajes de ingredientes"]
+            F6 -.-> U10
+        end
+
+        subgraph Lane_Supabase ["Lane: Supabase BaaS (Datos & Caché)"]
+            F3 --> S1["Consultar tabla core_receta"]
+            S1 --> S2{"¿Consulta exitosa?"}
+            S2 -- Sí --> S3["Retornar listado de recetas ordenadas"]
+            S3 --> F4["Transmitir payload JSON al cliente"]
+            S2 -- No --> S4["Retornar error controlado"]
+            S4 --> F4
+        end
+
+    end

@@ -1,0 +1,94 @@
+flowchart TD
+    subgraph INFRA_CLIENTE ["Capa de Cliente y Navegador"]
+        Browser_Web["Navegador Web Comensal (Desktop / Mobile)"]
+    end
+
+    subgraph CLOUD_EDGE ["Capa de Presentación y Frontend (Vercel Edge Platform)"]
+        subgraph ChileBiteFront_App ["Componente: ChileBiteFront (Astro 5 + React 19)"]
+            
+            subgraph Astro_Engine ["Núcleo Astro SSR & Static Generation"]
+                Astro_Router["Astro Router & Dynamic Pages (/recipes, /calculadora, /profile)"]
+                Shared_Layout["Shared Layout (Navbar.jsx, Footer.jsx, BaseHead.astro)"]
+            end
+
+            subgraph React_Islands ["Islas Interactivas React 19 (Client Hydration)"]
+                Island_Auth["AuthContext (Singleton Session Provider)"]
+                Island_Recipes["RecipeGrid, RecipeFilters & RecipeDetail"]
+                Island_Macros["MacroCalculator & CopilotChat (Nutrición)"]
+                Island_Comments["CommentSection (Interacción y Reseñas)"]
+                Island_Collections["CollectionPickerModal & ProfileManager"]
+            end
+
+            subgraph UI_DesignSystem ["Sistema de Diseño y Estilos"]
+                HeroUI_Lib["HeroUI v3 Components (Modal, Button, Select, Toast)"]
+                Tailwind_V4["Tailwind CSS v4 Engine (Glassmorphism & Copper Palette)"]
+                Security_DOMPurify["DOMPurify (Sanitización anti-XSS)"]
+            end
+
+        end
+    end
+
+    subgraph SERVICES_LAYER ["Capa de Servicios de Acceso a Datos (src/lib)"]
+        Client_Supabase["supabaseClient.js (Instancia Supabase SDK)"]
+        Service_Profile["profileService.js (Operaciones de Usuario y Avatar)"]
+        Service_Collection["collectionService.js (Gestión de Favoritos)"]
+    end
+
+    subgraph SUPABASE_BAAS ["Infraestructura Backend-as-a-Service (Supabase Cloud)"]
+        subgraph Auth_Service ["Supabase Auth"]
+            GoTrue_Engine["GoTrue Engine (Email/Password, Google OAuth, JWT)"]
+        end
+
+        subgraph Storage_Service ["Supabase Storage"]
+            Bucket_Avatars["Bucket: avatars (Imágenes de Perfil de Usuarios)"]
+        end
+
+        subgraph Edge_Runtime ["Supabase Serverless Edge Functions"]
+            Func_DeleteUser["delete-user (Eliminación Segura de Cuenta con Service Role)"]
+        end
+
+        subgraph DB_PostgreSQL ["Base de Datos PostgreSQL 15"]
+            Table_Profiles[("public.profiles")]
+            Table_Recetas[("public.core_receta")]
+            Table_Colecciones[("public.core_coleccion")]
+            Table_ColeccionReceta[("public.core_coleccion_receta")]
+            Table_Comentarios[("public.core_comentario")]
+            Security_RLS["Row Level Security (RLS) & Triggers PL/pgSQL"]
+        end
+    end
+
+    %% Relaciones Cliente -> Frontend
+    Browser_Web -->|"HTTPS / HTML & JavaScript Hydration"| Astro_Router
+
+    %% Integraciones internas Frontend
+    Astro_Router --- Shared_Layout
+    Shared_Layout --- Island_Auth
+    Island_Recipes --- HeroUI_Lib
+    Island_Macros --- Tailwind_V4
+    Island_Comments --- Security_DOMPurify
+    Island_Collections --- HeroUI_Lib
+
+    %% Islas React -> Capa de Servicios
+    Island_Auth -->|"Consumo de Sesión"| Client_Supabase
+    Island_Recipes -->|"Consultas Directas"| Client_Supabase
+    Island_Collections -->|"Gestión de Listas"| Service_Collection
+    Island_Comments -->|"Lectura / Escritura"| Client_Supabase
+    Island_Auth -->|"Actualización y Avatar"| Service_Profile
+
+    %% Capa de Servicios -> Supabase BaaS
+    Client_Supabase -->|"Supabase JS SDK v2"| GoTrue_Engine
+    Client_Supabase -->|"PostgREST API"| Table_Recetas
+    Client_Supabase -->|"PostgREST API"| Table_Comentarios
+    Service_Profile -->|"PostgREST API"| Table_Profiles
+    Service_Profile -->|"Multipart Upload"| Bucket_Avatars
+    Service_Profile -->|"HTTPS POST (Bearer Token)"| Func_DeleteUser
+    Service_Collection -->|"PostgREST API"| Table_Colecciones
+    Service_Collection -->|"PostgREST API"| Table_ColeccionReceta
+
+    %% DB Internals
+    Table_Profiles --- Security_RLS
+    Table_Colecciones --- Security_RLS
+    Table_ColeccionReceta --- Table_Colecciones
+    Table_ColeccionReceta --- Table_Recetas
+    Table_Comentarios --- Table_Recetas
+    Table_Comentarios --- Table_Profiles

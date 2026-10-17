@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth, AuthProvider } from '@/features/auth/context/AuthContext';
 import { toast, Skeleton } from "@heroui/react";
-import { ChefHat, Clock, Users, Heart, Share2, BookOpen, ListOrdered, Video, Bookmark, Minus, Plus, Flame, Beef, Wheat, Droplet } from 'lucide-react';
+import { ChefHat, Clock, Users, Heart, Share2, BookOpen, ListOrdered, Video, Bookmark, Minus, Plus, Flame, Beef, Wheat, Droplet, MessageCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import AdSenseBanner from '@/shared/ui/AdSenseBanner';
 import CollectionPickerModal from './CollectionPickerModal.jsx';
 import VideoEmbed from '@/shared/ui/VideoEmbed.jsx';
 import { trackRecipeView, trackRecipeDwellTime } from '../services/recommendationEngine';
+import { formatScaledIngredient, formatScaledIngredientText } from '@/shared/utils/unitRules';
 
 
 const parseTextToList = (text) => {
@@ -477,8 +478,10 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
                   const scale = porcionesDeseadas / (receta.numero_porcion || 1);
                   let text = ing.text;
                   if (ing.isDetailed && ing.data) {
-                    const scaledCantidad = (parseFloat(ing.data.cantidad) * scale).toFixed(1).replace(/\.0$/, '');
-                    text = `${scaledCantidad} ${ing.data.unidad} de ${ing.data.ingrediente.nombre}`;
+                    const scaledCantidad = parseFloat(ing.data.cantidad) * scale;
+                    text = formatScaledIngredient(scaledCantidad, ing.data.unidad, ing.data.ingrediente?.nombre || 'ingrediente');
+                  } else if (!ing.isDetailed && ing.text && scale !== 1) {
+                    text = formatScaledIngredientText(ing.text, scale);
                   }
                   return (
                     <li key={ing.id} onClick={() => toggleCheck("ingredients", ing.id)} className={`flex items-start gap-4 p-3.5 rounded-xl cursor-pointer transition-all ${ing.checked ? "opacity-50 grayscale bg-surface-muted/40 border border-transparent" : "premium-glass-panel hover:bg-surface-muted/60 border border-border-subtle shadow-sm"}`}>
@@ -529,6 +532,33 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
               </div>
             )}
 
+            {!isPreview && (
+              <div className="mt-8 flex flex-col sm:flex-row gap-4">
+                <button
+                  type="button"
+                  onClick={() => document.getElementById('productos-cocina')?.scrollIntoView({ behavior: 'smooth' })}
+                  className="flex-1 p-4 rounded-2xl border border-border-subtle bg-surface-card hover:bg-surface-muted/60 transition-all text-left flex items-center justify-between group shadow-sm"
+                >
+                  <div>
+                    <p className="text-xs font-bold text-text-subtle uppercase tracking-wider">¿Te falta algún utensilio?</p>
+                    <p className="font-extrabold text-brand-primary text-base group-hover:underline">Equipa tu cocina con nuestros productos ↓</p>
+                  </div>
+                  <span className="text-xl">🍳</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => document.getElementById('comentarios')?.scrollIntoView({ behavior: 'smooth' })}
+                  className="flex-1 p-4 rounded-2xl border border-border-subtle bg-surface-card hover:bg-surface-muted/60 transition-all text-left flex items-center justify-between group shadow-sm"
+                >
+                  <div>
+                    <p className="text-xs font-bold text-text-subtle uppercase tracking-wider">Comunidad</p>
+                    <p className="font-extrabold text-brand-primary text-base group-hover:underline">Ver opiniones y comentarios ↓</p>
+                  </div>
+                  <MessageCircle className="w-5 h-5 text-brand-primary" />
+                </button>
+              </div>
+            )}
+
           </div>
         );
       default:
@@ -565,19 +595,30 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
             </div>
 
             <div className={`${isPreview ? 'pt-4 mt-6' : 'pt-8 mt-12'} border-t border-border-subtle`}>
-              <div className={`flex justify-center ${isPreview ? 'gap-3' : 'gap-6'}`}>
-                <button onClick={handleFavorite} aria-label={isFavorite ? "Quitar de favoritos" : "Añadir a favoritos"} className={`${isPreview ? 'p-3' : 'p-4'} rounded-full shadow-lg transition-all duration-300 hover:-translate-y-1 ${isFavorite ? 'bg-red-500 text-white shadow-red-500/20' : 'bg-surface-muted text-text-muted hover:bg-surface-elevated hover:text-red-500 dark:hover:text-red-400 border border-border-subtle'}`} title={isFavorite ? "Ya no me gusta" : "Me gusta"}>
-                  <Heart className={`${isPreview ? 'w-5 h-5' : 'w-6 h-6'} ${isFavorite ? 'fill-current' : ''}`} />
+              <div className={`flex justify-center ${isPreview ? 'gap-3' : 'gap-4 sm:gap-6'}`}>
+                <button onClick={handleFavorite} aria-label={isFavorite ? "Quitar de favoritos" : "Añadir a favoritos"} className={`${isPreview ? 'p-3' : 'p-3.5 sm:p-4'} rounded-full shadow-lg transition-all duration-300 hover:-translate-y-1 ${isFavorite ? 'bg-red-500 text-white shadow-red-500/20' : 'bg-surface-muted text-text-muted hover:bg-surface-elevated hover:text-red-500 dark:hover:text-red-400 border border-border-subtle'}`} title={isFavorite ? "Ya no me gusta" : "Me gusta"}>
+                  <Heart className={`${isPreview ? 'w-5 h-5' : 'w-5 h-5 sm:w-6 sm:h-6'} ${isFavorite ? 'fill-current' : ''}`} />
                 </button>
-                <button onClick={handleSave} aria-label={isSaved ? "Quitar de Guardados" : "Guardar Receta"} className={`${isPreview ? 'p-3' : 'p-4'} rounded-full shadow-lg transition-all duration-300 hover:-translate-y-1 ${isSaved ? 'bg-amber-500 text-white shadow-amber-500/20' : 'bg-surface-muted text-text-muted hover:bg-surface-elevated hover:text-amber-500 dark:hover:text-amber-400 border border-border-subtle'}`} title={isSaved ? "Quitar de Guardados" : "Guardar Receta"}>
-                  <Bookmark className={`${isPreview ? 'w-5 h-5' : 'w-6 h-6'} ${isSaved ? 'fill-current' : ''}`} />
+                <button onClick={handleSave} aria-label={isSaved ? "Quitar de Guardados" : "Guardar Receta"} className={`${isPreview ? 'p-3' : 'p-3.5 sm:p-4'} rounded-full shadow-lg transition-all duration-300 hover:-translate-y-1 ${isSaved ? 'bg-amber-500 text-white shadow-amber-500/20' : 'bg-surface-muted text-text-muted hover:bg-surface-elevated hover:text-amber-500 dark:hover:text-amber-400 border border-border-subtle'}`} title={isSaved ? "Quitar de Guardados" : "Guardar Receta"}>
+                  <Bookmark className={`${isPreview ? 'w-5 h-5' : 'w-5 h-5 sm:w-6 sm:h-6'} ${isSaved ? 'fill-current' : ''}`} />
                 </button>
-                <button onClick={handleShare} aria-label="Compartir receta" className={`${isPreview ? 'p-3' : 'p-4'} rounded-full bg-surface-muted text-text-muted shadow-lg hover:bg-surface-elevated hover:text-brand-primary transition-all duration-300 hover:-translate-y-1 border border-border-subtle`} title="Compartir">
-                  <Share2 className={`${isPreview ? 'w-5 h-5' : 'w-6 h-6'}`} />
+                <button onClick={handleShare} aria-label="Compartir receta" className={`${isPreview ? 'p-3' : 'p-3.5 sm:p-4'} rounded-full bg-surface-muted text-text-muted shadow-lg hover:bg-surface-elevated hover:text-brand-primary transition-all duration-300 hover:-translate-y-1 border border-border-subtle`} title="Compartir">
+                  <Share2 className={`${isPreview ? 'w-5 h-5' : 'w-5 h-5 sm:w-6 sm:h-6'}`} />
                 </button>
+                {!isPreview && (
+                  <button 
+                    onClick={() => document.getElementById('comentarios')?.scrollIntoView({ behavior: 'smooth' })} 
+                    aria-label="Ir a comentarios" 
+                    className={`${isPreview ? 'p-3' : 'p-3.5 sm:p-4'} rounded-full bg-surface-muted text-text-muted shadow-lg hover:bg-surface-elevated hover:text-brand-primary transition-all duration-300 hover:-translate-y-1 border border-border-subtle`} 
+                    title="Ver comentarios"
+                  >
+                    <MessageCircle className={`${isPreview ? 'w-5 h-5' : 'w-5 h-5 sm:w-6 sm:h-6'}`} />
+                  </button>
+                )}
               </div>
             </div>
           </div>
+
 
           <div className={`flex-1 overflow-y-auto relative bg-transparent custom-scrollbar ${isPreview ? 'p-4 md:p-6' : 'p-8 md:p-12 xl:p-16'}`}>
             <PageContent />

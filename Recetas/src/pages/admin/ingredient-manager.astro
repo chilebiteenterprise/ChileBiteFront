@@ -10,17 +10,8 @@ import BaseHead from '@/shared/layout/BaseHead.astro';
 <html lang="es">
   <head>
     <BaseHead title="Gestor de Ingredientes - ChileBite" description="Administración de ingredientes y valores nutricionales." />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
-      rel="stylesheet"
-    />
-    <style>
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-        }
-    </style>
   </head>
-  <body class="transition-colors duration-300 overflow-x-hidden min-h-screen">
+  <body class="bg-bg-page text-text-main transition-colors duration-300 overflow-x-hidden min-h-screen">
     <!-- Navbar Absolute => Pushes content with mt-20 -->
     <Navbar client:only="react" />
     <main class="pt-20 pb-5 min-h-[calc(100vh-72px)]">

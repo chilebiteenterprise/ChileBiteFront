@@ -1,0 +1,84 @@
+flowchart TD
+    subgraph TIER_CLIENT ["1. Capa de Clientes y Presentación de Usuario"]
+        subgraph HW_CLIENT ["Infraestructura de Hardware (Dispositivos)"]
+            HW_USER["Smartphones & PCs: SoC ARM64 / x86_64, 4GB-16GB RAM, WiFi 6 / 5G LTE"]
+        end
+        subgraph SW_CLIENT ["Componentes de Software (Frontend Client)"]
+            SW_APP["Astro 5 Islands + React 19 Hydration"]
+            SW_UI["HeroUI v3 + Tailwind CSS v4 + Framer Motion"]
+            SW_SEC["DOMPurify (Filtro XSS) + Supabase JS Client v2"]
+        end
+        HW_USER --- SW_APP
+        SW_APP --- SW_UI
+        SW_UI --- SW_SEC
+    end
+
+    subgraph TIER_EDGE ["2. Capa Perimetral y Entrega de Contenidos (Edge Network)"]
+        subgraph HW_EDGE ["Infraestructura de Hardware Edge"]
+            HW_POPS["Servidores Edge en PoPs: AMD EPYC / Xeon, 64GB-128GB RAM, NICs 100GbE"]
+        end
+        subgraph SW_EDGE ["Componentes de Software Edge"]
+            SW_DNS["DNS Anycast + Balanceador de Carga Capa 7 + Terminación TLS 1.3"]
+            SW_CDN["Vercel Static Edge Cache (Compresión Brotli/Gzip)"]
+        end
+        HW_POPS --- SW_DNS
+        SW_DNS --- SW_CDN
+    end
+
+    subgraph TIER_COMPUTE ["3. Capa de Cómputo de Aplicación (Serverless Cloud)"]
+        subgraph HW_COMPUTE ["Infraestructura de Hardware Serverless"]
+        HW_VMS["Nodos Host AWS: Micro-VMs Firecracker (1-2 vCPU compartida, 1024MB-2048MB vRAM)"]
+        end
+        subgraph SW_COMPUTE ["Componentes de Software de Ejecución"]
+            SW_SSR["Astro SSR Execution Runtime (Node.js 20.x)"]
+            SW_API_COPILOT["Ruta API Serverless (/api/copilot - Orquestador Chef IA)"]
+            SW_DENO["Deno Runtime (Supabase Serverless Worker: delete-user)"]
+        end
+        HW_VMS --- SW_SSR
+        SW_SSR --- SW_API_COPILOT
+        SW_API_COPILOT --- SW_DENO
+    end
+
+    subgraph TIER_BAAS ["4. Capa de Microservicios Backend (Supabase Managed Cloud)"]
+        subgraph HW_BAAS ["Infraestructura de Hardware de Contenedores"]
+            HW_CONTAINERS["Instancias Cloud Gestionadas en AWS sa-east-1 / us-east-1"]
+        end
+        subgraph SW_BAAS ["Componentes de Software Backend"]
+            SW_KONG["Kong API Gateway (Reverse Proxy, Rate Limiter)"]
+            SW_GOTRUE["GoTrue Engine (Auth Service, Emisor JWT)"]
+            SW_POSTGREST["PostgREST 12 (Generador automático de APIs REST)"]
+            SW_REALTIME["Realtime Engine (Elixir / Phoenix WebSockets)"]
+            SW_STORAGE["Storage Service Daemon (API S3 compatible)"]
+        end
+        HW_CONTAINERS --- SW_KONG
+        SW_KONG --- SW_GOTRUE
+        SW_GOTRUE --- SW_POSTGREST
+        SW_POSTGREST --- SW_REALTIME
+        SW_REALTIME --- SW_STORAGE
+    end
+
+    subgraph TIER_DATA ["5. Capa de Almacenamiento y Persistencia de Datos"]
+        subgraph HW_DATA ["Infraestructura de Hardware de Almacenamiento"]
+            HW_DB["Servidor BD Dedicado: 2 vCPUs, 4GB-8GB ECC RAM, NVMe SSD (3000 IOPS)"]
+            HW_S3["Clúster de Almacenamiento Distribuido AWS S3 (Triple Replicación)"]
+        end
+        subgraph SW_DATA ["Componentes de Software de Base de Datos"]
+            SW_POOLER["Supavisor / PgBouncer (Pool de Conexiones PostgreSQL)"]
+            SW_PG["PostgreSQL 15 (Motor RDBMS con ACID estricto)"]
+            SW_EXT["Extensiones: pgcrypto, uuid-ossp, pg_trgm"]
+            SW_RLS["Políticas Row-Level Security (RLS) & Triggers PL/pgSQL"]
+            SW_BUCKET["Bucket de Objetos: 'avatars'"]
+        end
+        HW_DB --- SW_POOLER
+        SW_POOLER --- SW_PG
+        SW_PG --- SW_EXT
+        SW_EXT --- SW_RLS
+        HW_S3 --- SW_BUCKET
+    end
+
+    %% Relaciones de integración
+    TIER_CLIENT -->|"HTTPS / TLS 1.3"| TIER_EDGE
+    TIER_EDGE -->|"Peticiones dinámicas SSR"| TIER_COMPUTE
+    TIER_CLIENT -->|"API Calls directas con JWT"| TIER_BAAS
+    TIER_COMPUTE -->|"Llamadas de servicio administrativo"| TIER_BAAS
+    TIER_BAAS -->|"Conexiones TCP PostgreSQL (Puerto 5432)"| TIER_DATA

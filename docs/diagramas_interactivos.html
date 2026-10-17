@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChileBiteFront — Visor Interactivo de Arquitectura y Procesos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --bg-dark: #12100e;
+      --panel-dark: rgba(28, 25, 23, 0.75);
+      --copper: #b08969;
+      --copper-light: #d4a373;
+      --copper-dark: #6a523e;
+      --border: rgba(176, 137, 105, 0.25);
+      --text-main: #f5ece8;
+      --text-muted: #a89f91;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: var(--panel-dark);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #f5ece8 0%, var(--copper-light) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand span {
+      background: rgba(176, 137, 105, 0.2);
+      color: var(--copper-light);
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.2rem 0.6rem;
+      border-radius: 9999px;
+      border: 1px solid var(--border);
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 0.5rem;
+      background: rgba(0, 0, 0, 0.35);
+      padding: 0.3rem;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      overflow-x: auto;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 500;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .tab-btn.active {
+      color: #fff;
+      background: var(--copper);
+      box-shadow: 0 4px 12px rgba(176, 137, 105, 0.35);
+    }
+
+    .container {
+      max-width: 1400px;
+      width: 100%;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      flex: 1;
+    }
+
+    .diagram-card {
+      display: none;
+      background: var(--panel-dark);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2rem;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+      animation: fadeIn 0.3s ease;
+    }
+
+    .diagram-card.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid rgba(176, 137, 105, 0.15);
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .card-title h2 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 0.25rem;
+    }
+
+    .card-title p {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .btn {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-main);
+      border: 1px solid var(--border);
+      padding: 0.5rem 0.9rem;
+      font-size: 0.85rem;
+      font-weight: 500;
+      border-radius: 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s;
+    }
+
+    .btn:hover {
+      background: rgba(176, 137, 105, 0.3);
+      border-color: var(--copper-light);
+    }
+
+    .diagram-viewport {
+      background: #181513;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 2.5rem 1.5rem;
+      overflow-x: auto;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 480px;
+    }
+
+    .diagram-viewport svg {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .details-box {
+      margin-top: 1.5rem;
+      background: rgba(0, 0, 0, 0.25);
+      border-radius: 12px;
+      padding: 1.25rem;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .details-box h3 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.05rem;
+      color: var(--copper-light);
+      margin-bottom: 0.5rem;
+    }
+
+    .details-box ul {
+      list-style-position: inside;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      border-top: 1px solid rgba(176, 137, 105, 0.1);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <h1>ChileBiteFront Architecture</h1>
+      <span>Recetario & Nutrición 2026</span>
+    </div>
+
+    <nav class="nav-tabs">
+      <button class="tab-btn active" onclick="showTab('bpmn-1')">BPMN 1: Recetario</button>
+      <button class="tab-btn" onclick="showTab('bpmn-2')">BPMN 2: Calculadora Macros</button>
+      <button class="tab-btn" onclick="showTab('bpmn-3')">BPMN 3: Perfil y Colecciones</button>
+      <button class="tab-btn" onclick="showTab('casos-uso')">Casos de Uso</button>
+      <button class="tab-btn" onclick="showTab('componentes')">Componentes</button>
+      <button class="tab-btn" onclick="showTab('datos')">Modelo de Datos</button>
+      <button class="tab-btn" onclick="showTab('topologia')">Topología Lógica</button>
+      <button class="tab-btn" onclick="showTab('topologia-fisica')">Topología Física (Lucidchart)</button>
+      <button class="tab-btn" onclick="showTab('infraestructura')">Infraestructura</button>
+      <button class="tab-btn" onclick="showTab('arquitectura')">Arquitectura TI</button>
+    </nav>
+  </header>
+
+  <main class="container">
+
+    <!-- TAB 1: BPMN 1 -->
+    <section id="bpmn-1" class="diagram-card active">
+      <div class="card-header">
+        <div class="card-title">
+          <h2>Proceso 1: Búsqueda, Filtrado y Visualización Detallada de Recetas Chilenas</h2>
+          <p>Exploración del catálogo gastronómico, ajuste dinámico de porciones y renderizado en islas React.</p>
+        </div>
+        <div class="actions">
+          <button class="btn" onclick="exportSVG('bpmn-1')">📥 Descargar SVG</button>
+          <button class="btn" onclick="window.print()">🖨️ Imprimir</button>
+        </div>
+      </div>
+      <div class="diagram-viewport">
+        <pre class="mermaid">
+flowchart TD
+    subgraph Pool_Recetario ["Pool: Exploración y Consulta de Recetas Chilenas (ChileBiteFront)"]
+        
+        subgraph Lane_Usuario ["Lane: Comensal / Usuario Web"]
+            U1((Inicio: Ingreso a la plataforma)) --> U2["Navegar a Galería de Recetas (/recipes)"]
+            U2 --> U3["Ingresar término de búsqueda o aplicar filtros"]
+            U3 --> U4{"¿Existen recetas coincidentes?"}
+            U4 -- No --> U5["Ver mensaje de 'Sin resultados' y sugerencias"]
+            U5 --> U3
+            U4 -- Sí --> U6["Visualizar tarjetas de recetas (RecipeCard)"]
+            U6 --> U7["Seleccionar una receta típica chilena"]
+            U7 --> U8["Ver página detallada con ingredientes y pasos"]
+            U8 --> U9["Ajustar número de porciones deseadas"]
+            U9 --> U10((Fin: Receta lista para cocinar))
+        end
+
+        subgraph Lane_Front ["Lane: Frontend Astro + React Islands"]
+            U3 -.-> F1["RecipeToolbar & RecipeFilters capturan estado"]
+            F1 --> F2["Aplicar debounce en búsqueda y filtrar por tags"]
+            F2 --> F3["Solicitar catálogo a base de datos"]
+            F4 --> F5["Renderizar RecipeGrid con transiciones suaves"]
+            F5 -.-> U6
+            U9 -.-> F6["Recalcular dinámicamente gramajes de ingredientes"]
+            F6 -.-> U10
+        end
+
+        subgraph Lane_Supabase ["Lane: Supabase BaaS (Datos & Caché)"]
+            F3 --> S1["Consultar tabla core_receta"]
+            S1 --> S2{"¿Consulta exitosa?"}
+            S2 -- Sí --> S3["Retornar listado de recetas ordenadas"]
+            S3 --> F4["Transmitir payload JSON al cliente"]
+            S2 -- No --> S4["Retornar error controlado"]
+            S4 --> F4
+        end
+
+    end
+        </pre>
+      </div>
+      <div class="details-box">
+        <h3>Subprocesos Clave</h3>
+        <ul>
+          <li><strong>Subproceso 1.1:</strong> Búsqueda y filtrado reactivo con debounce y selectores de etiquetas en RecipeFilters.</li>
+          <li><strong>Subproceso 1.2:</strong> Renderizado eficiente en isla RecipeGrid con transiciones y estilo Glassmorphism.</li>
+          <li><strong>Subproceso 1.3:</strong> Escalado proporcional de ingredientes según porciones en RecipeDetail.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- TAB 2: BPMN 2 -->
+    <section id="bpmn-2" class="diagram-card">
+      <div class="card-header">
+        <div class="card-title">
+          <h2>Proceso 2: Cálculo Nutricional por Ingredientes y Asistente Chef IA</h2>
+          <p>Armado de platos con autocompletado de ingredientes, cálculo reactivo de macros y sugerencias inteligentes con Chef IA.</p>
+        </div>
+        <div class="actions">
+          <button class="btn" onclick="exportSVG('bpmn-2')">📥 Descargar SVG</button>
+          <button class="btn" onclick="window.print()">🖨️ Imprimir</button>
+        </div>
+      </div>
+      <div class="diagram-viewport">
+        <pre class="mermaid">
+flowchart TD
+    subgraph Pool_Calculadora ["Pool: Cálculo Nutricional y Asistente Chef IA (ChileBiteFront)"]
+        
+        subgraph Lane_Usuario ["Lane: Comensal / Usuario Web"]
+            M1((Inicio: Ingreso a /calculadora)) --> M2{"¿Cómo desea armar su preparación?"}
+            
+            M2 -- "Búsqueda Manual" --> M3["Escribir ingrediente en buscador (ej: pollo, arroz, palta)"]
+            M3 --> M4["Seleccionar ingrediente sugerido del catálogo"]
+            M4 --> M5["Definir cantidad y unidad: Gramos, Unidades, Cucharadas o Tazas"]
+            M5 --> M6["Presionar 'Agregar' al plato"]
+            M6 --> M7["Visualizar píldoras de macros acumuladas (Kcal, Proteínas, Carbs, Grasas)"]
+            
+            M2 -- "Chef IA Copilot" --> M8["Abrir modal de Chef IA (CopilotChat)"]
+            M8 --> M9["Escribir qué ingredientes tiene en el refrigerador o qué desea comer"]
+            M9 --> M10["Recibir sugerencias de recetas saludables con pasos e ingredientes"]
+            M10 --> M11{"¿Desea transferir la receta a la calculadora?"}
+            M11 -- Sí --> M12["Pulsar 'Usar Receta' en la tarjeta sugerida"]
+            M12 --> M13["Ver ingredientes cargados automáticamente en la calculadora"]
+            M13 --> M7
+            M11 -- No --> M14["Continuar conversando o cerrar chat"]
+            M14 --> M7
+            
+            M7 --> M15{"¿Desea ajustar ingredientes?"}
+            M15 -- Sí --> M16["Modificar cantidades o eliminar ingredientes del plato"]
+            M16 --> M7
+            M15 -- No --> M17((Fin: Información nutricional del plato obtenida))
+        end
+
+        subgraph Lane_CalculadoraEngine ["Lane: Calculadora de Macros (MacroCalculator.jsx)"]
+            M3 -.-> C1["Búsqueda predictiva con normalize() en lista de ingredientes"]
+            C1 -.-> M4
+            M6 -.-> C2["Convertir unidad seleccionada a gramos base"]
+            C2 --> C3["Calcular aporte proporcional de calorías, proteínas, carbohidratos y grasas"]
+            C3 --> C4["Sumar al total acumulado y renderizar MacroPill reactivos"]
+            C4 -.-> M7
+            M12 -.-> C5["onClear(): Limpiar plato actual"]
+            C5 --> C6["onSetRecipeName() y onSetRecipeSteps(): Asignar nombre y pasos"]
+            C6 --> C7["Iterar ingredientes y agregarlos síncronamente al plato"]
+            C7 -.-> M13
+        end
+
+        subgraph Lane_ChefIA ["Lane: Chef IA y Base de Datos (CopilotChat.jsx & Supabase)"]
+            M9 -.-> I1["Enviar historial de conversación a /api/copilot"]
+            I1 --> I2["Generar propuesta culinaria adaptada a los ingredientes disponibles"]
+            I2 -.-> M10
+            M12 -.-> I3["handleUseRecipe: Mapear ingredientes devueltos"]
+            I3 --> I4["Consultar tabla core_ingrediente con ilike() y filtro stop-words"]
+            I4 --> I5["Obtener datos nutricionales exactos de cada ingrediente coincidente"]
+            I5 -.-> C7
+        end
+
+    end
+        </pre>
+      </div>
+      <div class="details-box">
+        <h3>Subprocesos Clave</h3>
+        <ul>
+          <li><strong>Subproceso 2.1:</strong> Búsqueda predictiva y selección de unidades mediante <code>CustomUnitSelect</code> (g, unidades, cdas, tazas).</li>
+          <li><strong>Subproceso 2.2:</strong> Acumulación síncrona de nutrientes por cada ingrediente añadido al plato (<code>MacroPill</code>).</li>
+          <li><strong>Subproceso 2.3:</strong> Transferencia automática de recetas desde el Chef IA a la calculadora con <code>handleUseRecipe</code>.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- TAB 3: BPMN 3 -->
+    <section id="bpmn-3" class="diagram-card">
+      <div class="card-header">
+        <div class="card-title">
+          <h2>Proceso 3: Identidad, Gestión de Perfil y Curaduría de Colecciones</h2>
+          <p>Autenticación, personalización con avatar en Storage y carpetas temáticas de recetas favoritas.</p>
+        </div>
+        <div class="actions">
+          <button class="btn" onclick="exportSVG('bpmn-3')">📥 Descargar SVG</button>
+          <button class="btn" onclick="window.print()">🖨️ Imprimir</button>
+        </div>
+      </div>
+      <div class="diagram-viewport">
+        <pre class="mermaid">
+flowchart TD
+    subgraph Pool_Perfil_Colecciones ["Pool: Identidad, Perfil y Curaduría de Colecciones (ChileBiteFront)"]
+        
+        subgraph Lane_Usuario ["Lane: Usuario Registrado"]
+            P1((Inicio: Usuario autenticado)) --> P2["Acceder a /profile o ver una receta"]
+            P2 --> P3{"¿Qué acción desea realizar?"}
+            
+            P3 -- "Personalizar Perfil" --> P4["Editar Bio, Nombres y cargar nuevo Avatar"]
+            P4 --> P5["Guardar cambios de perfil"]
+            P5 --> P6((Perfil actualizado))
+            
+            P3 -- "Organizar Colección" --> P7["Presionar 'Guardar en Colección' en una receta"]
+            P7 --> P8["Abrir CollectionPickerModal"]
+            P8 --> P9{"¿Crear nueva colección o seleccionar existente?"}
+            P9 -- "Nueva" --> P10["Ingresar nombre y descripción"]
+            P10 --> P11["Confirmar creación y asociación de receta"]
+            P9 -- "Existente" --> P12["Marcar / desmarcar colección deseada"]
+            P11 --> P13["Ver mosaico de 4 portadas actualizado en /profile"]
+            P12 --> P13
+            P13 --> P14((Fin: Receta guardada en colección))
+        end
+
+        subgraph Lane_ServiciosFront ["Lane: Servicios Frontend (profileService.js & collectionService.js)"]
+            P5 -.-> S1["updateProfile: Actualizar fila en tabla profiles"]
+            P4 -.-> S2["uploadAvatar: Subir binario a Supabase Storage"]
+            P8 -.-> S3["getCollectionsWithRecipeStatus: Consultar listas del usuario"]
+            S3 -.-> P8
+            P11 -.-> S4["createCollection y toggleRecipeInCollection"]
+            P12 -.-> S5["toggleRecipeInCollection: Insertar o borrar relación"]
+            S4 --> S6["getUserCollections: Recalcular portadas de mosaico"]
+            S5 --> S6
+            S6 -.-> P13
+        end
+
+        subgraph Lane_SupabaseBaaS ["Lane: Supabase Cloud (Auth, DB & Storage)"]
+            S2 --> B1["Bucket 'avatars': Almacenar imagen y generar Public URL"]
+            B1 --> S1
+            S1 --> B2["Actualizar public.profiles y user_metadata"]
+            B2 -.-> P6
+            S4 --> B3["Insertar en core_coleccion y core_coleccion_receta"]
+            S5 --> B4["Mutación atómica en core_coleccion_receta"]
+            B3 --> B5["Consultar últimas 4 imágenes de core_receta"]
+            B4 --> B5
+            B5 -.-> S6
+        end
+
+    end
+        </pre>
+      </div>
+      <div class="details-box">
+        <h3>Subprocesos Clave</h3>
+        <ul>
+          <li><strong>Subproceso 3.1:</strong> Mutación de perfil y carga de avatar a bucket con control de caché.</li>
+          <li><strong>Subproceso 3.2:</strong> Toggling de recetas en colecciones y cálculo de mosaico de portadas.</li>
+          <li><strong>Subproceso 3.3:</strong> Sincronización segura con PostgreSQL bajo políticas RLS.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- TAB 4: CASOS DE USO -->
+    <section id="casos-uso" class="diagram-card">
+      <div class="card-header">
+        <div class="card-title">
+          <h2>Diagrama UML de Casos de Uso (ChileBiteFront)</h2>
+          <p>Interacciones entre visitantes, usuarios registrados, administradores y proveedor de autenticación.</p>
+        </div>
+        <div class="actions">
+          <button class="btn" onclick="exportSVG('casos-uso')">📥 Descargar SVG</button>
+          <button class="btn" onclick="window.print()">🖨️ Imprimir</button>
+        </div>
+      </div>
+      <div class="diagram-viewport">
+        <pre class="mermaid">
+flowchart LR
+    actor_visitante["Visitante Anónimo"]
+    actor_usuario["Usuario Registrado"]
+    actor_admin["Administrador de Contenido"]
+    actor_supabase["Proveedor Auth (Supabase / Google)"]
+
+    actor_usuario -.->|Generaliza| actor_visitante
+
+    subgraph Front_App ["Sistema ChileBiteFront (Plataforma de Recetas Chilenas)"]
+        UC1["CU01: Explorar Catálogo de Recetas"]
+        UC2["CU02: Filtrar por Categoría, Tiempo y Dificultad"]
+        UC3["CU03: Ver Detalle, Ingredientes y Pasos"]
+        UC4["CU04: Ajustar Porciones de la Receta"]
+        
+        UC5["CU05: Calcular Macronutrientes y Calorías"]
+        UC6["CU06: Consultar Asistente Copilot Nutricional"]
+
+        UC7["CU07: Registrarse con Email y Contraseña"]
+        UC8["CU08: Iniciar Sesión con Google OAuth"]
+        UC9["CU09: Gestionar Perfil (Nombres y Biografía)"]
+        UC10["CU10: Subir Foto de Avatar Personal"]
+        UC11["CU11: Eliminar Cuenta de Usuario (Edge Function)"]
+
+        UC12["CU12: Crear Colección de Recetas"]
+        UC13["CU13: Guardar / Quitar Receta de Colección"]
+        UC14["CU14: Publicar Comentario en Receta"]
+        UC15["CU15: Sanitizar Contenido HTML (DOMPurify XSS)"]
+
+        UC16["CU16: Crear / Modificar Receta en Catálogo"]
+    end
+
+    actor_visitante --> UC1
+    actor_visitante --> UC2
+    actor_visitante --> UC3
+    actor_visitante --> UC4
+    actor_visitante --> UC5
+    actor_visitante --> UC6
+    actor_visitante --> UC7
+    actor_visitante --> UC8
+
+    actor_usuario --> UC9
+    actor_usuario --> UC10
+    actor_usuario --> UC11
+    actor_usuario --> UC12
+    actor_usuario --> UC13
+    actor_usuario --> UC14
+
+    actor_admin --> UC16
+
+    actor_supabase -.-> UC7
+    actor_supabase -.-> UC8
+
+    UC1 -.->|<<extend>>| UC2
+    UC3 -.->|<<extend>>| UC4
+    UC5 -.->|<<extend>>| UC6
+    UC14 -.->|<<include>>| UC15
+    UC13 -.->|<<include>>| UC12
+    UC10 -.->|<<include>>| UC9
+        </pre>
+      </div>
+    </section>
+
+    <!-- TAB 5: COMPONENTES -->
+    <section id="componentes" class="diagram-card">
+      <div class="card-header">
+        <div class="card-title">
+          <h2>Diagrama UML de Componentes de ChileBiteFront</h2>
+          <p>Estructura modular: Astro Pages, Islas React 19, Capa de Servicios y BaaS Supabase.</p>
+        </div>
+        <div class="actions">
+          <button class="btn" onclick="exportSVG('componentes')">📥 Descargar SVG</button>
+          <button class="btn" onclick="window.print()">🖨️ Imprimir</button>
+        </div>
+      </div>
+      <div class="diagram-viewport">
+        <pre class="mermaid">
+flowchart TD
+    subgraph INFRA_CLIENTE ["Capa de Cliente y Navegador"]
+        Browser_Web["Navegador Web Comensal (Desktop / Mobile)"]
+    end
+
+    subgraph CLOUD_EDGE ["Capa de Presentación y Frontend (Vercel Edge Platform)"]
+        subgraph ChileBiteFront_App ["Componente: ChileBiteFront (Astro 5 + React 19)"]
+            
+            subgraph Astro_Engine ["Núcleo Astro SSR & Static Generation"]
+                Astro_Router["Astro Router & Dynamic Pages (/recipes, /calculadora, /profile)"]
+                Shared_Layout["Shared Layout (Navbar.jsx, Footer.jsx, BaseHead.astro)"]
+            end
+
+            subgraph React_Islands ["Islas Interactivas React 19 (Client Hydration)"]
+                Island_Auth["AuthContext (Singleton Session Provider)"]
+                Island_Recipes["RecipeGrid, RecipeFilters & RecipeDetail"]
+                Island_Macros["MacroCalculator & CopilotChat (Nutrición)"]
+                Island_Comments["CommentSection (Interacción y Reseñas)"]
+                Island_Collections["CollectionPickerModal & ProfileManager"]
+            end
+
+            subgraph UI_DesignSystem ["Sistema de Diseño y Estilos"]
+                HeroUI_Lib["HeroUI v3 Components (Modal, Button, Select, Toast)"]
+                Tailwind_V4["Tailwind CSS v4 Engine (Glassmorphism & Copper Palette)"]
+                Security_DOMPurify["DOMPurify (Sanitización anti-XSS)"]
+            end
+
+        end
+    end
+
+    subgraph SERVICES_LAYER ["Capa de Servicios de Acceso a Datos (src/lib)"]
+        Client_Supabase["supabaseClient.js (Instancia Supabase SDK)"]
+        Service_Profile["profileService.js (Operaciones de Usuario y Avatar)"]
+        Service_Collection["collectionService.js (Gestión de Favoritos)"]
+    end
+
+    subgraph SUPABASE_BAAS ["Infraestructura Backend-as-a-Service (Supabase Cloud)"]
+        subgraph Auth_Service ["Supabase Auth"]
+            GoTrue_Engine["GoTrue Engine (Email/Password, Google OAuth, JWT)"]
+        end
+
+        subgraph Storage_Service ["Supabase Storage"]
+            Bucket_Avatars["Bucket: avatars (Imágenes de Perfil de Usuarios)"]
+        end
+
+        subgraph Edge_Runtime ["Supabase Serverless Edge Functions"]
+            Func_DeleteUser["delete-user (Eliminación Segura de Cuenta con Service Role)"]
+        end
+
+        subgraph DB_PostgreSQL ["Base de Datos PostgreSQL 15"]
+            Table_Profiles[("public.profiles")]
+            Table_Recetas[("public.core_receta")]
+            Table_Colecciones[("public.core_coleccion")]
+            Table_ColeccionReceta[("public.core_coleccion_receta")]
+            Table_Comentarios[("public.core_comentario")]
+            Security_RLS["Row Level Security (RLS) & Triggers PL/pgSQL"]
+        end
+    end
+
+    Browser_Web -->|"HTTPS / HTML & JavaScript Hydration"| Astro_Router
+
+    Astro_Router --- Shared_Layout
+    Shared_Layout --- Island_Auth
+    Island_Recipes --- HeroUI_Lib
+    Island_Macros --- Tailwind_V4
+    Island_Comments --- Security_DOMPurify
+    Island_Collections --- HeroUI_Lib
+
+    Island_Auth -->|"Consumo de Sesión"| Client_Supabase
+    Island_Recipes -->|"Consultas Directas"| Client_Supabase
+    Island_Collections -->|"Gestión de Listas"| Service_Collection
+    Island_Comments -->|"Lectura / Escritura"| Client_Supabase
+    Island_Auth -->|"Actualización y Avatar"| Service_Profile
+
+    Client_Supabase -->|"Supabase JS SDK v2"| GoTrue_Engine
+    Client_Supabase -->|"PostgREST API"| Table_Recetas
+    Client_Supabase -->|"PostgREST API"| Table_Comentarios
+    Service_Profile -->|"PostgREST API"| Table_Profiles
+    Service_Profile -->|"Multipart Upload"| Bucket_Avatars
+    Service_Profile -->|"HTTPS POST (Bearer Token)"| Func_DeleteUser
+    Service_Collection -->|"PostgREST API"| Table_Colecciones
+    Service_Collection -->|"PostgREST API"| Table_ColeccionReceta
+
+    Table_Profiles --- Security_RLS
+    Table_Colecciones --- Security_RLS
+    Table_ColeccionReceta --- Table_Colecciones
+    Table_ColeccionReceta --- Table_Recetas
+    Table_Comentarios --- Table_Recetas
+    Table_Comentarios --- Table_Profiles
+        </pre>
+      </div>
+    </section>
+
+    <!-- TAB 6: MODELO DE DATOS -->
+    <section id="datos" class="diagram-card">
+      <div class="card-header">
+        <div class="card-title">
+          <h2>Diagrama Lógico de Datos (ERD)</h2>
+          <p>Modelo relacional normalizado con catálogo de recetas, desglose de ingredientes, perfiles, colecciones y comentarios.</p>
+        </div>
+        <div class="actions">
+          <button class="btn" onclick="exportSVG('datos')">📥 Descargar SVG</button>
+          <button class="btn" onclick="window.print()">🖨️ Imprimir</button>
+        </div>
+      </div>
+      <div class="diagram-viewport">
+        <pre class="mermaid">
+erDiagram
+    PROFILES ||--o{ CORE_COLECCION : "crea y administra"
+    PROFILES ||--o{ CORE_COMENTARIO : "escribe"
+    
+    CORE_RECETA ||--o{ CORE_COLECCION_RECETA : "es guardada en"
+    CORE_RECETA ||--o{ CORE_COMENTARIO : "recibe"
+    CORE_RECETA ||--o{ CORE_RECETAINGREDIENTE : "se compone de"
+    
+    CORE_INGREDIENTE ||--o{ CORE_RECETAINGREDIENTE : "es utilizado en"
+    
+    CORE_COLECCION ||--o{ CORE_COLECCION_RECETA : "contiene"
+
+    PROFILES {
+        uuid id PK
+        string username UK
+        string nombres
+        string apellido_paterno
+        string apellido_materno
+        text bio
+        string avatar_url
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    CORE_RECETA {
+        bigint id PK
+        string nombre
+        text descripcion_corta
+        text descripcion_larga
+        text preparacion
+        string dificultad
+        integer tiempo_preparacion_minutos
+        integer tiempo_coccion_minutos
+        integer porciones
+        string imagen_url
+        float calorias_totales
+        timestamp created_at
+    }
+
+    CORE_INGREDIENTE {
+        bigint id PK
+        string nombre UK
+        string categoria
+        float calorias_por_100g
+        float proteinas_por_100g
+        float grasas_por_100g
+        float carbohidratos_por_100g
+        float fibra_por_100g
+        float azucares_por_100g
+        float sodio_mg_por_100g
+        float peso_por_unidad_gramos
+        float peso_por_taza_gramos
+        float peso_por_cucharada_gramos
+        boolean es_vegano
+        boolean es_libre_de_gluten
+    }
+
+    CORE_RECETAINGREDIENTE {
+        bigint id PK
+        bigint receta_id FK
+        bigint ingrediente_id FK
+        float cantidad
+        string unidad
+    }
+
+    CORE_COLECCION {
+        uuid id PK
+        uuid user_id FK
+        string nombre
+        text descripcion
+        boolean es_privada
+        timestamp fecha_creacion
+    }
+
+    CORE_COLECCION_RECETA {
+        bigint id PK
+        uuid coleccion_id FK
+        bigint receta_id FK
+        timestamp fecha_agregado
+    }
+
+    CORE_COMENTARIO {
+        uuid id PK
+        bigint receta_id FK
+        uuid user_id FK
+        text contenido
+        integer valoracion
+        timestamp created_at
+    }
+        </pre>
+      </div>
+    </section>
+
+    <!-- TAB 7: TOPOLOGIA DE RED -->
+    <section id="topologia" class="diagram-card">
+      <div class="card-header">
+        <div class="card-title">
+          <h2>Topología de Comunicaciones y Protocolos</h2>
+          <p>Protocolos de transmisión segura: DNS Anycast, HTTPS/TLS 1.3, PostgREST, WebSockets y SSE Streaming para IA.</p>
+        </div>
+        <div class="actions">
+          <button class="btn" onclick="exportSVG('topologia')">📥 Descargar SVG</button>
+          <button class="btn" onclick="window.print()">🖨️ Imprimir</button>
+        </div>
+      </div>
+      <div class="diagram-viewport">
+        <pre class="mermaid">
+flowchart TD
+    subgraph CLIENT_TIER ["Capa de Clientes (Dispositivos de Usuario)"]
+        Client_Mobile["Dispositivo Móvil (Smartphone iOS/Android)"]
+        Client_Desktop["Computador de Escritorio / Laptop (Web Browser)"]
+    end
+
+    subgraph NETWORK_INGRESS ["Capa de Transporte y Red Perimetral"]
+        DNS_Edge["DNS Anycast Global (Resolución de nombres / DoH / UDP 53)"]
+        Vercel_PoP["Punto de Presencia Edge Vercel (PoP Santiago / São Paulo)"]
+    end
+
+    subgraph FRONTEND_EDGE_TIER ["Plataforma Frontend y Cómputo Edge (Vercel)"]
+        Static_CDN["CDN Estático (HTML, CSS Tailwind v4, JS Bundles)"]
+        Serverless_SSR["Astro SSR Runtime (Renderizado dinámico en servidor)"]
+        API_Copilot["Ruta API Serverless: /api/copilot (Orquestador Chef IA)"]
+    end
+
+    subgraph EXTERNAL_AI ["Proveedor Externo de Inteligencia Artificial"]
+        LLM_Provider["API de Inferencia LLM (Google Gemini / OpenAI)"]
+    end
+
+    subgraph BAAS_GATEWAY ["Puerta de Entrada BaaS (Supabase Cloud Gateway)"]
+        Kong_Gateway["Kong API Gateway (Reverse Proxy, SSL Termination, Rate Limiting)"]
+    end
+
+    subgraph SUPABASE_SERVICES ["Servicios de Backend y Aplicación (Supabase Cloud)"]
+        Auth_GoTrue["GoTrue Auth Service (Manejo de Tokens JWT, OAuth)"]
+        API_PostgREST["PostgREST Service (Exposición REST automática sobre DB)"]
+        Realtime_Engine["Realtime WebSocket Service (Elixir/Phoenix)"]
+        Storage_API["Storage Service (API S3-compatible para imágenes)"]
+        Edge_Func["Edge Function Worker (Deno Runtime: delete-user)"]
+    end
+
+    subgraph STORAGE_PERSISTENCE ["Capa de Persistencia de Datos"]
+        DB_Postgres[("Base de Datos PostgreSQL 15 (Instancia con RLS y Triggers)")]
+        Bucket_S3[("Supabase Storage: Bucket 'avatars' (S3 Object Storage)")]
+    end
+
+    Client_Mobile -->|"1. Consulta DNS / UDP 53 o DoH"| DNS_Edge
+    Client_Desktop -->|"1. Consulta DNS / UDP 53 o DoH"| DNS_Edge
+    DNS_Edge -.->|"Resuelve IP Anycast de PoP cercano"| Vercel_PoP
+
+    Client_Mobile -->|"2. HTTPS / HTTP/2 - HTTP/3 (TLS 1.3, TCP/UDP 443)"| Vercel_PoP
+    Client_Desktop -->|"2. HTTPS / HTTP/2 - HTTP/3 (TLS 1.3, TCP/UDP 443)"| Vercel_PoP
+
+    Vercel_PoP -->|"Caché Hit (Archivos estáticos precompilados)"| Static_CDN
+    Vercel_PoP -->|"Caché Miss / Rutas dinámicas SSR"| Serverless_SSR
+    Vercel_PoP -->|"Peticiones de chat culinario"| API_Copilot
+
+    API_Copilot -->|"HTTPS / TLS 1.3 (JSON REST + SSE Streaming)"| LLM_Provider
+
+    Client_Mobile -->|"3. HTTPS REST / PostgREST (JSON, Bearer JWT, TLS 1.3)"| Kong_Gateway
+    Client_Desktop -->|"3. HTTPS REST / PostgREST (JSON, Bearer JWT, TLS 1.3)"| Kong_Gateway
+    Client_Mobile -->|"4. WSS / WebSockets Seguros (TLS 1.3, Puerto 443)"| Kong_Gateway
+    Client_Desktop -->|"4. WSS / WebSockets Seguros (TLS 1.3, Puerto 443)"| Kong_Gateway
+    Client_Mobile -->|"5. HTTPS Multipart/form-data (Subida de Avatar)"| Kong_Gateway
+    Client_Desktop -->|"5. HTTPS Multipart/form-data (Subida de Avatar)"| Kong_Gateway
+
+    Kong_Gateway -->|"Enrutamiento interno /auth/v1"| Auth_GoTrue
+    Kong_Gateway -->|"Enrutamiento interno /rest/v1"| API_PostgREST
+    Kong_Gateway -->|"Enrutamiento interno /realtime/v1"| Realtime_Engine
+    Kong_Gateway -->|"Enrutamiento interno /storage/v1"| Storage_API
+    Kong_Gateway -->|"Enrutamiento interno /functions/v1"| Edge_Func
+
+    Auth_GoTrue -->|"Conexión TCP Cifrada (Puerto 5432 / TLS)"| DB_Postgres
+    API_PostgREST -->|"Conexión TCP Cifrada (Pooler PgBouncer / Puerto 5432)"| DB_Postgres
+    Realtime_Engine -->|"Replicación lógica WAL / TCP 5432"| DB_Postgres
+    Edge_Func -->|"Conexión administrativa Service Role / TCP 5432"| DB_Postgres
+    Storage_API -->|"Metadatos de archivo / TCP 5432"| DB_Postgres
+    Storage_API -->|"HTTPS S3 API (Lectura y Escritura de Blobs)"| Bucket_S3
+        </pre>
+      </div>
+    </section>
+
+    <!-- TAB 7.1: TOPOLOGÍA FÍSICA (LUCIDCHART) -->
+    <section id="topologia-fisica" class="diagram-card">
+      <div class="card-header">
+        <div class="card-title">
+          <h2>Topología Física y Conexiones de Red (Equipos y Enlaces)</h2>
+          <p>Conexiones entre servidores, routers, switches y terminales clientes con medios de transmisión físicos (Diseñado en Lucidchart).</p>
+        </div>
+        <div class="actions">
+          <a href="https://lucid.app/lucidchart/c265dfa1-dda8-4481-9222-42d93555c213/edit" target="_blank" class="btn" style="text-decoration:none; background:#ff6200; color:#fff; border-color:#e05600;">🔗 Abrir en Lucidchart</a>
+          <button class="btn" onclick="exportSVG('topologia-fisica')">📥 Descargar SVG</button>
+          <button class="btn" onclick="window.print()">🖨️ Imprimir</button>
+        </div>
+      </div>
+      <div class="diagram-viewport">
+        <pre class="mermaid">
+flowchart TB
+    Internet(("☁️ INTERNET / RED WAN<br/>(Proveedores ISP)"))
+    Firewall["🧱 FIREWALL / WAF<br/>(Vercel & Cloudflare DDoS Shield)"]
+    Router["🔀 ROUTER DE BORDE / EDGE POP<br/>(Enrutador Anycast Santiago/Sao Paulo)"]
+    Switch["🎛️ SWITCH / API GATEWAY<br/>(Kong Gateway & Balanceador Virtual)"]
+
+    Internet -->|"Enlace Troncal Fibra Optica (WAN)"| Firewall
+    Firewall -->|"Cable UTP Cat 6A / Enlace 10 Gbps"| Router
+    Router -->|"Canal Virtual mTLS / Fibra 10GbE"| Switch
+
+    subgraph AREA_SERVIDORES["🟦 AREA DE SERVIDORES (Cloud VPC / Backend BaaS)"]
+        direction TB
+        ServerWeb["🖥️ SERVIDOR WEB / SSR<br/>(Astro 5 & Route /api/copilot)"]
+        ServerAPI["⚙️ SERVIDOR API REST<br/>(PostgREST 12 & GoTrue Auth)"]
+        ServerBD[("🗄️ SERVIDOR BASE DE DATOS<br/>(PostgreSQL 15 & PgBouncer)")]
+        ServerStorage["📦 SERVIDOR STORAGE<br/>(S3 Bucket 'avatars')"]
+
+        ServerWeb ---|"Red Privada Virtual (VPC LAN)"| ServerAPI
+        ServerAPI ---|"Pool TCP 5432 / Socket Interno"| ServerBD
+        ServerAPI ---|"Enlace Interno AWS S3"| ServerStorage
+    end
+
+    subgraph AREA_ESCRITORIO["🟨 AREA DE CLIENTES ESCRITORIO (Hogar / Oficina)"]
+        direction TB
+        PCEscritorio["🖥️ PC / NOTEBOOK USUARIO<br/>(Navegador Desktop Chrome/Edge)"]
+        ImpresoraRecetas["🖨️ IMPRESORA / SALIDA PDF<br/>(Fichas de Recetas Guardadas)"]
+
+        PCEscritorio ---|"Cable USB / Impresion Local"| ImpresoraRecetas
+    end
+
+    subgraph AREA_MOVIL["🟥 AREA DE DISPOSITIVOS MOVILES (En Cocina / Comensal)"]
+        direction TB
+        SmartMobile["📱 SMARTPHONE / TABLET COCINA<br/>(PWA / Navegador Movil iOS/Android)"]
+        BalanzaCocina["⚖️ SMART SCALE / ACCESORIO<br/>(Control de Gramos e Insumos)"]
+
+        SmartMobile -.-|"Bluetooth / Enlace Local"| BalanzaCocina
+    end
+
+    subgraph AREA_IA["🟪 AREA DE SERVICIOS EXTERNOS (Motor de Inteligencia Artificial)"]
+        direction TB
+        ServerIA["🧠 SERVIDOR INFERENCIA LLM<br/>(Google Gemini API / Vertex AI)"]
+    end
+
+    Router -->|"Enlace Ethernet UTP / Virtual LAN"| AREA_SERVIDORES
+    Switch -->|"Cable UTP / Red LAN Domiciliaria"| AREA_ESCRITORIO
+    Router -->|"Enlace Inalambrico Wi-Fi 6 / 4G-5G LTE"| AREA_MOVIL
+    ServerWeb -->|"Enlace WAN Seguro / HTTPS REST"| AREA_IA
+
+    style AREA_SERVIDORES fill:#d0e7ff,stroke:#0066cc,stroke-width:2px,color:#003366
+    style AREA_ESCRITORIO fill:#fff1cc,stroke:#d69e2e,stroke-width:2px,color:#744210
+    style AREA_MOVIL fill:#ffd6d6,stroke:#e53e3e,stroke-width:2px,color:#742a2a
+    style AREA_IA fill:#f3e8ff,stroke:#9333ea,stroke-width:2px,color:#581c87
+    style Firewall fill:#ffeedd,stroke:#dd6b20,stroke-width:2px
+    style Router fill:#e2e8f0,stroke:#4a5568,stroke-width:2px
+    style Switch fill:#e2e8f0,stroke:#4a5568,stroke-width:2px
+        </pre>
+      </div>
+    </section>
+
+    <!-- TAB 8: INFRAESTRUCTURA -->
+    <section id="infraestructura" class="diagram-card">
+      <div class="card-header">
+        <div class="card-title">
+          <h2>Diagrama de Diseño de Infraestructura</h2>
+          <p>Dispositivos de usuario, Vercel Edge Serverless, clúster gestionado Supabase Cloud y almacenamiento de objetos S3.</p>
+        </div>
+        <div class="actions">
+          <button class="btn" onclick="exportSVG('infraestructura')">📥 Descargar SVG</button>
+          <button class="btn" onclick="window.print()">🖨️ Imprimir</button>
+        </div>
+      </div>
+      <div class="diagram-viewport">
+        <pre class="mermaid">
+flowchart TD
+    subgraph INFRA_CLIENTS ["Infraestructura de Clientes y Dispositivos"]
+        DEV_MOB["Smartphones (iOS / Android con navegadores Chromium & Safari)"]
+        DEV_DESK["Laptops / Computadores (Windows / macOS / Linux)"]
+    end
+
+    subgraph CLOUD_VERCEL ["Infraestructura de Hosting y Cómputo Edge (Vercel Cloud)"]
+        subgraph VERCEL_EDGE ["Vercel Edge Network (Red Distribuida Global)"]
+            EDGE_ROUTER["Edge DNS & Anycast Routing"]
+            SSL_TERM["Terminación SSL/TLS & Escudo anti-DDoS"]
+            STATIC_STORAGE["Almacenamiento de Assets Estáticos (HTML, JS, CSS, Media)"]
+        end
+
+        subgraph VERCEL_COMPUTE ["Capa de Cómputo Serverless (Micro-VMs)"]
+            SSR_NODE["Astro SSR Serverless Execution Node (Node.js 20.x)"]
+            COPILOT_NODE["Copilot API Serverless Function Node (/api/copilot)"]
+        end
+    end
+
+    subgraph EXT_PROVIDERS ["Servicios de Terceros e Inteligencia Artificial"]
+        GOOGLE_OAUTH["Google Identity Provider (OAuth 2.0 / OpenID Connect)"]
+        AI_LLM_CLOUD["Plataforma de Inferencia LLM (Google Gemini / OpenAI API)"]
+    end
+
+    subgraph CLOUD_SUPABASE ["Infraestructura Gestionada BaaS (Supabase Cloud en AWS)"]
+        subgraph SUPABASE_INGRESS ["Capa de Acceso Perimetral y Seguridad"]
+            KONG_PROXY["Kong API Gateway (Proxy Inverso, Rate Limiter, CORS)"]
+        end
+
+        subgraph SUPABASE_CONTAINERS ["Capa de Microservicios en Contenedores"]
+            GOTRUE_CONT["GoTrue Container (Servicio de Autenticación & JWT)"]
+            POSTGREST_CONT["PostgREST Container (Generación dinámica de API REST)"]
+            REALTIME_CONT["Realtime Server Container (Elixir Phoenix WebSockets)"]
+            STORAGE_CONT["Storage Daemon Container (API de Gestión de Archivos)"]
+            DENO_WORKER["Deno Edge Worker (Ejecución de Edge Function delete-user)"]
+        end
+
+        subgraph SUPABASE_DATA ["Capa de Persistencia Gestionada"]
+            POOLER_PG["Supavisor / PgBouncer (Agrupador de Conexiones a BD)"]
+            POSTGRES_CORE[("Instancia PostgreSQL 15 (Compute Dedicado + NVMe SSD)")]
+            S3_BUCKET[("Amazon S3 Object Storage (Bucket 'avatars')")]
+            WAL_BACKUP[("Almacenamiento de Respaldos WAL & Snapshots Diarios")]
+        end
+    end
+
+    DEV_MOB -->|"Petición Web (HTTPS 443)"| EDGE_ROUTER
+    DEV_DESK -->|"Petición Web (HTTPS 443)"| EDGE_ROUTER
+    EDGE_ROUTER --> SSL_TERM
+
+    SSL_TERM -->|"Caché Hit"| STATIC_STORAGE
+    SSL_TERM -->|"Caché Miss / Rutas SSR"| SSR_NODE
+    SSL_TERM -->|"Ruta /api/copilot"| COPILOT_NODE
+
+    COPILOT_NODE -->|"HTTPS / TLS 1.3"| AI_LLM_CLOUD
+
+    DEV_MOB -->|"Autenticación OAuth"| GOOGLE_OAUTH
+    DEV_DESK -->|"Autenticación OAuth"| GOOGLE_OAUTH
+    GOOGLE_OAUTH -.->|"Redirección con Token"| GOTRUE_CONT
+
+    DEV_MOB -->|"API Calls (HTTPS / WSS)"| KONG_PROXY
+    DEV_DESK -->|"API Calls (HTTPS / WSS)"| KONG_PROXY
+
+    KONG_PROXY --> GOTRUE_CONT
+    KONG_PROXY --> POSTGREST_CONT
+    KONG_PROXY --> REALTIME_CONT
+    KONG_PROXY --> STORAGE_CONT
+    KONG_PROXY --> DENO_WORKER
+
+    POSTGREST_CONT --> POOLER_PG
+    GOTRUE_CONT --> POOLER_PG
+    DENO_WORKER --> POOLER_PG
+    POOLER_PG --> POSTGRES_CORE
+
+    REALTIME_CONT -->|"Lectura de WAL"| POSTGRES_CORE
+    POSTGRES_CORE -.->|"Replicación y Backup"| WAL_BACKUP
+
+    STORAGE_CONT --> S3_BUCKET
+    STORAGE_CONT --> POOLER_PG
+        </pre>
+      </div>
+    </section>
+
+    <!-- TAB 9: ARQUITECTURA -->
+    <section id="arquitectura" class="diagram-card">
+      <div class="card-header">
+        <div class="card-title">
+          <h2>Diagrama de Arquitectura de TI (Software y Hardware)</h2>
+          <p>Mapeo entre las capas funcionales de software y los recursos físicos de hardware que dan soporte al sistema.</p>
+        </div>
+        <div class="actions">
+          <button class="btn" onclick="exportSVG('arquitectura')">📥 Descargar SVG</button>
+          <button class="btn" onclick="window.print()">🖨️ Imprimir</button>
+        </div>
+      </div>
+      <div class="diagram-viewport">
+        <pre class="mermaid">
+flowchart TD
+    subgraph TIER_CLIENT ["1. Capa de Clientes y Presentación de Usuario"]
+        subgraph HW_CLIENT ["Infraestructura de Hardware (Dispositivos)"]
+            HW_USER["Smartphones & PCs: SoC ARM64 / x86_64, 4GB-16GB RAM, WiFi 6 / 5G LTE"]
+        end
+        subgraph SW_CLIENT ["Componentes de Software (Frontend Client)"]
+            SW_APP["Astro 5 Islands + React 19 Hydration"]
+            SW_UI["HeroUI v3 + Tailwind CSS v4 + Framer Motion"]
+            SW_SEC["DOMPurify (Filtro XSS) + Supabase JS Client v2"]
+        end
+        HW_USER --- SW_APP
+        SW_APP --- SW_UI
+        SW_UI --- SW_SEC
+    end
+
+    subgraph TIER_EDGE ["2. Capa Perimetral y Entrega de Contenidos (Edge Network)"]
+        subgraph HW_EDGE ["Infraestructura de Hardware Edge"]
+            HW_POPS["Servidores Edge en PoPs: AMD EPYC / Xeon, 64GB-128GB RAM, NICs 100GbE"]
+        end
+        subgraph SW_EDGE ["Componentes de Software Edge"]
+            SW_DNS["DNS Anycast + Balanceador de Carga Capa 7 + Terminación TLS 1.3"]
+            SW_CDN["Vercel Static Edge Cache (Compresión Brotli/Gzip)"]
+        end
+        HW_POPS --- SW_DNS
+        SW_DNS --- SW_CDN
+    end
+
+    subgraph TIER_COMPUTE ["3. Capa de Cómputo de Aplicación (Serverless Cloud)"]
+        subgraph HW_COMPUTE ["Infraestructura de Hardware Serverless"]
+        HW_VMS["Nodos Host AWS: Micro-VMs Firecracker (1-2 vCPU compartida, 1024MB-2048MB vRAM)"]
+        end
+        subgraph SW_COMPUTE ["Componentes de Software de Ejecución"]
+            SW_SSR["Astro SSR Execution Runtime (Node.js 20.x)"]
+            SW_API_COPILOT["Ruta API Serverless (/api/copilot - Orquestador Chef IA)"]
+            SW_DENO["Deno Runtime (Supabase Serverless Worker: delete-user)"]
+        end
+        HW_VMS --- SW_SSR
+        SW_SSR --- SW_API_COPILOT
+        SW_API_COPILOT --- SW_DENO
+    end
+
+    subgraph TIER_BAAS ["4. Capa de Microservicios Backend (Supabase Managed Cloud)"]
+        subgraph HW_BAAS ["Infraestructura de Hardware de Contenedores"]
+            HW_CONTAINERS["Instancias Cloud Gestionadas en AWS sa-east-1 / us-east-1"]
+        end
+        subgraph SW_BAAS ["Componentes de Software Backend"]
+            SW_KONG["Kong API Gateway (Reverse Proxy, Rate Limiter)"]
+            SW_GOTRUE["GoTrue Engine (Auth Service, Emisor JWT)"]
+            SW_POSTGREST["PostgREST 12 (Generador automático de APIs REST)"]
+            SW_REALTIME["Realtime Engine (Elixir / Phoenix WebSockets)"]
+            SW_STORAGE["Storage Service Daemon (API S3 compatible)"]
+        end
+        HW_CONTAINERS --- SW_KONG
+        SW_KONG --- SW_GOTRUE
+        SW_GOTRUE --- SW_POSTGREST
+        SW_POSTGREST --- SW_REALTIME
+        SW_REALTIME --- SW_STORAGE
+    end
+
+    subgraph TIER_DATA ["5. Capa de Almacenamiento y Persistencia de Datos"]
+        subgraph HW_DATA ["Infraestructura de Hardware de Almacenamiento"]
+            HW_DB["Servidor BD Dedicado: 2 vCPUs, 4GB-8GB ECC RAM, NVMe SSD (3000 IOPS)"]
+            HW_S3["Clúster de Almacenamiento Distribuido AWS S3 (Triple Replicación)"]
+        end
+        subgraph SW_DATA ["Componentes de Software de Base de Datos"]
+            SW_POOLER["Supavisor / PgBouncer (Pool de Conexiones PostgreSQL)"]
+            SW_PG["PostgreSQL 15 (Motor RDBMS con ACID estricto)"]
+            SW_EXT["Extensiones: pgcrypto, uuid-ossp, pg_trgm"]
+            SW_RLS["Políticas Row-Level Security (RLS) & Triggers PL/pgSQL"]
+            SW_BUCKET["Bucket de Objetos: 'avatars'"]
+        end
+        HW_DB --- SW_POOLER
+        SW_POOLER --- SW_PG
+        SW_PG --- SW_EXT
+        SW_EXT --- SW_RLS
+        HW_S3 --- SW_BUCKET
+    end
+
+    TIER_CLIENT -->|"HTTPS / TLS 1.3"| TIER_EDGE
+    TIER_EDGE -->|"Peticiones dinámicas SSR"| TIER_COMPUTE
+    TIER_CLIENT -->|"API Calls directas con JWT"| TIER_BAAS
+    TIER_COMPUTE -->|"Llamadas de servicio administrativo"| TIER_BAAS
+    TIER_BAAS -->|"Conexiones TCP PostgreSQL (Puerto 5432)"| TIER_DATA
+        </pre>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <p>© 2026 ChileBiteFront Architecture Suite · Enfocado en Recetario y Nutrición</p>
+  </footer>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'dark',
+      themeVariables: {
+        darkMode: true,
+        background: '#181513',
+        primaryColor: '#b08969',
+        primaryTextColor: '#f5ece8',
+        primaryBorderColor: '#6a523e',
+        lineColor: '#d4a373',
+        secondaryColor: '#2b2623',
+        tertiaryColor: '#1c1916'
+      }
+    });
+
+    function showTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.diagram-card').forEach(card => card.classList.remove('active'));
+
+      event.target.classList.add('active');
+      const targetCard = document.getElementById(tabId);
+      targetCard.classList.add('active');
+    }
+
+    function exportSVG(sectionId) {
+      const section = document.getElementById(sectionId);
+      const svg = section.querySelector('svg');
+      if (!svg) {
+        alert("El diagrama aún está renderizándose...");
+        return;
+      }
+      const svgData = new XMLSerializer().serializeToString(svg);
+      const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+      const svgUrl = URL.createObjectURL(svgBlob);
+      const downloadLink = document.createElement('a');
+      downloadLink.href = svgUrl;
+      downloadLink.download = `${sectionId}-chilebitefront.svg`;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+    }
+  </script>
+</body>
+</html>

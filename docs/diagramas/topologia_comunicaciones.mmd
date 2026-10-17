@@ -1,0 +1,74 @@
+flowchart TD
+    subgraph CLIENT_TIER ["Capa de Clientes (Dispositivos de Usuario)"]
+        Client_Mobile["Dispositivo Móvil (Smartphone iOS/Android)"]
+        Client_Desktop["Computador de Escritorio / Laptop (Web Browser)"]
+    end
+
+    subgraph NETWORK_INGRESS ["Capa de Transporte y Red Perimetral"]
+        DNS_Edge["DNS Anycast Global (Resolución de nombres / DoH / UDP 53)"]
+        Vercel_PoP["Punto de Presencia Edge Vercel (PoP Santiago / São Paulo)"]
+    end
+
+    subgraph FRONTEND_EDGE_TIER ["Plataforma Frontend y Cómputo Edge (Vercel)"]
+        Static_CDN["CDN Estático (HTML, CSS Tailwind v4, JS Bundles)"]
+        Serverless_SSR["Astro SSR Runtime (Renderizado dinámico en servidor)"]
+        API_Copilot["Ruta API Serverless: /api/copilot (Orquestador Chef IA)"]
+    end
+
+    subgraph EXTERNAL_AI ["Proveedor Externo de Inteligencia Artificial"]
+        LLM_Provider["API de Inferencia LLM (Google Gemini / OpenAI)"]
+    end
+
+    subgraph BAAS_GATEWAY ["Puerta de Entrada BaaS (Supabase Cloud Gateway)"]
+        Kong_Gateway["Kong API Gateway (Reverse Proxy, SSL Termination, Rate Limiting)"]
+    end
+
+    subgraph SUPABASE_SERVICES ["Servicios de Backend y Aplicación (Supabase Cloud)"]
+        Auth_GoTrue["GoTrue Auth Service (Manejo de Tokens JWT, OAuth)"]
+        API_PostgREST["PostgREST Service (Exposición REST automática sobre DB)"]
+        Realtime_Engine["Realtime WebSocket Service (Elixir/Phoenix)"]
+        Storage_API["Storage Service (API S3-compatible para imágenes)"]
+        Edge_Func["Edge Function Worker (Deno Runtime: delete-user)"]
+    end
+
+    subgraph STORAGE_PERSISTENCE ["Capa de Persistencia de Datos"]
+        DB_Postgres[("Base de Datos PostgreSQL 15 (Instancia con RLS y Triggers)")]
+        Bucket_S3[("Supabase Storage: Bucket 'avatars' (S3 Object Storage)")]
+    end
+
+    %% Enlaces y Protocolos de Comunicación
+    Client_Mobile -->|"1. Consulta DNS / UDP 53 o DoH"| DNS_Edge
+    Client_Desktop -->|"1. Consulta DNS / UDP 53 o DoH"| DNS_Edge
+    DNS_Edge -.->|"Resuelve IP Anycast de PoP cercano"| Vercel_PoP
+
+    Client_Mobile -->|"2. HTTPS / HTTP/2 - HTTP/3 (TLS 1.3, TCP/UDP 443)"| Vercel_PoP
+    Client_Desktop -->|"2. HTTPS / HTTP/2 - HTTP/3 (TLS 1.3, TCP/UDP 443)"| Vercel_PoP
+
+    Vercel_PoP -->|"Caché Hit (Archivos estáticos precompilados)"| Static_CDN
+    Vercel_PoP -->|"Caché Miss / Rutas dinámicas SSR"| Serverless_SSR
+    Vercel_PoP -->|"Peticiones de chat culinario"| API_Copilot
+
+    API_Copilot -->|"HTTPS / TLS 1.3 (JSON REST + SSE Streaming)"| LLM_Provider
+
+    %% Cliente directo a Supabase mediante SDK
+    Client_Mobile -->|"3. HTTPS REST / PostgREST (JSON, Bearer JWT, TLS 1.3)"| Kong_Gateway
+    Client_Desktop -->|"3. HTTPS REST / PostgREST (JSON, Bearer JWT, TLS 1.3)"| Kong_Gateway
+    Client_Mobile -->|"4. WSS / WebSockets Seguros (TLS 1.3, Puerto 443)"| Kong_Gateway
+    Client_Desktop -->|"4. WSS / WebSockets Seguros (TLS 1.3, Puerto 443)"| Kong_Gateway
+    Client_Mobile -->|"5. HTTPS Multipart/form-data (Subida de Avatar)"| Kong_Gateway
+    Client_Desktop -->|"5. HTTPS Multipart/form-data (Subida de Avatar)"| Kong_Gateway
+
+    %% Kong enrutando internamente
+    Kong_Gateway -->|"Enrutamiento interno /auth/v1"| Auth_GoTrue
+    Kong_Gateway -->|"Enrutamiento interno /rest/v1"| API_PostgREST
+    Kong_Gateway -->|"Enrutamiento interno /realtime/v1"| Realtime_Engine
+    Kong_Gateway -->|"Enrutamiento interno /storage/v1"| Storage_API
+    Kong_Gateway -->|"Enrutamiento interno /functions/v1"| Edge_Func
+
+    %% Conexiones con Persistencia
+    Auth_GoTrue -->|"Conexión TCP Cifrada (Puerto 5432 / TLS)"| DB_Postgres
+    API_PostgREST -->|"Conexión TCP Cifrada (Pooler PgBouncer / Puerto 5432)"| DB_Postgres
+    Realtime_Engine -->|"Replicación lógica WAL / TCP 5432"| DB_Postgres
+    Edge_Func -->|"Conexión administrativa Service Role / TCP 5432"| DB_Postgres
+    Storage_API -->|"Metadatos de archivo / TCP 5432"| DB_Postgres
+    Storage_API -->|"HTTPS S3 API (Lectura y Escritura de Blobs)"| Bucket_S3

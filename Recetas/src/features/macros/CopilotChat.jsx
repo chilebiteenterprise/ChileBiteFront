@@ -193,8 +193,20 @@ export default function CopilotChat({ isOpen, onClose, onAdd, onClear, onSetReci
 
           const foundIng = data[0];
           // 3. Añadir a la calculadora con la cantidad y unidad sugeridas por la IA
-          const qty = ing.cantidad || ing.gramos || 100;
-          const unit = ing.unidad || 'g';
+          let rawUnit = (ing.unidad || '').toLowerCase().trim();
+          let unit = 'g';
+          if (rawUnit.startsWith('gram') || rawUnit === 'gr' || rawUnit === 'g') unit = 'g';
+          else if (rawUnit.startsWith('kilo') || rawUnit === 'kg') unit = 'kg';
+          else if (rawUnit.startsWith('mili') || rawUnit === 'ml' || rawUnit === 'cc') unit = 'ml';
+          else if (rawUnit.startsWith('litr') || rawUnit === 'l' || rawUnit === 'lt') unit = 'l';
+          else if (rawUnit.startsWith('unid') || rawUnit.startsWith('ud') || rawUnit.startsWith('piez') || rawUnit === 'u') unit = 'unidad';
+          else if (rawUnit.startsWith('taz') || rawUnit === 'tz') unit = 'taza';
+          else if (rawUnit.startsWith('cucharadita') || rawUnit === 'cdta') unit = 'cda';
+          else if (rawUnit.startsWith('cucharada') || rawUnit === 'cda') unit = 'cda';
+          else if (foundIng.tipo_medida === 'volumen') unit = 'ml';
+          else if (foundIng.tipo_medida === 'unidad') unit = 'unidad';
+
+          const qty = ing.cantidad || ing.gramos || (unit === 'unidad' ? 1 : unit === 'ml' ? 200 : 100);
           if (onAdd) {
             onAdd(foundIng, qty, unit);
           }

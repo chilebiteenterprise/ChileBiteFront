@@ -15,7 +15,7 @@
    1. DIRECTIVAS & CAPAS DE FRAMEWORK
    ----------------------------------------------------------------------------- */
 @import "tailwindcss";
-@custom-variant dark (&:where(.dark, .dark *));
+@variant dark (&:where(.dark, .dark *));
 @import "@heroui/styles";
 
 @layer theme, base, components, utilities;
@@ -179,6 +179,17 @@ select {
   background-color: var(--surface-input);
   color: var(--text-main);
   border-color: var(--border-subtle);
+}
+
+/* Ocultar flechas / spinners nativos en inputs numéricos */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
 }
 
 /* -----------------------------------------------------------------------------

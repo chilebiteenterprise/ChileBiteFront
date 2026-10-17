@@ -5,18 +5,12 @@ import { supabase } from '@/lib/supabaseClient';
 import CopilotChat from './CopilotChat';
 import { Sparkles } from 'lucide-react';
 import { AuthProvider } from '@/features/auth/context/AuthContext';
+import { ALL_UNIT_OPTIONS, getAvailableUnitsForIngredient } from '@/shared/utils/unitRules';
 
 const normalize = (s = "") =>
   s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
-const UNIT_OPTIONS = [
-  { val: 'g', label: 'Gramos (g)' },
-  { val: 'unidad', label: 'Unidades (ud)' },
-  { val: 'cda', label: 'Cucharadas (cda)' },
-  { val: 'taza', label: 'Tazas' }
-];
-
-function CustomUnitSelect({ value, onChange, fullWidth = false }) {
+function CustomUnitSelect({ value, onChange, fullWidth = false, options = ALL_UNIT_OPTIONS }) {
   const [isOpen, setIsOpen] = useState(false);
   const buttonRef = useRef(null);
   const [coords, setCoords] = useState({ top: 0, left: 0, width: 155, opensUp: false });
@@ -49,7 +43,8 @@ function CustomUnitSelect({ value, onChange, fullWidth = false }) {
     };
   }, [isOpen]);
 
-  const selectedOption = UNIT_OPTIONS.find(o => o.val === value) || UNIT_OPTIONS[0];
+  const activeOptions = options && options.length > 0 ? options : ALL_UNIT_OPTIONS;
+  const selectedOption = activeOptions.find(o => o.val === value) || activeOptions[0];
 
   return (
     <div className={`relative ${fullWidth ? 'w-full flex-1' : 'shrink-0'}`}>
@@ -102,7 +97,7 @@ function CustomUnitSelect({ value, onChange, fullWidth = false }) {
                 }}
                 className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl py-2 overflow-hidden"
               >
-                {UNIT_OPTIONS.map(u => (
+                {activeOptions.map(u => (
                   <motion.button
                     key={u.val}
                     type="button"
@@ -186,8 +181,27 @@ function IngredientSearch({ onAdd, allIngredients, loadingIngredients }) {
     setQuery(ing.nombre);
     setIsOpen(false);
     setActiveIdx(-1);
-    setCantidad("1"); // Cantidad por defecto
-    setUnidad("g");
+
+    const allowed = getAvailableUnitsForIngredient(ing);
+    let defaultUnit = 'g';
+    let defaultQty = '100';
+
+    if (allowed.some(u => u.val === 'unidad')) {
+      defaultUnit = 'unidad';
+      defaultQty = '1';
+    } else if (allowed.some(u => u.val === 'ml')) {
+      defaultUnit = 'ml';
+      defaultQty = '200';
+    } else if (allowed.some(u => u.val === 'cda') && !allowed.some(u => u.val === 'kg')) {
+      defaultUnit = 'cda';
+      defaultQty = '1';
+    } else {
+      defaultUnit = allowed[0]?.val || 'g';
+      defaultQty = defaultUnit === 'kg' ? '0.5' : defaultUnit === 'cda' ? '1' : '100';
+    }
+
+    setUnidad(defaultUnit);
+    setCantidad(defaultQty);
   };
 
   const handleAdd = () => {
@@ -312,7 +326,10 @@ function IngredientSearch({ onAdd, allIngredients, loadingIngredients }) {
           <div className="flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-1 shadow-sm shrink-0">
             <button
               type="button"
-              onClick={() => setCantidad((prev) => Math.max(0.1, Number((Number(prev || 1) - (unidad === 'g' ? 10 : 0.5)).toFixed(1))).toString())}
+              onClick={() => {
+                const step = ['g', 'ml'].includes(unidad) ? 10 : ['kg', 'l'].includes(unidad) ? 0.1 : 0.5;
+                setCantidad((prev) => Math.max(0.1, Number((Number(prev || 1) - step).toFixed(1))).toString());
+              }}
               className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold transition-colors active:scale-90"
               aria-label="Disminuir cantidad"
             >
@@ -324,7 +341,7 @@ function IngredientSearch({ onAdd, allIngredients, loadingIngredients }) {
             <input
               type="number"
               min="0.1"
-              step="0.1"
+              step={['g', 'ml'].includes(unidad) ? 1 : 0.1}
               placeholder="Cant."
               value={cantidad}
               onChange={(e) => setCantidad(e.target.value)}
@@ -334,7 +351,10 @@ function IngredientSearch({ onAdd, allIngredients, loadingIngredients }) {
 
             <button
               type="button"
-              onClick={() => setCantidad((prev) => Number(((Number(prev) || 0) + (unidad === 'g' ? 10 : 0.5)).toFixed(1)).toString())}
+              onClick={() => {
+                const step = ['g', 'ml'].includes(unidad) ? 10 : ['kg', 'l'].includes(unidad) ? 0.1 : 0.5;
+                setCantidad((prev) => Number(((Number(prev) || 0) + step).toFixed(1)).toString());
+              }}
               className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold transition-colors active:scale-90"
               aria-label="Aumentar cantidad"
             >
@@ -347,6 +367,7 @@ function IngredientSearch({ onAdd, allIngredients, loadingIngredients }) {
             value={unidad}
             onChange={setUnidad}
             fullWidth={true}
+            options={getAvailableUnitsForIngredient(selectedIngredient)}
           />
           <button
             type="button"
@@ -369,10 +390,18 @@ function IngredientSearch({ onAdd, allIngredients, loadingIngredients }) {
 // Single ingredient row in the list
 // ─────────────────────────────────────────────────────────────────────────────
 const getItemGrams = (item) => {
-  if (item.unidad === 'unidad') return item.cantidad * (Number(item.peso_por_unidad_gramos) || 100);
-  if (item.unidad === 'taza') return item.cantidad * (Number(item.peso_por_taza_gramos) || 200);
-  if (item.unidad === 'cda') return item.cantidad * (Number(item.peso_por_cucharada_gramos) || 15);
-  return item.cantidad; // 'g'
+  const cant = Number(item.cantidad) || 0;
+  if (item.unidad === 'kg') return cant * 1000;
+  if (item.unidad === 'l') return cant * 1000;
+  if (item.unidad === 'ml') return cant * 1;
+  if (item.unidad === 'unidad') return cant * (Number(item.peso_por_unidad_gramos) || 100);
+  if (item.unidad === 'taza') {
+    return cant * (Number(item.peso_por_taza_gramos) || (item.tipo_medida === 'volumen' ? 240 : 200));
+  }
+  if (item.unidad === 'cda') {
+    return cant * (Number(item.peso_por_cucharada_gramos) || 15);
+  }
+  return cant; // 'g'
 };
 
 function IngredientRow({ item, index = 0, totalCount = 1, onUpdateQuantity, onUpdateUnit, onRemove }) {
@@ -383,8 +412,10 @@ function IngredientRow({ item, index = 0, totalCount = 1, onUpdateQuantity, onUp
   const opensUpward = totalCount >= 2 && index >= totalCount - 2;
 
   const handleAdjust = (val) => {
-    onUpdateQuantity(item._uid, Math.max(0.1, item.cantidad + val));
+    onUpdateQuantity(item._uid, Math.max(0.1, Number((item.cantidad + val).toFixed(1))));
   };
+
+  const currentStep = ['g', 'ml'].includes(item.unidad) ? 10 : ['kg', 'l'].includes(item.unidad) ? 0.1 : 0.5;
 
   return (
     <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 bg-white dark:bg-slate-900/60 rounded-2xl border border-slate-200 dark:border-slate-800 group transition-all hover:shadow-sm">
@@ -402,7 +433,7 @@ function IngredientRow({ item, index = 0, totalCount = 1, onUpdateQuantity, onUp
           <span className="opacity-40">•</span>
           <span>G: {(item.grasas_por_100g * factor).toFixed(1)}g</span>
           <span className="opacity-40">•</span>
-          <span>({Math.round(grams)}g totales)</span>
+          <span>({Math.round(grams)}{item.tipo_medida === 'volumen' ? 'ml aprox' : 'g totales'})</span>
         </div>
       </div>
 
@@ -412,7 +443,7 @@ function IngredientRow({ item, index = 0, totalCount = 1, onUpdateQuantity, onUp
         <div className="flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-1 shadow-sm">
           <button
             type="button"
-            onClick={() => handleAdjust(item.unidad === 'g' ? -10 : -0.5)}
+            onClick={() => handleAdjust(-currentStep)}
             className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold transition-colors active:scale-90"
             aria-label={`Disminuir cantidad de ${name}`}
           >
@@ -424,7 +455,7 @@ function IngredientRow({ item, index = 0, totalCount = 1, onUpdateQuantity, onUp
           <input
             type="number"
             min={0.1}
-            step={item.unidad === 'g' ? 1 : 0.1}
+            step={['g', 'ml'].includes(item.unidad) ? 1 : 0.1}
             value={item.cantidad}
             onChange={(e) => onUpdateQuantity(item._uid, Math.max(0.1, Number(e.target.value)))}
             aria-label={`Cantidad de ${name}`}
@@ -433,7 +464,7 @@ function IngredientRow({ item, index = 0, totalCount = 1, onUpdateQuantity, onUp
 
           <button
             type="button"
-            onClick={() => handleAdjust(item.unidad === 'g' ? 10 : 0.5)}
+            onClick={() => handleAdjust(currentStep)}
             className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold transition-colors active:scale-90"
             aria-label={`Aumentar cantidad de ${name}`}
           >
@@ -448,6 +479,7 @@ function IngredientRow({ item, index = 0, totalCount = 1, onUpdateQuantity, onUp
           value={item.unidad}
           onChange={(newVal) => onUpdateUnit(item._uid, newVal)}
           fullWidth={false}
+          options={getAvailableUnitsForIngredient(item)}
         />
 
         <button
@@ -482,7 +514,7 @@ function MacroCalculatorInner() {
     setLoadingIngredients(true);
     supabase
       .from('core_ingrediente')
-      .select('id, nombre, calorias_por_100g, proteinas_por_100g, carbohidratos_por_100g, grasas_por_100g, fibra_por_100g, peso_por_unidad_gramos, peso_por_taza_gramos, peso_por_cucharada_gramos')
+      .select('id, nombre, categoria, tipo_medida, calorias_por_100g, proteinas_por_100g, carbohidratos_por_100g, grasas_por_100g, fibra_por_100g, peso_por_unidad_gramos, peso_por_taza_gramos, peso_por_cucharada_gramos')
       .order('nombre')
       .limit(1000)
       .then(({ data, error }) => {

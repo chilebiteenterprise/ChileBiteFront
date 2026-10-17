@@ -1,0 +1,89 @@
+erDiagram
+    PROFILES ||--o{ CORE_COLECCION : "crea y administra"
+    PROFILES ||--o{ CORE_COMENTARIO : "escribe"
+    
+    CORE_RECETA ||--o{ CORE_COLECCION_RECETA : "es guardada en"
+    CORE_RECETA ||--o{ CORE_COMENTARIO : "recibe"
+    CORE_RECETA ||--o{ CORE_RECETAINGREDIENTE : "se compone de"
+    
+    CORE_INGREDIENTE ||--o{ CORE_RECETAINGREDIENTE : "es utilizado en"
+    
+    CORE_COLECCION ||--o{ CORE_COLECCION_RECETA : "contiene"
+
+    PROFILES {
+        uuid id PK
+        string username UK
+        string nombres
+        string apellido_paterno
+        string apellido_materno
+        text bio
+        string avatar_url
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    CORE_RECETA {
+        bigint id PK
+        string nombre
+        text descripcion_corta
+        text descripcion_larga
+        text preparacion
+        string dificultad
+        integer tiempo_preparacion_minutos
+        integer tiempo_coccion_minutos
+        integer porciones
+        string imagen_url
+        float calorias_totales
+        timestamp created_at
+    }
+
+    CORE_INGREDIENTE {
+        bigint id PK
+        string nombre UK
+        string categoria
+        float calorias_por_100g
+        float proteinas_por_100g
+        float grasas_por_100g
+        float carbohidratos_por_100g
+        float fibra_por_100g
+        float azucares_por_100g
+        float sodio_mg_por_100g
+        float peso_por_unidad_gramos
+        float peso_por_taza_gramos
+        float peso_por_cucharada_gramos
+        boolean es_vegano
+        boolean es_libre_de_gluten
+    }
+
+    CORE_RECETAINGREDIENTE {
+        bigint id PK
+        bigint receta_id FK
+        bigint ingrediente_id FK
+        float cantidad
+        string unidad
+    }
+
+    CORE_COLECCION {
+        uuid id PK
+        uuid user_id FK
+        string nombre
+        text descripcion
+        boolean es_privada
+        timestamp fecha_creacion
+    }
+
+    CORE_COLECCION_RECETA {
+        bigint id PK
+        uuid coleccion_id FK
+        bigint receta_id FK
+        timestamp fecha_agregado
+    }
+
+    CORE_COMENTARIO {
+        uuid id PK
+        bigint receta_id FK
+        uuid user_id FK
+        text contenido
+        integer valoracion
+        timestamp created_at
+    }

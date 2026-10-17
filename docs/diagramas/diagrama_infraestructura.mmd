@@ -1,0 +1,79 @@
+flowchart TD
+    subgraph INFRA_CLIENTS ["Infraestructura de Clientes y Dispositivos"]
+        DEV_MOB["Smartphones (iOS / Android con navegadores Chromium & Safari)"]
+        DEV_DESK["Laptops / Computadores (Windows / macOS / Linux)"]
+    end
+
+    subgraph CLOUD_VERCEL ["Infraestructura de Hosting y Cómputo Edge (Vercel Cloud)"]
+        subgraph VERCEL_EDGE ["Vercel Edge Network (Red Distribuida Global)"]
+            EDGE_ROUTER["Edge DNS & Anycast Routing"]
+            SSL_TERM["Terminación SSL/TLS & Escudo anti-DDoS"]
+            STATIC_STORAGE["Almacenamiento de Assets Estáticos (HTML, JS, CSS, Media)"]
+        end
+
+        subgraph VERCEL_COMPUTE ["Capa de Cómputo Serverless (Micro-VMs)"]
+            SSR_NODE["Astro SSR Serverless Execution Node (Node.js 20.x)"]
+            COPILOT_NODE["Copilot API Serverless Function Node (/api/copilot)"]
+        end
+    end
+
+    subgraph EXT_PROVIDERS ["Servicios de Terceros e Inteligencia Artificial"]
+        GOOGLE_OAUTH["Google Identity Provider (OAuth 2.0 / OpenID Connect)"]
+        AI_LLM_CLOUD["Plataforma de Inferencia LLM (Google Gemini / OpenAI API)"]
+    end
+
+    subgraph CLOUD_SUPABASE ["Infraestructura Gestionada BaaS (Supabase Cloud en AWS)"]
+        subgraph SUPABASE_INGRESS ["Capa de Acceso Perimetral y Seguridad"]
+            KONG_PROXY["Kong API Gateway (Proxy Inverso, Rate Limiter, CORS)"]
+        end
+
+        subgraph SUPABASE_CONTAINERS ["Capa de Microservicios en Contenedores"]
+            GOTRUE_CONT["GoTrue Container (Servicio de Autenticación & JWT)"]
+            POSTGREST_CONT["PostgREST Container (Generación dinámica de API REST)"]
+            REALTIME_CONT["Realtime Server Container (Elixir Phoenix WebSockets)"]
+            STORAGE_CONT["Storage Daemon Container (API de Gestión de Archivos)"]
+            DENO_WORKER["Deno Edge Worker (Ejecución de Edge Function delete-user)"]
+        end
+
+        subgraph SUPABASE_DATA ["Capa de Persistencia Gestionada"]
+            POOLER_PG["Supavisor / PgBouncer (Agrupador de Conexiones a BD)"]
+            POSTGRES_CORE[("Instancia PostgreSQL 15 (Compute Dedicado + NVMe SSD)")]
+            S3_BUCKET[("Amazon S3 Object Storage (Bucket 'avatars')")]
+            WAL_BACKUP[("Almacenamiento de Respaldos WAL & Snapshots Diarios")]
+        end
+    end
+
+    %% Flujos de Infraestructura
+    DEV_MOB -->|"Petición Web (HTTPS 443)"| EDGE_ROUTER
+    DEV_DESK -->|"Petición Web (HTTPS 443)"| EDGE_ROUTER
+    EDGE_ROUTER --> SSL_TERM
+
+    SSL_TERM -->|"Caché Hit"| STATIC_STORAGE
+    SSL_TERM -->|"Caché Miss / Rutas SSR"| SSR_NODE
+    SSL_TERM -->|"Ruta /api/copilot"| COPILOT_NODE
+
+    COPILOT_NODE -->|"HTTPS / TLS 1.3"| AI_LLM_CLOUD
+
+    DEV_MOB -->|"Autenticación OAuth"| GOOGLE_OAUTH
+    DEV_DESK -->|"Autenticación OAuth"| GOOGLE_OAUTH
+    GOOGLE_OAUTH -.->|"Redirección con Token"| GOTRUE_CONT
+
+    DEV_MOB -->|"API Calls (HTTPS / WSS)"| KONG_PROXY
+    DEV_DESK -->|"API Calls (HTTPS / WSS)"| KONG_PROXY
+
+    KONG_PROXY --> GOTRUE_CONT
+    KONG_PROXY --> POSTGREST_CONT
+    KONG_PROXY --> REALTIME_CONT
+    KONG_PROXY --> STORAGE_CONT
+    KONG_PROXY --> DENO_WORKER
+
+    POSTGREST_CONT --> POOLER_PG
+    GOTRUE_CONT --> POOLER_PG
+    DENO_WORKER --> POOLER_PG
+    POOLER_PG --> POSTGRES_CORE
+
+    REALTIME_CONT -->|"Lectura de WAL"| POSTGRES_CORE
+    POSTGRES_CORE -.->|"Replicación y Backup"| WAL_BACKUP
+
+    STORAGE_CONT --> S3_BUCKET
+    STORAGE_CONT --> POOLER_PG

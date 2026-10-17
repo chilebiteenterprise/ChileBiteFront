@@ -1,0 +1,63 @@
+flowchart TB
+    %% Nodos Principales de Red
+    Internet(("☁️ INTERNET / RED WAN<br/>(Proveedores ISP)"))
+    Firewall["🧱 FIREWALL / WAF<br/>(Vercel & Cloudflare DDoS Shield)"]
+    Router["🔀 ROUTER DE BORDE / EDGE POP<br/>(Enrutador Anycast Santiago/Sao Paulo)"]
+    Switch["🎛️ SWITCH / API GATEWAY<br/>(Kong Gateway & Balanceador Virtual)"]
+
+    %% Enlaces de Perímetro
+    Internet -->|"Enlace Troncal Fibra Optica (WAN)"| Firewall
+    Firewall -->|"Cable UTP Cat 6A / Enlace 10 Gbps"| Router
+    Router -->|"Canal Virtual mTLS / Fibra 10GbE"| Switch
+
+    %% AREA SERVIDORES (Zona Azul)
+    subgraph AREA_SERVIDORES["🟦 AREA DE SERVIDORES (Cloud VPC / Backend BaaS)"]
+        direction TB
+        ServerWeb["🖥️ SERVIDOR WEB / SSR<br/>(Astro 5 & Route /api/copilot)"]
+        ServerAPI["⚙️ SERVIDOR API REST<br/>(PostgREST 12 & GoTrue Auth)"]
+        ServerBD[("🗄️ SERVIDOR BASE DE DATOS<br/>(PostgreSQL 15 & PgBouncer)")]
+        ServerStorage["📦 SERVIDOR STORAGE<br/>(S3 Bucket 'avatars')"]
+
+        ServerWeb ---|"Red Privada Virtual (VPC LAN)"| ServerAPI
+        ServerAPI ---|"Pool TCP 5432 / Socket Interno"| ServerBD
+        ServerAPI ---|"Enlace Interno AWS S3"| ServerStorage
+    end
+
+    %% AREA CLIENTES ESCRITORIO (Zona Amarilla)
+    subgraph AREA_ESCRITORIO["🟨 AREA DE CLIENTES ESCRITORIO (Hogar / Oficina)"]
+        direction TB
+        PCEscritorio["🖥️ PC / NOTEBOOK USUARIO<br/>(Navegador Desktop Chrome/Edge)"]
+        ImpresoraRecetas["🖨️ IMPRESORA / SALIDA PDF<br/>(Fichas de Recetas Guardadas)"]
+
+        PCEscritorio ---|"Cable USB / Impresion Local"| ImpresoraRecetas
+    end
+
+    %% AREA DISPOSITIVOS MOVILES (Zona Roja/Coral)
+    subgraph AREA_MOVIL["🟥 AREA DE DISPOSITIVOS MOVILES (En Cocina / Comensal)"]
+        direction TB
+        SmartMobile["📱 SMARTPHONE / TABLET COCINA<br/>(PWA / Navegador Movil iOS/Android)"]
+        BalanzaCocina["⚖️ SMART SCALE / ACCESORIO<br/>(Control de Gramos e Insumos)"]
+
+        SmartMobile -.-|"Bluetooth / Enlace Local"| BalanzaCocina
+    end
+
+    %% AREA SERVICIOS EXTERNOS IA (Zona Purpura)
+    subgraph AREA_IA["🟪 AREA DE SERVICIOS EXTERNOS (Motor de Inteligencia Artificial)"]
+        direction TB
+        ServerIA["🧠 SERVIDOR INFERENCIA LLM<br/>(Google Gemini API / Vertex AI)"]
+    end
+
+    %% Conexiones desde el Router y Switch a las Areas
+    Router -->|"Enlace Ethernet UTP / Virtual LAN"| AREA_SERVIDORES
+    Switch -->|"Cable UTP / Red LAN Domiciliaria"| AREA_ESCRITORIO
+    Router -->|"Enlace Inalambrico Wi-Fi 6 / 4G-5G LTE"| AREA_MOVIL
+    ServerWeb -->|"Enlace WAN Seguro / HTTPS REST"| AREA_IA
+
+    %% Estilos de color para coincidir con la imagen de referencia
+    style AREA_SERVIDORES fill:#d0e7ff,stroke:#0066cc,stroke-width:2px,color:#003366
+    style AREA_ESCRITORIO fill:#fff1cc,stroke:#d69e2e,stroke-width:2px,color:#744210
+    style AREA_MOVIL fill:#ffd6d6,stroke:#e53e3e,stroke-width:2px,color:#742a2a
+    style AREA_IA fill:#f3e8ff,stroke:#9333ea,stroke-width:2px,color:#581c87
+    style Firewall fill:#ffeedd,stroke:#dd6b20,stroke-width:2px
+    style Router fill:#e2e8f0,stroke:#4a5568,stroke-width:2px
+    style Switch fill:#e2e8f0,stroke:#4a5568,stroke-width:2px

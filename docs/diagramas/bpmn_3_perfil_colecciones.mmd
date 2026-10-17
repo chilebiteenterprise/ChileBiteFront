@@ -1,0 +1,47 @@
+flowchart TD
+    subgraph Pool_Perfil_Colecciones ["Pool: Identidad, Perfil y Curaduría de Colecciones (ChileBiteFront)"]
+        
+        subgraph Lane_Usuario ["Lane: Usuario Registrado"]
+            P1((Inicio: Usuario autenticado)) --> P2["Acceder a /profile o ver una receta"]
+            P2 --> P3{"¿Qué acción desea realizar?"}
+            
+            P3 -- "Personalizar Perfil" --> P4["Editar Bio, Nombres y cargar nuevo Avatar"]
+            P4 --> P5["Guardar cambios de perfil"]
+            P5 --> P6((Perfil actualizado))
+            
+            P3 -- "Organizar Colección" --> P7["Presionar 'Guardar en Colección' en una receta"]
+            P7 --> P8["Abrir CollectionPickerModal"]
+            P8 --> P9{"¿Crear nueva colección o seleccionar existente?"}
+            P9 -- "Nueva" --> P10["Ingresar nombre y descripción"]
+            P10 --> P11["Confirmar creación y asociación de receta"]
+            P9 -- "Existente" --> P12["Marcar / desmarcar colección deseada"]
+            P11 --> P13["Ver mosaico de 4 portadas actualizado en /profile"]
+            P12 --> P13
+            P13 --> P14((Fin: Receta guardada en colección))
+        end
+
+        subgraph Lane_ServiciosFront ["Lane: Servicios Frontend (profileService.js & collectionService.js)"]
+            P5 -.-> S1["updateProfile: Actualizar fila en tabla profiles"]
+            P4 -.-> S2["uploadAvatar: Subir binario a Supabase Storage"]
+            P8 -.-> S3["getCollectionsWithRecipeStatus: Consultar listas del usuario"]
+            S3 -.-> P8
+            P11 -.-> S4["createCollection y toggleRecipeInCollection"]
+            P12 -.-> S5["toggleRecipeInCollection: Insertar o borrar relación"]
+            S4 --> S6["getUserCollections: Recalcular portadas de mosaico"]
+            S5 --> S6
+            S6 -.-> P13
+        end
+
+        subgraph Lane_SupabaseBaaS ["Lane: Supabase Cloud (Auth, DB & Storage)"]
+            S2 --> B1["Bucket 'avatars': Almacenar imagen y generar Public URL"]
+            B1 --> S1
+            S1 --> B2["Actualizar public.profiles y user_metadata"]
+            B2 -.-> P6
+            S4 --> B3["Insertar en core_coleccion y core_coleccion_receta"]
+            S5 --> B4["Mutación atómica en core_coleccion_receta"]
+            B3 --> B5["Consultar últimas 4 imágenes de core_receta"]
+            B4 --> B5
+            B5 -.-> S6
+        end
+
+    end

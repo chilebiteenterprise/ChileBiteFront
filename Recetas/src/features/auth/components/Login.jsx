@@ -152,14 +152,14 @@ function LoginContent() {
       <form onSubmit={handleSubmit} className="space-y-6">
         {mfaChallenge ? (
           <div className="animate-in fade-in slide-in-from-top-4 duration-500 space-y-4">
-            <div className="flex items-center gap-3 p-4 rounded-2xl bg-default border border-border">
+            <div className="flex items-center gap-3 p-4 rounded-2xl bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700">
               <ShieldCheck className="w-5 h-5 shrink-0 text-[#b08968]" />
-              <p className="text-sm text-default-600">
-                Cuenta protegida: {mfaChallenge.email}
+              <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                Cuenta protegida: <span className="font-bold text-zinc-900 dark:text-zinc-100">{mfaChallenge.email}</span>
               </p>
             </div>
             <div>
-              <label className="text-xs font-bold text-default-600 uppercase tracking-widest ml-1">Código 2FA</label>
+              <label className="text-xs font-bold text-zinc-600 dark:text-zinc-300 uppercase tracking-widest ml-1">Código 2FA</label>
               <input
                 type="text"
                 inputMode="numeric"
@@ -170,7 +170,7 @@ function LoginContent() {
                   setErrors({ ...errors, mfa: "", global: "" });
                 }}
                 placeholder="000000"
-                className="w-full px-5 py-4 mt-1 rounded-2xl text-center text-xl font-mono tracking-[0.4em] bg-field hover:bg-field-hover border-2 border-transparent focus:border-[#b08968] focus:bg-default text-foreground outline-none transition-all placeholder-default-500"
+                className="w-full px-5 py-4 mt-1 rounded-2xl text-center text-xl font-mono tracking-[0.4em] bg-zinc-50 dark:bg-zinc-800 border-2 border-zinc-200 dark:border-zinc-700 focus:border-[#b08968] text-zinc-900 dark:text-zinc-100 outline-none transition-all placeholder-zinc-400"
               />
               {errors.mfa && <p className="text-danger-500 text-xs mt-1 ml-1 font-bold">{errors.mfa}</p>}
             </div>
