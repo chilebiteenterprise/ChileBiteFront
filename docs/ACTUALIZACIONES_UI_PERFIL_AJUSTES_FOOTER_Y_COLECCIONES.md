@@ -115,8 +115,30 @@ Durante esta iteración se realizaron importantes mejoras visuales, de experienc
 
 ---
 
+### 2.8. Corrección de Error 504 (Outdated Optimize Dep) e Hidratación en Editor de Recetas (`fix`)
+- **Archivos Modificados**:
+  - [`astro.config.mjs`](file:///c:/Users/chrys/Documents/Github/ChileBite/ChileBiteFront/recetas/astro.config.mjs)
+  - [`src/features/recipes/components/RecipeEditor.jsx`](file:///c:/Users/chrys/Documents/Github/ChileBite/ChileBiteFront/recetas/src/features/recipes/components/RecipeEditor.jsx)
+  - [`src/features/comments/components/CommentSection.jsx`](file:///c:/Users/chrys/Documents/Github/ChileBite/ChileBiteFront/recetas/src/features/comments/components/CommentSection.jsx)
+  - [`src/pages/admin/recipe-editor.astro`](file:///c:/Users/chrys/Documents/Github/ChileBite/ChileBiteFront/recetas/src/pages/admin/recipe-editor.astro)
+- **Problema Detectado**:
+  - Al ingresar a `/admin/recipe-editor?id=...`, la consola del navegador arrojaba:
+    ```
+    dompurify.js:1 Failed to load resource: the server responded with a status of 504 (Outdated Optimize Dep)
+    [astro-island] Error hydrating /src/features/recipes/components/RecipeEditor.jsx TypeError: Failed to fetch dynamically imported module
+    ```
+  - Debido a la falla en la importación estática de `dompurify` por optimización desfasada en Vite, el módulo completo `RecipeEditor.jsx` fallaba al hidratarse y la pantalla quedaba completamente en blanco.
+- **Solución Aplicada**:
+  - **Inclusión en `optimizeDeps`**: Se configuró `vite.optimizeDeps.include: ['dompurify', '@heroui/react', '@heroui/toast', 'lucide-react', '@supabase/supabase-js']` en `astro.config.mjs` para que Vite pre-compile estas dependencias desde el arranque y nunca las descubra tarde con hashes obsoletos.
+  - **Carga Diferida Tolerante a Fallos**: Se retiró el `import DOMPurify from 'dompurify'` estático de nivel superior en `RecipeEditor.jsx` y `CommentSection.jsx`. La sanitización ahora se carga dinámicamente (`await import('dompurify')`) solo al momento de guardar/enviar, con fallback seguro a texto plano si la dependencia no estuviese disponible.
+  - **Fallback Slot en Astro Island**: En `recipe-editor.astro`, se agregó un slot de carga animado (`slot="fallback"`) y `<Footer client:visible />`, garantizando retroalimentación visual inmediata durante la carga de la isla React.
+
+---
+
 ## 3. Verificación y Calidad
 
 - **Build de Producción**: Verificado exitosamente con `npm run build` (código de salida 0).
 - **Generación Estática (SSG)**: Todas las rutas generadas sin errores.
 - **Modo Oscuro / Claro**: Consistencia total de colores en temas claro y oscuro.
+- **Resiliencia de Carga**: Componentes administrativos cargan y funcionan sin bloqueos por dependencias de Vite.
+

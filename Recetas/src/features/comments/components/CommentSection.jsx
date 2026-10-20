@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { MessageSquare, Send, MessageCircle, Trash2, Edit3, Check, X, ShieldCheck, CornerUpLeft, Filter, Clock, Users, ThumbsUp, EyeOff, Eye, Ban } from 'lucide-react';
 import { useAuth, AuthProvider } from '@/features/auth/context/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
-import DOMPurify from 'dompurify';
 import { useRateLimit } from '@/hooks/useRateLimit';
 import { toast } from "@heroui/react";
 
@@ -516,10 +515,21 @@ function CommentSectionContent({ recipeId }) {
 
             const rawText = finalParent !== replyingTo && replyingTo ? `@${comments.find(c=>c.id===replyingTo)?.usuario_nombre} ${newComment.trim()}` : newComment.trim();
 
+            let sanitize = (val) => (typeof val === 'string' ? val.trim() : (val || ''));
+            try {
+                const dompurifyModule = await import('dompurify');
+                const dp = dompurifyModule.default || dompurifyModule;
+                if (dp && typeof dp.sanitize === 'function') {
+                    sanitize = (val) => dp.sanitize(typeof val === 'string' ? val : (val || ''));
+                }
+            } catch (err) {
+                console.warn('DOMPurify dynamic fallback:', err);
+            }
+
             const payload = {
                 receta_id: recipeId,
                 user_id: currentUser.id,
-                texto: DOMPurify.sanitize(rawText),
+                texto: sanitize(rawText),
                 comentario_padre_id: finalParent || null,
                 estado: 'visible',
                 fecha_creacion: new Date().toISOString(),
@@ -550,9 +560,20 @@ function CommentSectionContent({ recipeId }) {
     const handleEditComment = async (commentId, newContent, estadoStr = 'visible') => {
         if (!currentUser?.id) return;
         try {
+            let sanitize = (val) => (typeof val === 'string' ? val.trim() : (val || ''));
+            try {
+                const dompurifyModule = await import('dompurify');
+                const dp = dompurifyModule.default || dompurifyModule;
+                if (dp && typeof dp.sanitize === 'function') {
+                    sanitize = (val) => dp.sanitize(typeof val === 'string' ? val : (val || ''));
+                }
+            } catch (err) {
+                console.warn('DOMPurify dynamic fallback:', err);
+            }
+
             const { error } = await supabase
                 .from('core_comentarioreceta')
-                .update({ texto: DOMPurify.sanitize(newContent), estado: estadoStr })
+                .update({ texto: sanitize(newContent), estado: estadoStr })
                 .eq('id', commentId);
 
             if (error) throw new Error(error.message);

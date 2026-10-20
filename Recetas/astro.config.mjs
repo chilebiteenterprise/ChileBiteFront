@@ -38,6 +38,9 @@ export default defineConfig({
 
   vite: {
     plugins: [tailwindcss()],
+    optimizeDeps: {
+      include: ['dompurify', '@heroui/react', '@heroui/toast', 'lucide-react', '@supabase/supabase-js'],
+    },
   },
 
   integrations: [

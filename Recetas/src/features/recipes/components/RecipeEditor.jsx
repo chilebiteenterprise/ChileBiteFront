@@ -4,7 +4,6 @@ import RecipeCard from './RecipeCard';
 import RecetaDetalle from './RecipeDetail'; 
 import IngredientSelector from './IngredientSelector';
 import { toast } from "@heroui/react";
-import DOMPurify from 'dompurify';
 import { 
   Youtube, 
   Smartphone, 
@@ -338,7 +337,19 @@ const RecetaFormContent = () => {
         return;
       }
 
-      const preparacionFinal = DOMPurify.sanitize(pasos.filter(p => p.trim() !== '').join('\n\n'));
+      // Sanitización segura tolerante a fallos
+      let sanitize = (val) => (typeof val === 'string' ? val.trim() : (val || ''));
+      try {
+        const dompurifyModule = await import('dompurify');
+        const dp = dompurifyModule.default || dompurifyModule;
+        if (dp && typeof dp.sanitize === 'function') {
+          sanitize = (val) => dp.sanitize(typeof val === 'string' ? val : (val || ''));
+        }
+      } catch (err) {
+        console.warn('DOMPurify dynamic fallback:', err);
+      }
+
+      const preparacionFinal = sanitize(pasos.filter(p => p.trim() !== '').join('\n\n'));
 
       const totalCal = parseFloat(macrosLive.cal) || 0;
       const totalProt = parseFloat(macrosLive.prot) || 0;
@@ -346,11 +357,11 @@ const RecetaFormContent = () => {
       const totalGras = parseFloat(macrosLive.gras) || 0;
 
       const recetaPayload = {
-        nombre: DOMPurify.sanitize(recetaData.nombre || ''),
-        descripcion_corta: DOMPurify.sanitize(recetaData.descripcion_corta || ''),
-        descripcion_larga: DOMPurify.sanitize(recetaData.descripcion_larga || ''),
+        nombre: sanitize(recetaData.nombre || ''),
+        descripcion_corta: sanitize(recetaData.descripcion_corta || ''),
+        descripcion_larga: sanitize(recetaData.descripcion_larga || ''),
         preparacion: preparacionFinal,
-        sugerencias: DOMPurify.sanitize(recetaData.sugerencias || ''),
+        sugerencias: sanitize(recetaData.sugerencias || ''),
         dificultad: recetaData.dificultad,
         pais_id: recetaData.pais || null,
         tipo_plato_id: recetaData.tipo_plato || null,

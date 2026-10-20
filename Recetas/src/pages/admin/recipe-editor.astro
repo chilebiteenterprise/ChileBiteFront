@@ -17,10 +17,14 @@ import BaseHead from '@/shared/layout/BaseHead.astro';
     <!-- Wrapper normal debajo del navbar -->
     <main class="mt-20 flex-1 min-h-[calc(100vh-80px)]">
         <div class="py-12">
-            <RecipeEditorComponent client:only="react" />
-            
+            <RecipeEditorComponent client:only="react">
+                <div slot="fallback" class="w-full flex flex-col items-center justify-center p-20 animate-pulse text-text-muted">
+                    <div class="w-12 h-12 border-4 border-border-subtle border-t-brand-primary dark:border-t-[#f0a262] rounded-full animate-spin mb-4"></div>
+                    <p class="font-bold text-sm tracking-widest uppercase text-text-muted">Cargando editor de recetas...</p>
+                </div>
+            </RecipeEditorComponent>
         </div>
     </main>
-    <Footer/>
+    <Footer client:visible />
   </body>
 </html>
