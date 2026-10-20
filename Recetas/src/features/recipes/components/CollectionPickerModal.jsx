@@ -27,7 +27,7 @@ export default function CollectionPickerModal({ isOpen, onOpenChange, recetaId, 
       setCollections(data);
     } catch (err) {
       console.error(err);
-      toast.error("Error al cargar colecciones");
+      toast.danger("Error al cargar colecciones");
     } finally {
       setLoading(false);
     }
@@ -57,7 +57,7 @@ export default function CollectionPickerModal({ isOpen, onOpenChange, recetaId, 
       setCollections(prev => prev.map(c => 
         c.id === coleccionId ? { ...c, hasRecipe: isCurrentlySaved } : c
       ));
-      toast.error("Error al actualizar la colección");
+      toast.danger("Error al actualizar la colección");
     }
   };
 
@@ -78,7 +78,7 @@ export default function CollectionPickerModal({ isOpen, onOpenChange, recetaId, 
         onSaveComplete(true);
       }
     } catch (err) {
-      toast.error("Error al crear la colección");
+      toast.danger("Error al crear la colección");
     } finally {
       setSavingCollection(false);
     }

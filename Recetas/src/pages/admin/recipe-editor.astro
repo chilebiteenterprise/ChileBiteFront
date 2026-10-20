@@ -12,10 +12,10 @@ import BaseHead from '@/shared/layout/BaseHead.astro';
     <BaseHead title="Creación de Recetas - ChileBite" description="Panel de creación y edición de recetas para ChileBite." />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1,-50..200&display=swap" rel="stylesheet" />
   </head>
-<Navbar client:only="react" />
-  <body class="font-['Inter'] transition-colors duration-300 antialiased min-h-screen">
+  <body class="font-['Inter'] transition-colors duration-300 antialiased min-h-screen flex flex-col">
+    <Navbar client:only="react" />
     <!-- Wrapper normal debajo del navbar -->
-    <main class="mt-20 flex-1">
+    <main class="mt-20 flex-1 min-h-[calc(100vh-80px)]">
         <div class="py-12">
             <RecipeEditorComponent client:only="react" />
             

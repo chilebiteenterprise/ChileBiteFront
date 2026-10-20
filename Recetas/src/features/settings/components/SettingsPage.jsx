@@ -55,7 +55,7 @@ function SettingsLayout() {
   if (authLoading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader className="w-8 h-8 animate-spin" style={{ color: BRAND }} />
+        <Loader className="w-8 h-8 animate-spin text-brand-primary dark:text-[#f0a262]" />
       </div>
     );
   }
@@ -63,9 +63,12 @@ function SettingsLayout() {
   if (!user) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-        <UserCircle2 className="w-14 h-14 text-default-300" />
-        <h2 className="text-xl font-bold text-foreground">Sesión Requerida</h2>
-        <a href="/auth/register" className="px-6 py-2.5 rounded-xl text-sm font-bold text-white" style={{ backgroundColor: BRAND }}>
+        <UserCircle2 className="w-14 h-14 text-text-muted/40 dark:text-zinc-600" />
+        <h2 className="text-xl font-bold text-text-main dark:text-zinc-100">Sesión Requerida</h2>
+        <a
+          href="/auth/register"
+          className="px-6 py-2.5 rounded-xl text-sm font-bold text-white bg-brand-primary hover:bg-[#633612] dark:bg-[#f0a262] dark:hover:bg-[#ffb87a] dark:text-[#171310] transition-colors shadow-sm"
+        >
           Ir al Login
         </a>
       </div>
@@ -155,11 +158,11 @@ function SettingsLayout() {
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-20">
       {/* Page header */}
       <div className="mb-8">
-        <a href="/profile" className="text-xs font-bold text-default-400 hover:text-default-600 transition-colors flex items-center gap-1 mb-3">
-          ← Volver al Perfil
+        <a href="/profile" className="text-xs font-bold text-text-muted hover:text-brand-primary dark:text-zinc-400 dark:hover:text-[#f0a262] transition-colors inline-flex items-center gap-1.5 mb-3 group">
+          <span className="transition-transform group-hover:-translate-x-0.5">←</span> Volver al Perfil
         </a>
-        <h1 className="text-2xl font-black text-foreground">Ajustes de Cuenta</h1>
-        <p className="text-sm text-default-500 mt-1">Gestiona tu cuenta, seguridad y conexiones.</p>
+        <h1 className="text-2xl sm:text-3xl font-black text-text-main dark:text-zinc-100 tracking-tight">Ajustes de Cuenta</h1>
+        <p className="text-sm text-text-muted dark:text-zinc-400 mt-1">Gestiona tu cuenta, seguridad y preferencias.</p>
         
         {/* Barra de Estado de Configuración */}
         {profile && (
@@ -167,40 +170,42 @@ function SettingsLayout() {
             <button
               type="button"
               onClick={() => setShowCompletenessBreakdown((value) => !value)}
-              className="w-full text-left rounded-[1.5rem] border border-border/70 bg-white/5 dark:bg-white/[0.03] px-4 py-4 shadow-sm backdrop-blur-md transition-all duration-200 hover:border-[#b08968]/40 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-[#b08968]/20"
+              className="w-full text-left rounded-3xl border border-border-subtle dark:border-zinc-800 bg-white dark:bg-[#202026] px-5 py-4 shadow-sm backdrop-blur-md transition-all duration-200 hover:border-brand-primary/40 dark:hover:border-[#f0a262]/40 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 dark:focus:ring-[#f0a262]/20"
             >
               <div className="flex items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <span className="block text-[11px] font-black uppercase tracking-[0.22em] text-default-500">Completitud</span>
-                  <span className="block mt-1 text-base font-extrabold text-foreground leading-tight">Configuración de cuenta</span>
+                  <span className="block text-[11px] font-black uppercase tracking-[0.22em] text-text-muted/80 dark:text-zinc-400">Completitud</span>
+                  <span className="block mt-0.5 text-base font-extrabold text-text-main dark:text-zinc-100 leading-tight">Configuración de cuenta</span>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-sm font-black" style={{ color: BRAND }}>{completeness}%</span>
-                  <ChevronDown className={`w-4 h-4 text-default-400 transition-transform duration-200 ${showCompletenessBreakdown ? 'rotate-180' : ''}`} />
+                  <span className="text-sm font-black text-brand-primary dark:text-[#f0a262]">{completeness}%</span>
+                  <ChevronDown className={`w-4 h-4 text-text-muted dark:text-zinc-400 transition-transform duration-200 ${showCompletenessBreakdown ? 'rotate-180' : ''}`} />
                 </div>
               </div>
-              <div className="mt-3 w-full bg-default-200/70 rounded-full h-2.5 overflow-hidden">
+              <div className="mt-3 w-full bg-surface-muted dark:bg-[#18181d] rounded-full h-2.5 overflow-hidden">
                 <div
-                  className="h-2.5 rounded-full transition-all duration-1000 ease-out shadow-[0_0_18px_rgba(176,137,104,0.35)]"
-                  style={{ width: `${completeness}%`, backgroundColor: BRAND }}
+                  className="h-2.5 rounded-full transition-all duration-1000 ease-out bg-brand-primary dark:bg-[#f0a262] shadow-[0_0_12px_rgba(122,70,27,0.3)] dark:shadow-[0_0_12px_rgba(240,162,98,0.3)]"
+                  style={{ width: `${completeness}%` }}
                 ></div>
               </div>
             </button>
 
             {showCompletenessBreakdown && (
-              <div className="absolute left-0 top-full mt-3 w-full max-h-[55vh] overflow-y-auto rounded-[1.5rem] border border-border/70 bg-white/95 dark:bg-[#0c0f16]/95 backdrop-blur-xl shadow-2xl shadow-black/20 p-4 space-y-3">
+              <div className="absolute left-0 top-full mt-3 w-full max-h-[55vh] overflow-y-auto rounded-3xl border border-border-subtle dark:border-zinc-800 bg-white dark:bg-[#202026] backdrop-blur-xl shadow-2xl p-5 space-y-3.5 z-30 animate-in fade-in zoom-in-95 duration-200">
                 {completenessChecks.map((item) => (
                   <div key={item.label} className="flex items-start gap-3">
                     <div
                       className={`mt-0.5 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black shrink-0 ${
-                        item.done ? "bg-success text-white" : "bg-default-200 text-default-500"
+                        item.done
+                          ? "bg-emerald-500 text-white"
+                          : "bg-surface-muted dark:bg-zinc-800 text-text-muted dark:text-zinc-400"
                       }`}
                     >
                       {item.done ? "✓" : "•"}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-foreground">{item.label}</p>
-                      <p className="text-xs text-default-500 leading-relaxed">{item.detail}</p>
+                      <p className="text-sm font-bold text-text-main dark:text-zinc-100">{item.label}</p>
+                      <p className="text-xs text-text-muted dark:text-zinc-400 leading-relaxed">{item.detail}</p>
                     </div>
                   </div>
                 ))}
@@ -212,7 +217,7 @@ function SettingsLayout() {
 
       <div className="flex flex-col md:flex-row gap-8 items-start">
         {/* Sidebar / Tabs */}
-        <div className="w-full md:w-64 shrink-0 flex md:flex-col gap-1 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
+        <div className="w-full md:w-64 shrink-0 flex md:flex-col gap-1.5 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
           {TABS.map(tab => (
             <button
               key={tab.id}
@@ -220,20 +225,24 @@ function SettingsLayout() {
               className={`group relative flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-semibold whitespace-nowrap transition-all duration-200 flex-1 md:flex-none justify-center md:justify-start border ${
                 activeTab === tab.id
                   ? (tab.danger
-                    ? 'bg-danger-soft/70 text-danger border-danger/20 shadow-sm shadow-danger/5'
-                    : 'bg-white/80 dark:bg-white/5 text-foreground border-border/70 shadow-sm shadow-black/5')
-                  : 'text-default-500 border-transparent hover:bg-white/70 dark:hover:bg-white/5 hover:text-foreground hover:border-border/60 hover:shadow-sm hover:shadow-black/5 hover:-translate-y-0.5'
+                    ? 'bg-red-500/10 dark:bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/20 shadow-sm font-bold'
+                    : 'bg-white dark:bg-[#202026] text-text-main dark:text-zinc-100 border-border-subtle dark:border-zinc-800 shadow-sm font-bold')
+                  : 'text-text-muted dark:text-zinc-400 border-transparent hover:bg-white dark:hover:bg-[#202026] hover:text-text-main dark:hover:text-zinc-100 hover:border-border-subtle dark:hover:border-zinc-800/80 hover:shadow-sm hover:-translate-y-0.5'
               }`}
             >
               <span
                 className={`absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1.5 rounded-r-full transition-all duration-200 ${
                   activeTab === tab.id
-                    ? (tab.danger ? 'bg-danger' : 'bg-[#b08968]')
-                    : 'bg-transparent group-hover:bg-[#b08968]/50'
+                    ? (tab.danger ? 'bg-red-500' : 'bg-brand-primary dark:bg-[#f0a262]')
+                    : 'bg-transparent group-hover:bg-brand-primary/40 dark:group-hover:bg-[#f0a262]/40'
                 }`}
               />
-              <tab.icon className={`w-4 h-4 ${tab.danger ? (activeTab === tab.id ? 'text-danger' : 'text-danger/70') : ''}`} />
-              <span className={tab.danger ? (activeTab === tab.id ? 'text-danger' : 'text-danger/80') : ''}>
+              <tab.icon className={`w-4 h-4 transition-colors ${
+                activeTab === tab.id
+                  ? (tab.danger ? 'text-red-600 dark:text-red-400' : 'text-brand-primary dark:text-[#f0a262]')
+                  : (tab.danger ? 'text-red-500/70' : 'text-text-muted/70 dark:text-zinc-500 group-hover:text-text-main dark:group-hover:text-zinc-300')
+              }`} />
+              <span className={tab.danger ? (activeTab === tab.id ? 'text-red-600 dark:text-red-400' : 'text-red-500/80') : ''}>
                 {tab.label}
               </span>
             </button>

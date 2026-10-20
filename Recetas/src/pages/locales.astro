@@ -13,10 +13,10 @@ import { LocalesSection } from "@/features/locales/components/LocalesSection";
     <meta name="description" content="Explora los mejores restaurantes, picadas y viñedos de Chile. Tu guía definitiva de la gastronomía nacional." />
   </head>
 
-  <body class="transition-colors duration-300 min-h-screen">
+  <body class="transition-colors duration-300 min-h-screen flex flex-col">
     <Navbar client:only="react" />
 
-    <main>
+    <main class="flex-grow min-h-[calc(100vh-80px)]">
       <LocalesSection client:load />
     </main>
 

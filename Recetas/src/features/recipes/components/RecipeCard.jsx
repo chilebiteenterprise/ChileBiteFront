@@ -6,6 +6,7 @@ import { useAuth } from '@/features/auth/context/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 import CollectionPickerModal from "./CollectionPickerModal.jsx";
 import { trackRecipeView } from "../services/recommendationEngine";
+import { notifyAuthRequired } from "@/shared/utils/authToast.jsx";
 
 export default function RecipeCard({ receta, index = 0, usuarioEsAdmin = false, isSelected = false, onToggleSelect }) {
   const { session } = useAuth();
@@ -80,7 +81,10 @@ export default function RecipeCard({ receta, index = 0, usuarioEsAdmin = false, 
   const handleFavorite = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!session?.user?.id) return toast.error("Debes estar logueado para marcar como favorito");
+    if (!session?.user?.id) {
+      notifyAuthRequired("like");
+      return;
+    }
 
     try {
       if (liked) {
@@ -107,7 +111,10 @@ export default function RecipeCard({ receta, index = 0, usuarioEsAdmin = false, 
   const handleSave = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!session?.user?.id) return toast.error("Debes estar logueado para guardar");
+    if (!session?.user?.id) {
+      notifyAuthRequired("save");
+      return;
+    }
     setIsCollectionModalOpen(true);
   };
 
@@ -151,7 +158,7 @@ export default function RecipeCard({ receta, index = 0, usuarioEsAdmin = false, 
 
   return (
     <div 
-      className={`group relative bg-surface-card border rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 ease-out cursor-pointer flex flex-col h-full ${isSelected ? "border-brand-primary ring-2 ring-brand-primary/50" : "border-border-subtle"}`}
+      className={`group relative bg-surface-card border rounded-2xl overflow-hidden shadow-md hover:shadow-2xl hover:-translate-y-1 dark:shadow-[0_4px_20px_rgba(0,0,0,0.35)] dark:hover:shadow-[0_12px_32px_rgba(0,0,0,0.6)] transition-all duration-300 ease-out cursor-pointer flex flex-col h-full ${isSelected ? "border-brand-primary ring-2 ring-brand-primary/50" : "border-border-subtle"}`}
       onClick={handleCardClick}
     >
       {/* Admin Multi-Select Checkbox Overlay */}
@@ -218,7 +225,7 @@ export default function RecipeCard({ receta, index = 0, usuarioEsAdmin = false, 
       </div>
 
       {/* Middle Content */}
-      <div className="p-5 flex flex-col gap-3">
+      <div className="p-5 flex flex-col gap-3 flex-1">
         <h3 className="text-xl font-bold text-text-main leading-tight tracking-tight line-clamp-2">
           {receta.nombre}
         </h3>

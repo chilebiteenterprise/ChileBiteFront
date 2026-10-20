@@ -38,12 +38,12 @@ export function AccountSection({ user }) {
             value={emailForm.email}
             onChange={e => setEmailForm({ email: e.target.value })}
             placeholder="nuevo@correo.com"
-            className="w-full px-4 py-3 rounded-xl text-sm border border-field-border bg-field text-field-foreground placeholder-field-placeholder focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/20 focus:bg-default transition-all"
+            className="w-full px-4 py-3 rounded-2xl text-sm border border-border-subtle dark:border-zinc-700/80 bg-white dark:bg-[#18181d] text-text-main dark:text-zinc-100 placeholder:text-text-muted/50 dark:placeholder:text-zinc-500 focus:outline-none focus:border-brand-primary dark:focus:border-[#f0a262] focus:ring-2 focus:ring-brand-primary/20 dark:focus:ring-[#f0a262]/20 transition-all"
           />
-          <p className="text-xs text-default-500 leading-relaxed">
+          <p className="text-xs text-text-muted dark:text-zinc-400 leading-relaxed">
             Te enviaremos un link de confirmación a tu nueva dirección. El cambio solo aplicará cuando confirmes el link.
           </p>
-          <SubmitBtn loading={isChangingEmail} icon={Mail} label="Solicitar cambio" color="#6366f1" />
+          <SubmitBtn loading={isChangingEmail} icon={Mail} label="Solicitar cambio" />
         </form>
       </Row>
     </Section>

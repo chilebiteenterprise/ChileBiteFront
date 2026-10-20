@@ -19,9 +19,9 @@ export default function CollectionDetail() {
     // Evitamos renderizar agresivamente RecipeGrid hasta que sepamos el ID (para no disparar requests sueltos)
     if (!collectionId) {
         return (
-            <div className="flex-1 flex flex-col items-center justify-center p-20 animate-pulse text-gray-500">
-                <div className="w-12 h-12 border-4 border-gray-200 border-t-[#b08968] rounded-full animate-spin mb-4" />
-                <p className="font-semibold text-lg tracking-widest uppercase">Cargando...</p>
+            <div className="flex-1 flex flex-col items-center justify-center p-20 animate-pulse text-text-muted">
+                <div className="w-12 h-12 border-4 border-border-subtle border-t-brand-primary dark:border-t-[#f0a262] rounded-full animate-spin mb-4" />
+                <p className="font-bold text-sm tracking-widest uppercase text-text-muted">Cargando recetas...</p>
             </div>
         );
     }

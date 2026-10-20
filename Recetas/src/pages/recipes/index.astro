@@ -14,12 +14,12 @@ import BaseHead from "@/shared/layout/BaseHead.astro";
   </head>
 
   <body
-    class="transition-colors duration-300 min-h-screen flex flex-col justify-between antialiased"
+    class="transition-colors duration-300 min-h-screen flex flex-col antialiased"
   >
     <Navbar client:only="react" />
 
     <!-- Wrapper normal debajo del navbar -->
-    <main class="pt-20 pb-5">
+    <main class="flex-grow pt-20 pb-5 min-h-[calc(100vh-80px)]">
       <RecipeGrid client:load />
     </main>
 

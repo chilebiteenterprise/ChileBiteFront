@@ -18,10 +18,10 @@ import BaseHead from "@/shared/layout/BaseHead.astro";
     <link rel="dns-prefetch" href="https://tnzpojvhsxjzfachozid.supabase.co" />
   </head>
 
-  <body class="transition-colors duration-300">
+  <body class="transition-colors duration-300 min-h-screen flex flex-col">
     <Navbar client:only="react" />
 
-    <main class="pt-20 pb-12 min-h-screen">
+    <main class="flex-grow pt-20 pb-12 min-h-[calc(100vh-80px)]">
       <MacroCalculator client:load />
 
       <!-- ── Monetización: Carrusel Premium ── -->

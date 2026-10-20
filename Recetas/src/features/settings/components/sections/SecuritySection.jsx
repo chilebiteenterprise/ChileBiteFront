@@ -46,10 +46,10 @@ export function SecuritySection({ user }) {
         iconColor={BRAND}
       >
         <form onSubmit={handleSetPassword} className="space-y-3 mt-2">
-          <p className="text-xs text-default-500 leading-relaxed">
+          <p className="text-xs text-text-muted dark:text-zinc-400 leading-relaxed">
             Por seguridad, te enviaremos un enlace a tu correo electrónico registrado. Al hacer clic, podrás configurar una nueva contraseña de forma segura.
           </p>
-          <SubmitBtn loading={isSettingPw} icon={Mail} label="Enviar correo de recuperación" color={BRAND} />
+          <SubmitBtn loading={isSettingPw} icon={Mail} label="Enviar correo de recuperación" />
         </form>
       </Row>
 
@@ -57,7 +57,7 @@ export function SecuritySection({ user }) {
         icon={ShieldCheck}
         label="Autenticación en dos pasos"
         sublabel="Protege tu cuenta con un código de una app autenticadora"
-        iconColor="#22c55e"
+        iconColor="#10b981"
       >
         <MFASetup />
       </Row>
@@ -66,18 +66,17 @@ export function SecuritySection({ user }) {
         icon={LogOut}
         label="Cerrar todas las sesiones"
         sublabel="Cierra tu sesión en todos los dispositivos simultáneamente"
-        iconColor="#6366f1"
+        iconColor="#f43f5e"
       >
         <div className="space-y-3 mt-2">
-          <p className="text-xs text-default-500 leading-relaxed">
+          <p className="text-xs text-text-muted dark:text-zinc-400 leading-relaxed">
             Esto cerrará tu sesión en todos los navegadores y dispositivos donde hayas iniciado sesión. Tendrás que volver a ingresar con tu contraseña o Google.
           </p>
           <button
             type="button"
             onClick={handleSignOutAllDevices}
             disabled={isSigningOutAll}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-50 transition-all mt-1"
-            style={{ backgroundColor: "#6366f1" }}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/50 bg-red-50/50 dark:bg-red-950/20 hover:bg-red-100/70 dark:hover:bg-red-900/30 disabled:opacity-50 transition-all mt-1 shadow-sm"
           >
             {isSigningOutAll ? <Loader className="w-4 h-4 animate-spin" /> : <LogOut className="w-4 h-4" />}
             Cerrar todas las sesiones

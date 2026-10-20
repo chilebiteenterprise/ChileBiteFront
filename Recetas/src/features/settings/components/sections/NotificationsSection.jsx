@@ -75,23 +75,29 @@ export function NotificationsSection({ user, profile }) {
     const isSecurity = prefKey === 'security_alerts';
 
     return (
-      <div className="flex items-center justify-between py-3 border-b border-border last:border-0">
+      <div className="flex items-center justify-between py-3.5 border-b border-border-subtle dark:border-zinc-800/80 last:border-0">
         <div className="flex items-center gap-3">
-          <div className={`p-2 rounded-lg ${isActive ? 'bg-primary-50 text-primary' : 'bg-default-100 text-default-400'}`}>
+          <div className={`p-2.5 rounded-xl transition-colors ${
+            isActive
+              ? 'bg-brand-primary/10 text-brand-primary dark:bg-[#f0a262]/15 dark:text-[#f0a262]'
+              : 'bg-surface-muted dark:bg-[#18181d] text-text-muted dark:text-zinc-500'
+          }`}>
             <Icon className="w-4 h-4" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-foreground">{title}</p>
-            <p className="text-xs text-default-500">{description}</p>
+            <p className="text-sm font-bold text-text-main dark:text-zinc-100">{title}</p>
+            <p className="text-xs text-text-muted dark:text-zinc-400">{description}</p>
           </div>
         </div>
         <button
           type="button"
           onClick={() => handleToggle(prefKey)}
           disabled={isSaving}
-          className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[#b08968] focus-visible:ring-opacity-75 ${isActive ? 'bg-[#b08968]' : 'bg-black/20'} ${isSecurity ? 'ring-1 ring-[#b08968]/20' : ''} ${isSaving ? 'opacity-70 cursor-not-allowed' : ''}`}
+          className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary dark:focus-visible:ring-[#f0a262] ${
+            isActive ? 'bg-brand-primary dark:bg-[#f0a262]' : 'bg-zinc-300 dark:bg-zinc-700'
+          } ${isSaving ? 'opacity-70 cursor-not-allowed' : ''}`}
         >
-          <span className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${isActive ? 'translate-x-5' : 'translate-x-0'}`} />
+          <span className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white dark:bg-zinc-900 shadow ring-0 transition duration-200 ease-in-out ${isActive ? 'translate-x-5' : 'translate-x-0'}`} />
         </button>
       </div>
     );
@@ -101,7 +107,7 @@ export function NotificationsSection({ user, profile }) {
     <>
       <Section title="Notificaciones">
         <Row icon={Bell} label="Notificaciones por Correo" sublabel="Administra qué correos recibes de nosotros" iconColor="#f43f5e">
-          <div className="flex flex-col mt-2 px-2">
+          <div className="flex flex-col mt-1">
             <ToggleItem
               icon={Heart}
               title="Me gusta en tus recetas"
@@ -126,14 +132,14 @@ export function NotificationsSection({ user, profile }) {
 
       {showSecurityModal && (
         <div className="fixed inset-0 z-[1000] bg-black/60 backdrop-blur-sm flex items-center justify-center px-4">
-          <div className="w-full max-w-md rounded-3xl bg-white dark:bg-[#111318] border border-slate-200 dark:border-slate-800 shadow-2xl p-6">
+          <div className="w-full max-w-md rounded-3xl bg-white dark:bg-[#202026] border border-border-subtle dark:border-zinc-800 shadow-2xl p-6 animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-start gap-3">
-              <div className="w-11 h-11 rounded-2xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center shrink-0">
-                <ShieldAlert className="w-5 h-5 text-amber-600 dark:text-amber-300" />
+              <div className="w-11 h-11 rounded-2xl bg-amber-100 dark:bg-amber-950/40 flex items-center justify-center shrink-0">
+                <ShieldAlert className="w-5 h-5 text-amber-600 dark:text-amber-400" />
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-black text-foreground">Desactivar alertas de seguridad</h3>
-                <p className="text-sm text-default-500 mt-2 leading-relaxed">
+                <h3 className="text-lg font-black text-text-main dark:text-zinc-100">Desactivar alertas de seguridad</h3>
+                <p className="text-sm text-text-muted dark:text-zinc-400 mt-2 leading-relaxed">
                   Estas alertas te avisan sobre inicios de sesión nuevos y cambios sensibles en tu cuenta. Si las desactivas, quedas sin ese aviso preventivo.
                 </p>
               </div>
@@ -143,7 +149,7 @@ export function NotificationsSection({ user, profile }) {
               <button
                 type="button"
                 onClick={() => setShowSecurityModal(false)}
-                className="px-4 py-2.5 rounded-xl text-sm font-bold border border-border text-default-600 hover:bg-default-hover transition-colors inline-flex items-center justify-center gap-2"
+                className="px-4 py-2.5 rounded-xl text-sm font-bold border border-border-subtle dark:border-zinc-700 text-text-main dark:text-zinc-200 hover:bg-surface-muted dark:hover:bg-zinc-800 transition-colors inline-flex items-center justify-center gap-2"
               >
                 <X className="w-4 h-4" />
                 Cancelar
@@ -151,7 +157,7 @@ export function NotificationsSection({ user, profile }) {
               <button
                 type="button"
                 onClick={confirmSecurityToggle}
-                className="px-4 py-2.5 rounded-xl text-sm font-bold text-white bg-[#b08968] hover:opacity-90 transition-opacity inline-flex items-center justify-center gap-2"
+                className="px-4 py-2.5 rounded-xl text-sm font-bold text-white bg-brand-primary hover:bg-[#633612] dark:bg-[#f0a262] dark:hover:bg-[#ffb87a] dark:text-[#171310] transition-colors inline-flex items-center justify-center gap-2 shadow-sm"
               >
                 Confirmar
               </button>

@@ -8,6 +8,7 @@ import CollectionPickerModal from './CollectionPickerModal.jsx';
 import VideoEmbed from '@/shared/ui/VideoEmbed.jsx';
 import { trackRecipeView, trackRecipeDwellTime } from '../services/recommendationEngine';
 import { formatScaledIngredient, formatScaledIngredientText } from '@/shared/utils/unitRules';
+import { notifyAuthRequired } from '@/shared/utils/authToast.jsx';
 
 
 const parseTextToList = (text) => {
@@ -219,7 +220,10 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
   };
 
   const handleFavorite = async () => {
-    if (!session?.user?.id) return toast.error("Debes estar logueado para marcar como favorito");
+    if (!session?.user?.id) {
+      notifyAuthRequired("like");
+      return;
+    }
     try {
       if (isFavorite) {
         await supabase.from('core_recetalike').delete().eq('receta_id', idReceta).eq('user_id', session.user.id);
@@ -240,7 +244,10 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
   };
 
   const handleSave = async () => {
-    if (!session?.user?.id) return toast.error("Debes estar logueado para guardar");
+    if (!session?.user?.id) {
+      notifyAuthRequired("save");
+      return;
+    }
     setIsCollectionModalOpen(true);
   };
 

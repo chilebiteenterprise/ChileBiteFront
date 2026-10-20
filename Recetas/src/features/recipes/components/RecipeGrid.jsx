@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import { Bookmark } from "lucide-react";
 import { useAuth, AuthProvider } from '@/features/auth/context/AuthContext';
 import RecipeFilters from "./RecipeFilters";
 import RecipeCard from "./RecipeCard";
@@ -368,8 +369,29 @@ const RecetarioContent = ({ collectionId, collectionTitle }) => {
             <section className="flex-1 px-4 lg:px-6 relative min-h-0 pb-6 rounded-l-2xl">
                 {collectionTitle && (
                     <div className="mb-6 pt-2">
-                        <h1 className="text-3xl font-black text-foreground">{collectionTitle}</h1>
-                        <p className="text-sm text-default-500 mt-1">Explorando las recetas de tu colección</p>
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 sm:p-7 rounded-3xl bg-white dark:bg-[#202026] border border-border-subtle dark:border-zinc-800 shadow-sm transition-colors">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-2xl bg-brand-primary/10 dark:bg-[#f0a262]/15 text-brand-primary dark:text-[#f0a262] flex items-center justify-center shrink-0 shadow-inner">
+                                    <Bookmark className="w-6 h-6" />
+                                </div>
+                                <div>
+                                    <span className="inline-block text-[11px] font-black uppercase tracking-[0.2em] text-text-muted/80 dark:text-zinc-400">
+                                        Colección de Recetas
+                                    </span>
+                                    <h1 className="text-2xl sm:text-3xl font-black text-text-main dark:text-zinc-100 tracking-tight">
+                                        {collectionTitle.replace("Tus Recetas de: ", "")}
+                                    </h1>
+                                    <p className="text-xs sm:text-sm text-text-muted dark:text-zinc-400 mt-0.5">
+                                        Explorando tus recetas guardadas en esta colección
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2 self-start sm:self-center">
+                                <span className="px-4 py-2 rounded-2xl text-xs font-extrabold bg-surface-muted/60 dark:bg-[#18181d] text-text-main dark:text-zinc-200 border border-border-subtle dark:border-zinc-700/80 shadow-2xs">
+                                    {filteredRecipes.length} {filteredRecipes.length === 1 ? "receta" : "recetas"}
+                                </span>
+                            </div>
+                        </div>
                     </div>
                 )}
                 <RecipeToolbar 
@@ -389,7 +411,7 @@ const RecetarioContent = ({ collectionId, collectionTitle }) => {
                 {loading ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-6 mt-4">
                         {Array.from({ length: 9 }).map((_, i) => (
-                            <div key={i} className="receta-card-wrapper h-[450px] overflow-hidden">
+                            <div key={i} className="h-full flex flex-col min-h-[440px]">
                                 <RecipeSkeleton />
                             </div>
                         ))}
@@ -397,7 +419,7 @@ const RecetarioContent = ({ collectionId, collectionTitle }) => {
                 ) : paginatedRecipes.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-6 mt-4">
                         {paginatedRecipes.map((r, i) => (
-                            <div key={r.id} className="receta-card-wrapper h-[450px] overflow-hidden flex flex-col">
+                            <div key={r.id} className="h-full flex flex-col min-h-[440px]">
                                 {/* PASAR LA FUNCIÓN DE CALLBACK PARA ELIMINACIÓN */}
                                 <RecipeCard 
                                     receta={r} 

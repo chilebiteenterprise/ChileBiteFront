@@ -26,13 +26,17 @@ export function LocaleSection({ user, profile }) {
   return (
     <Section title="Idioma y Región">
       <Row icon={Globe} label="Preferencia Regional" sublabel="Define cómo se muestran las fechas y números" iconColor="#0284c7">
-        <div className="flex flex-col gap-3 mt-3 px-2">
-          <label className="flex items-center justify-between p-3 border border-border rounded-xl cursor-pointer hover:bg-default-50 transition-colors">
+        <div className="flex flex-col gap-3 mt-3">
+          <label className={`flex items-center justify-between p-3.5 border rounded-2xl cursor-pointer transition-colors ${
+            locale === 'es-CL'
+              ? 'border-brand-primary/40 dark:border-[#f0a262]/40 bg-brand-primary/5 dark:bg-[#f0a262]/10'
+              : 'border-border-subtle dark:border-zinc-800 bg-white dark:bg-[#18181d] hover:bg-surface-muted/50 dark:hover:bg-zinc-800/40'
+          }`}>
             <div className="flex items-center gap-3">
-              <MapPin className="w-5 h-5 text-default-500" />
+              <MapPin className="w-5 h-5 text-text-muted dark:text-zinc-400" />
               <div>
-                <p className="text-sm font-semibold">Español (Chile)</p>
-                <p className="text-xs text-default-500">Formato predeterminado</p>
+                <p className="text-sm font-bold text-text-main dark:text-zinc-100">Español (Chile)</p>
+                <p className="text-xs text-text-muted dark:text-zinc-400">Formato predeterminado</p>
               </div>
             </div>
             <input 
@@ -42,15 +46,19 @@ export function LocaleSection({ user, profile }) {
               checked={locale === 'es-CL'} 
               onChange={handleLocaleChange}
               disabled={isSaving}
-              className="w-4 h-4 text-brand focus:ring-brand"
+              className="w-4 h-4 accent-[#7a461b] dark:accent-[#f0a262]"
             />
           </label>
-          <label className="flex items-center justify-between p-3 border border-border rounded-xl cursor-pointer hover:bg-default-50 transition-colors">
+          <label className={`flex items-center justify-between p-3.5 border rounded-2xl cursor-pointer transition-colors ${
+            locale === 'es-ES'
+              ? 'border-brand-primary/40 dark:border-[#f0a262]/40 bg-brand-primary/5 dark:bg-[#f0a262]/10'
+              : 'border-border-subtle dark:border-zinc-800 bg-white dark:bg-[#18181d] hover:bg-surface-muted/50 dark:hover:bg-zinc-800/40'
+          }`}>
             <div className="flex items-center gap-3">
-              <Globe className="w-5 h-5 text-default-500" />
+              <Globe className="w-5 h-5 text-text-muted dark:text-zinc-400" />
               <div>
-                <p className="text-sm font-semibold">Español (España)</p>
-                <p className="text-xs text-default-500">Formato europeo</p>
+                <p className="text-sm font-bold text-text-main dark:text-zinc-100">Español (España)</p>
+                <p className="text-xs text-text-muted dark:text-zinc-400">Formato europeo</p>
               </div>
             </div>
             <input 
@@ -60,15 +68,19 @@ export function LocaleSection({ user, profile }) {
               checked={locale === 'es-ES'} 
               onChange={handleLocaleChange}
               disabled={isSaving}
-              className="w-4 h-4 text-brand focus:ring-brand"
+              className="w-4 h-4 accent-[#7a461b] dark:accent-[#f0a262]"
             />
           </label>
-          <label className="flex items-center justify-between p-3 border border-border rounded-xl cursor-pointer hover:bg-default-50 transition-colors">
+          <label className={`flex items-center justify-between p-3.5 border rounded-2xl cursor-pointer transition-colors ${
+            locale === 'en-US'
+              ? 'border-brand-primary/40 dark:border-[#f0a262]/40 bg-brand-primary/5 dark:bg-[#f0a262]/10'
+              : 'border-border-subtle dark:border-zinc-800 bg-white dark:bg-[#18181d] hover:bg-surface-muted/50 dark:hover:bg-zinc-800/40'
+          }`}>
             <div className="flex items-center gap-3">
-              <Globe className="w-5 h-5 text-default-500" />
+              <Globe className="w-5 h-5 text-text-muted dark:text-zinc-400" />
               <div>
-                <p className="text-sm font-semibold">English (US)</p>
-                <p className="text-xs text-default-500">US format</p>
+                <p className="text-sm font-bold text-text-main dark:text-zinc-100">English (US)</p>
+                <p className="text-xs text-text-muted dark:text-zinc-400">US format</p>
               </div>
             </div>
             <input 
@@ -78,7 +90,7 @@ export function LocaleSection({ user, profile }) {
               checked={locale === 'en-US'} 
               onChange={handleLocaleChange}
               disabled={isSaving}
-              className="w-4 h-4 text-brand focus:ring-brand"
+              className="w-4 h-4 accent-[#7a461b] dark:accent-[#f0a262]"
             />
           </label>
         </div>

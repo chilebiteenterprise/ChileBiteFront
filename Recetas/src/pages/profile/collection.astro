@@ -13,12 +13,18 @@ import CollectionDetail from '../../features/profiles/components/CollectionDetai
         description="Explora tus recetas guardadas en esta colección." 
     />
 </head>
-<body class="transition-colors duration-300 min-h-screen">
+<body class="transition-colors duration-300 min-h-screen flex flex-col">
     <Navbar client:only="react" />
 
-    <div class="pt-20 pb-12">
-        <CollectionDetail client:only="react" />
-    </div>
+    <!-- Wrapper normal debajo del navbar con ancho completo -->
+    <main class="flex-grow pt-20 pb-5 min-h-[calc(100vh-80px)]">
+        <CollectionDetail client:only="react">
+            <div slot="fallback" class="w-full flex flex-col items-center justify-center p-20 animate-pulse text-text-muted">
+                <div class="w-12 h-12 border-4 border-border-subtle border-t-brand-primary dark:border-t-[#f0a262] rounded-full animate-spin mb-4"></div>
+                <p class="font-bold text-sm tracking-widest uppercase text-text-muted">Cargando recetas...</p>
+            </div>
+        </CollectionDetail>
+    </main>
 
     <Footer client:visible />
 </body>

@@ -65,13 +65,17 @@ export function PrivacySection({ user, profile }) {
   return (
     <Section title="Privacidad">
       <Row icon={Lock} label="Visibilidad del Perfil" sublabel="Controla quién puede ver tu perfil público" iconColor="#8b5cf6">
-        <div className="flex flex-col gap-3 mt-3 px-2">
-          <label className="flex items-center justify-between p-3 border border-border rounded-xl cursor-pointer hover:bg-default-50 transition-colors">
+        <div className="flex flex-col gap-3 mt-3">
+          <label className={`flex items-center justify-between p-3.5 border rounded-2xl cursor-pointer transition-colors ${
+            profileVisibility === 'public'
+              ? 'border-brand-primary/40 dark:border-[#f0a262]/40 bg-brand-primary/5 dark:bg-[#f0a262]/10'
+              : 'border-border-subtle dark:border-zinc-800 bg-white dark:bg-[#18181d] hover:bg-surface-muted/50 dark:hover:bg-zinc-800/40'
+          }`}>
             <div className="flex items-center gap-3">
-              <Eye className="w-5 h-5 text-default-500" />
+              <Eye className="w-5 h-5 text-text-muted dark:text-zinc-400" />
               <div>
-                <p className="text-sm font-semibold">Público</p>
-                <p className="text-xs text-default-500">Cualquier persona puede ver tu perfil</p>
+                <p className="text-sm font-bold text-text-main dark:text-zinc-100">Público</p>
+                <p className="text-xs text-text-muted dark:text-zinc-400">Cualquier persona puede ver tu perfil</p>
               </div>
             </div>
             <input 
@@ -80,15 +84,19 @@ export function PrivacySection({ user, profile }) {
               value="public" 
               checked={profileVisibility === 'public'} 
               onChange={() => handleVisibilityChange('public')}
-              className="w-4 h-4 text-brand focus:ring-brand"
+              className="w-4 h-4 accent-[#7a461b] dark:accent-[#f0a262]"
             />
           </label>
-          <label className="flex items-center justify-between p-3 border border-border rounded-xl cursor-pointer hover:bg-default-50 transition-colors">
+          <label className={`flex items-center justify-between p-3.5 border rounded-2xl cursor-pointer transition-colors ${
+            profileVisibility === 'private'
+              ? 'border-brand-primary/40 dark:border-[#f0a262]/40 bg-brand-primary/5 dark:bg-[#f0a262]/10'
+              : 'border-border-subtle dark:border-zinc-800 bg-white dark:bg-[#18181d] hover:bg-surface-muted/50 dark:hover:bg-zinc-800/40'
+          }`}>
             <div className="flex items-center gap-3">
-              <EyeOff className="w-5 h-5 text-default-500" />
+              <EyeOff className="w-5 h-5 text-text-muted dark:text-zinc-400" />
               <div>
-                <p className="text-sm font-semibold">Privado</p>
-                <p className="text-xs text-default-500">Solo tú puedes ver tu perfil</p>
+                <p className="text-sm font-bold text-text-main dark:text-zinc-100">Privado</p>
+                <p className="text-xs text-text-muted dark:text-zinc-400">Solo tú puedes ver tu perfil</p>
               </div>
             </div>
             <input 
@@ -97,23 +105,30 @@ export function PrivacySection({ user, profile }) {
               value="private" 
               checked={profileVisibility === 'private'} 
               onChange={() => handleVisibilityChange('private')}
-              className="w-4 h-4 text-brand focus:ring-brand"
+              className="w-4 h-4 accent-[#7a461b] dark:accent-[#f0a262]"
             />
           </label>
         </div>
       </Row>
 
       <Row icon={Eye} label="Colecciones Guardadas" sublabel="Hacer que tus colecciones de recetas sean públicas" iconColor="#0ea5e9">
-        <div className="flex items-center justify-between mt-3 px-2">
+        <div className="flex items-center justify-between mt-2 py-1">
           <div className="flex flex-col">
-            <p className="text-sm font-semibold text-foreground">Colecciones Públicas</p>
-            <p className="text-xs text-default-500 mt-1">Permitir que otros vean tus recetas guardadas</p>
+            <p className="text-sm font-bold text-text-main dark:text-zinc-100">Colecciones Públicas</p>
+            <p className="text-xs text-text-muted dark:text-zinc-400 mt-0.5">Permitir que otros vean tus recetas guardadas</p>
           </div>
           {loadingCols ? (
-            <Loader className="w-5 h-5 animate-spin text-default-300" />
+            <Loader className="w-5 h-5 animate-spin text-text-muted dark:text-zinc-500" />
           ) : (
-            <button type="button" onClick={handleCollectionsToggle} disabled={isSaving} className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[#b08968] focus-visible:ring-opacity-75 ${collectionsPublic ? 'bg-[#b08968]' : 'bg-black/20'}`}>
-              <span className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${collectionsPublic ? 'translate-x-5' : 'translate-x-0'}`} />
+            <button
+              type="button"
+              onClick={handleCollectionsToggle}
+              disabled={isSaving}
+              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary dark:focus-visible:ring-[#f0a262] ${
+                collectionsPublic ? 'bg-brand-primary dark:bg-[#f0a262]' : 'bg-zinc-300 dark:bg-zinc-700'
+              }`}
+            >
+              <span className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white dark:bg-zinc-900 shadow ring-0 transition duration-200 ease-in-out ${collectionsPublic ? 'translate-x-5' : 'translate-x-0'}`} />
             </button>
           )}
         </div>
@@ -121,14 +136,13 @@ export function PrivacySection({ user, profile }) {
 
       <Row icon={Download} label="Exportar mis datos" sublabel="Descarga una copia de toda tu información" iconColor="#10b981">
         <div className="mt-2 space-y-3">
-          <p className="text-xs text-default-500 leading-relaxed">
+          <p className="text-xs text-text-muted dark:text-zinc-400 leading-relaxed">
             Obtén un archivo JSON con tu perfil, colecciones y recetas en cumplimiento con normativas de privacidad.
           </p>
           <button
             type="button"
             onClick={handleExportData}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white hover:opacity-90 transition-opacity"
-            style={{ backgroundColor: "#10b981" }}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600 transition-colors shadow-sm"
           >
             <Download className="w-4 h-4" />
             Descargar datos

@@ -43,11 +43,11 @@ export default function ResetPasswordClient() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (formData.password.length < 6) {
-      toast.error("La contraseña debe tener al menos 6 caracteres.");
+      toast.danger("La contraseña debe tener al menos 6 caracteres.");
       return;
     }
     if (formData.password !== formData.confirm) {
-      toast.error("Las contraseñas no coinciden.");
+      toast.danger("Las contraseñas no coinciden.");
       return;
     }
 
@@ -62,7 +62,7 @@ export default function ResetPasswordClient() {
       setTimeout(() => { window.location.href = "/"; }, 1500);
     } catch (err) {
       setErrorObj(err.message || "Error al actualizar la contraseña");
-      toast.error("Ocurrió un error.");
+      toast.danger("Ocurrió un error.");
     } finally {
       setLoading(false);
     }

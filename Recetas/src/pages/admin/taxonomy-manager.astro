@@ -20,10 +20,10 @@ import BaseHead from '@/shared/layout/BaseHead.astro';
         }
     </style>
   </head>
-  <body class="transition-colors duration-300 overflow-x-hidden min-h-screen">
+  <body class="transition-colors duration-300 overflow-x-hidden min-h-screen flex flex-col">
     <!-- Navbar Absolute => Pushes content with mt-20 -->
     <Navbar client:only="react" />
-    <main class="pt-20 pb-5 min-h-[calc(100vh-72px)]">
+    <main class="flex-grow pt-20 pb-5 min-h-[calc(100vh-80px)]">
         <div class="py-4">
             <TaxonomyManagerComponent client:only="react" />
         </div>

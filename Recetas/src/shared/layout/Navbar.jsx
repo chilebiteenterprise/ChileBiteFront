@@ -65,7 +65,13 @@ function NavbarContent() {
   }, [isMobileMenuOpen]);
 
   useEffect(() => {
-    window.abrirLoginNavbar = () => setIsLoginOpen(true);
+    window.abrirLoginNavbar = () => {
+      if (typeof window !== "undefined" && window.innerWidth < 768) {
+        setIsMobileMenuOpen(true);
+      } else {
+        setIsLoginOpen(true);
+      }
+    };
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
     const handleClickOutside = (event) => {
       // Don't close if clicking inside the ref

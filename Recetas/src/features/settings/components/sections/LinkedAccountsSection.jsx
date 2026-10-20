@@ -43,28 +43,28 @@ export function LinkedAccountsSection({ user, linkGoogleToCurrentAccount, unlink
       >
         {isGoogleLinked ? (
           <div className="mt-2 space-y-3">
-            <div className="flex items-center gap-2 p-3 bg-success-soft rounded-xl border border-success-soft">
-              <CheckCircle2 className="w-4 h-4 text-success shrink-0" />
-              <p className="text-xs text-foreground">Google está correctamente vinculado a esta cuenta.</p>
+            <div className="flex items-center gap-2.5 p-3.5 bg-emerald-50 dark:bg-emerald-950/30 rounded-2xl border border-emerald-200/80 dark:border-emerald-900/50">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <p className="text-xs font-medium text-emerald-900 dark:text-emerald-300">Google está correctamente vinculado a esta cuenta.</p>
             </div>
 
             {!canUnlinkGoogle ? (
-              <div className="flex flex-col gap-3 p-4 bg-amber-50 dark:bg-amber-950/20 rounded-xl border border-amber-200 dark:border-amber-900/40">
-                <div className="flex items-start gap-2">
-                  <AlertCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+              <div className="flex flex-col gap-3 p-4 bg-amber-50/80 dark:bg-amber-950/20 rounded-2xl border border-amber-200/80 dark:border-amber-900/40">
+                <div className="flex items-start gap-2.5">
+                  <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-xs font-bold text-amber-800 dark:text-amber-300">
+                    <p className="text-xs font-bold text-amber-900 dark:text-amber-200">
                       Desvinculación no disponible (Falta Identidad de Correo)
                     </p>
-                    <p className="text-xs text-amber-700 dark:text-amber-400 leading-relaxed mt-1">
+                    <p className="text-xs text-amber-800/90 dark:text-amber-300/80 leading-relaxed mt-1">
                       Aunque tengas una contraseña configurada y puedas usarla para iniciar sesión, Supabase aún registra tu cuenta internamente como <strong>únicamente de Google</strong>. Para desvincular Google de forma segura, debes sincronizar tu identidad de correo.
                     </p>
                   </div>
                 </div>
                 
-                <div className="pl-6 border-t border-amber-200/50 dark:border-amber-800/30 pt-2.5">
-                  <p className="text-xs font-semibold text-amber-800 dark:text-amber-300 mb-1.5">Cómo solucionarlo en 2 pasos:</p>
-                  <ol className="list-decimal pl-4 text-xs text-amber-700 dark:text-amber-400 space-y-1">
+                <div className="pl-6 border-t border-amber-200/60 dark:border-amber-800/30 pt-2.5">
+                  <p className="text-xs font-semibold text-amber-900 dark:text-amber-200 mb-1.5">Cómo solucionarlo en 2 pasos:</p>
+                  <ol className="list-decimal pl-4 text-xs text-amber-800 dark:text-amber-300/90 space-y-1">
                     <li>Cierra sesión en este dispositivo.</li>
                     <li>Ve a la pantalla de <strong>Crear Cuenta</strong> y regístrate ingresando el mismo correo y la misma contraseña. Supabase detectará tu cuenta y enlazará la identidad de correo automáticamente.</li>
                   </ol>
@@ -75,7 +75,7 @@ export function LinkedAccountsSection({ user, linkGoogleToCurrentAccount, unlink
                 <button
                   type="button"
                   onClick={() => setShowUnlinkConfirm(true)}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/50 bg-red-50/50 dark:bg-red-950/20 hover:bg-red-100/70 dark:hover:bg-red-900/30 transition-colors shadow-sm"
                 >
                   <Unlink className="w-4 h-4" />
                   Desvincular Google
@@ -83,9 +83,9 @@ export function LinkedAccountsSection({ user, linkGoogleToCurrentAccount, unlink
               </>
             ) : (
               <>
-                <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800 space-y-3">
-                  <p className="text-sm font-bold text-red-700 dark:text-red-400">¿Confirmar desvinculación?</p>
-                  <p className="text-xs text-red-600 dark:text-red-500 leading-relaxed">
+                <div className="p-4 bg-red-50 dark:bg-red-950/20 rounded-2xl border border-red-200 dark:border-red-900/50 space-y-3">
+                  <p className="text-sm font-bold text-red-700 dark:text-red-300">¿Confirmar desvinculación?</p>
+                  <p className="text-xs text-red-600 dark:text-red-400 leading-relaxed">
                     Dejarás de poder iniciar sesión con Google. Usarás tu contraseña de aquí en adelante.
                   </p>
                   <div className="flex gap-2">
@@ -93,7 +93,7 @@ export function LinkedAccountsSection({ user, linkGoogleToCurrentAccount, unlink
                       type="button"
                       onClick={handleUnlinkGoogle}
                       disabled={isUnlinking}
-                      className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-white bg-red-500 hover:bg-red-600 disabled:opacity-50 transition-colors"
+                      className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 transition-colors shadow-sm"
                     >
                       {isUnlinking ? <Loader className="w-4 h-4 animate-spin" /> : <Unlink className="w-4 h-4" />}
                       Sí, desvincular
@@ -101,7 +101,7 @@ export function LinkedAccountsSection({ user, linkGoogleToCurrentAccount, unlink
                     <button
                       type="button"
                       onClick={() => setShowUnlinkConfirm(false)}
-                      className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-default-600 border border-border hover:bg-default-hover transition-colors"
+                      className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-text-main dark:text-zinc-200 border border-border-subtle dark:border-zinc-700 hover:bg-surface-muted dark:hover:bg-zinc-800 transition-colors"
                     >
                       <X className="w-4 h-4" /> Cancelar
                     </button>
@@ -112,12 +112,12 @@ export function LinkedAccountsSection({ user, linkGoogleToCurrentAccount, unlink
           </div>
         ) : (
           <div className="mt-2 space-y-3">
-            <p className="text-xs text-default-500 leading-relaxed">
+            <p className="text-xs text-text-muted dark:text-zinc-400 leading-relaxed">
               Vincula tu cuenta de Google para poder iniciar sesión de ambas formas.
             </p>
             <button
               onClick={linkGoogleToCurrentAccount}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white hover:opacity-90 transition-opacity"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white hover:opacity-90 transition-opacity shadow-sm"
               style={{ backgroundColor: "#4285F4" }}>
               <Link2 className="w-4 h-4" />
               Vincular con Google

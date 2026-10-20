@@ -201,16 +201,16 @@ export default function MFASetup() {
       <div className="mt-2 space-y-4">
         {isEnrolled ? (
           <>
-            <div className="flex items-center gap-2 p-3 bg-success-soft rounded-xl border border-success-soft">
-              <CheckCircle2 className="w-4 h-4 text-success shrink-0" />
-              <p className="text-xs text-foreground font-medium">
+            <div className="flex items-center gap-2.5 p-3.5 bg-emerald-50 dark:bg-emerald-950/30 rounded-2xl border border-emerald-200/80 dark:border-emerald-900/50">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <p className="text-xs text-emerald-900 dark:text-emerald-300 font-medium">
                 Autenticación en dos pasos <strong>activa</strong>. Tu cuenta está protegida.
               </p>
             </div>
             <button
               type="button"
               onClick={() => { setMode("unenrolling"); setTotpCode(""); setError(""); }}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/50 bg-red-50/50 dark:bg-red-950/20 hover:bg-red-100/70 dark:hover:bg-red-900/30 transition-colors shadow-sm"
             >
               <ShieldOff className="w-4 h-4" />
               Desactivar 2FA
@@ -219,14 +219,14 @@ export default function MFASetup() {
         ) : (
           <>
             {totpUnavailable && (
-              <div className="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800">
-                <p className="text-xs text-amber-700 dark:text-amber-400 leading-relaxed">
+              <div className="p-3.5 bg-amber-50/80 dark:bg-amber-950/20 rounded-2xl border border-amber-200/80 dark:border-amber-900/40">
+                <p className="text-xs text-amber-800 dark:text-amber-300 leading-relaxed">
                   TOTP está desactivado en Supabase para este proyecto. Actívalo en el panel de Supabase, dentro de la configuración de autenticación / MFA, y luego vuelve a intentar.
                 </p>
               </div>
             )}
-            <div className="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800">
-              <p className="text-xs text-amber-700 dark:text-amber-400 leading-relaxed">
+            <div className="p-3.5 bg-amber-50/80 dark:bg-amber-950/20 rounded-2xl border border-amber-200/80 dark:border-amber-900/40">
+              <p className="text-xs text-amber-800 dark:text-amber-300 leading-relaxed">
                 <strong>Recomendado:</strong> El 2FA agrega una capa de seguridad extra. Necesitarás una app autenticadora (Google Authenticator, Authy, etc.).
               </p>
             </div>
@@ -234,8 +234,7 @@ export default function MFASetup() {
               type="button"
               onClick={() => setMode("enrolling-step1")}
               disabled={totpUnavailable}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{ backgroundColor: BRAND }}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-brand-primary hover:bg-[#633612] dark:bg-[#f0a262] dark:hover:bg-[#ffb87a] dark:text-[#171310] transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
             >
               <ShieldCheck className="w-4 h-4" />
               {totpUnavailable ? "TOTP desactivado" : "Activar 2FA"}
@@ -251,16 +250,16 @@ export default function MFASetup() {
     return (
       <div className="mt-2 space-y-4">
         <StepIndicator current={1} />
-        <p className="text-sm font-semibold text-foreground">Necesitarás una app autenticadora</p>
+        <p className="text-sm font-bold text-text-main dark:text-zinc-100">Necesitarás una app autenticadora</p>
         <div className="space-y-2">
           {["Google Authenticator", "Authy", "Microsoft Authenticator", "1Password"].map((app) => (
-            <div key={app} className="flex items-center gap-2 text-xs text-default-500">
-              <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: BRAND }} />
+            <div key={app} className="flex items-center gap-2 text-xs text-text-muted dark:text-zinc-400">
+              <span className="w-1.5 h-1.5 rounded-full shrink-0 bg-brand-primary dark:bg-[#f0a262]" />
               {app}
             </div>
           ))}
         </div>
-        <p className="text-xs text-default-400 leading-relaxed">
+        <p className="text-xs text-text-muted dark:text-zinc-400 leading-relaxed">
           Después de instalada la app, haremos clic en "Continuar" para escanear el código QR.
         </p>
         {error && <ErrorBox message={error} />}
@@ -269,8 +268,7 @@ export default function MFASetup() {
             type="button"
             onClick={handleStartEnroll}
             disabled={isSubmitting}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-50 transition-all"
-            style={{ backgroundColor: BRAND }}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-brand-primary hover:bg-[#633612] dark:bg-[#f0a262] dark:hover:bg-[#ffb87a] dark:text-[#171310] disabled:opacity-50 transition-all shadow-sm"
           >
             {isSubmitting ? <Loader className="w-4 h-4 animate-spin" /> : <ChevronRight className="w-4 h-4" />}
             Continuar
@@ -286,15 +284,15 @@ export default function MFASetup() {
     return (
       <div className="mt-2 space-y-4">
         <StepIndicator current={2} />
-        <p className="text-sm font-semibold text-foreground">Escanea este código QR</p>
-        <p className="text-xs text-default-500 leading-relaxed">
+        <p className="text-sm font-bold text-text-main dark:text-zinc-100">Escanea este código QR</p>
+        <p className="text-xs text-text-muted dark:text-zinc-400 leading-relaxed">
           Abre tu app autenticadora, toca "Agregar cuenta" y escanea el código.
         </p>
 
         {/* QR Code */}
         {qrCode && (
           <div className="flex justify-center">
-            <div className="p-3 bg-white rounded-2xl border border-border shadow-sm">
+            <div className="p-4 bg-white rounded-2xl border border-border-subtle shadow-sm">
               <img src={qrCode} alt="Código QR para 2FA" className="w-44 h-44" />
             </div>
           </div>
@@ -302,17 +300,17 @@ export default function MFASetup() {
 
         {/* Clave manual */}
         {secret && (
-          <div className="space-y-1">
-            <p className="text-xs text-default-400">¿No puedes escanear? Ingresa esta clave manualmente:</p>
-            <div className="flex items-center gap-2 p-2.5 bg-field rounded-xl border border-field-border">
-              <code className="text-xs font-mono text-foreground flex-1 break-all">{secret}</code>
+          <div className="space-y-1.5">
+            <p className="text-xs text-text-muted dark:text-zinc-400">¿No puedes escanear? Ingresa esta clave manualmente:</p>
+            <div className="flex items-center gap-2 p-3 bg-surface-muted dark:bg-[#18181d] rounded-2xl border border-border-subtle dark:border-zinc-800">
+              <code className="text-xs font-mono text-text-main dark:text-zinc-200 flex-1 break-all">{secret}</code>
               <button
                 type="button"
                 onClick={handleCopySecret}
-                className="shrink-0 p-1.5 rounded-lg hover:bg-default-hover transition-colors text-default-500 hover:text-foreground"
+                className="shrink-0 p-1.5 rounded-lg hover:bg-surface-muted/80 dark:hover:bg-zinc-800 transition-colors text-text-muted dark:text-zinc-400 hover:text-text-main dark:hover:text-zinc-100"
                 title="Copiar clave"
               >
-                {isCopied ? <CheckCircle2 className="w-4 h-4 text-success" /> : <Copy className="w-4 h-4" />}
+                {isCopied ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
               </button>
             </div>
           </div>
@@ -320,7 +318,7 @@ export default function MFASetup() {
 
         {/* Input código */}
         <div className="space-y-1.5">
-          <label className="text-xs font-bold text-default-600 uppercase tracking-widest">
+          <label className="text-xs font-bold text-text-muted/80 dark:text-zinc-400 uppercase tracking-widest">
             Código de verificación (6 dígitos)
           </label>
           <input
@@ -330,7 +328,7 @@ export default function MFASetup() {
             value={totpCode}
             onChange={(e) => { setTotpCode(e.target.value.replace(/\D/g, "")); setError(""); }}
             placeholder="000000"
-            className="w-full px-4 py-3 rounded-xl text-center text-xl font-mono tracking-[0.4em] border border-field-border bg-field text-foreground placeholder-field-placeholder focus:outline-none focus:border-[#b08968] focus:ring-2 focus:ring-[#b08968]/20 transition-all"
+            className="w-full px-4 py-3 rounded-2xl text-center text-xl font-mono tracking-[0.4em] border border-border-subtle dark:border-zinc-700/80 bg-white dark:bg-[#18181d] text-text-main dark:text-zinc-100 placeholder:text-text-muted/40 dark:placeholder:text-zinc-600 focus:outline-none focus:border-brand-primary dark:focus:border-[#f0a262] focus:ring-2 focus:ring-brand-primary/20 dark:focus:ring-[#f0a262]/20 transition-all"
           />
         </div>
 
@@ -341,8 +339,7 @@ export default function MFASetup() {
             type="button"
             onClick={handleVerifyEnroll}
             disabled={isSubmitting || totpCode.length !== 6}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-50 transition-all"
-            style={{ backgroundColor: BRAND }}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-brand-primary hover:bg-[#633612] dark:bg-[#f0a262] dark:hover:bg-[#ffb87a] dark:text-[#171310] disabled:opacity-50 transition-all shadow-sm"
           >
             {isSubmitting ? <Loader className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
             Verificar y activar
@@ -358,18 +355,18 @@ export default function MFASetup() {
     return (
       <div className="mt-2 space-y-4">
         <div className="flex flex-col items-center text-center py-4 space-y-3">
-          <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ backgroundColor: "#22c55e18" }}>
-            <CheckCircle2 className="w-7 h-7" style={{ color: "#22c55e" }} />
+          <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+            <CheckCircle2 className="w-7 h-7" />
           </div>
-          <p className="text-base font-extrabold text-foreground">¡2FA Activado!</p>
-          <p className="text-xs text-default-500 leading-relaxed max-w-xs">
+          <p className="text-base font-extrabold text-text-main dark:text-zinc-100">¡2FA Activado!</p>
+          <p className="text-xs text-text-muted dark:text-zinc-400 leading-relaxed max-w-xs">
             Cada vez que inicies sesión, necesitarás ingresar el código de 6 dígitos de tu app autenticadora.
           </p>
         </div>
         <button
           type="button"
           onClick={resetFlow}
-          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold border border-border text-default-600 hover:bg-default-hover transition-colors"
+          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold border border-border-subtle dark:border-zinc-700 text-text-main dark:text-zinc-200 hover:bg-surface-muted dark:hover:bg-zinc-800 transition-colors"
         >
           <RefreshCw className="w-4 h-4" />
           Listo
@@ -382,14 +379,14 @@ export default function MFASetup() {
   if (mode === "unenrolling") {
     return (
       <div className="mt-2 space-y-4">
-        <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800">
+        <div className="p-3.5 bg-red-50/80 dark:bg-red-950/20 rounded-2xl border border-red-200/80 dark:border-red-900/50">
           <p className="text-xs text-red-700 dark:text-red-400 leading-relaxed">
             Para desactivar el 2FA, ingresa el código actual de tu app autenticadora. Esta acción reducirá la seguridad de tu cuenta.
           </p>
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-xs font-bold text-default-600 uppercase tracking-widest">
+          <label className="text-xs font-bold text-text-muted/80 dark:text-zinc-400 uppercase tracking-widest">
             Código actual de tu app (6 dígitos)
           </label>
           <input
@@ -399,7 +396,7 @@ export default function MFASetup() {
             value={totpCode}
             onChange={(e) => { setTotpCode(e.target.value.replace(/\D/g, "")); setError(""); }}
             placeholder="000000"
-            className="w-full px-4 py-3 rounded-xl text-center text-xl font-mono tracking-[0.4em] border border-field-border bg-field text-foreground placeholder-field-placeholder focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-400/20 transition-all"
+            className="w-full px-4 py-3 rounded-2xl text-center text-xl font-mono tracking-[0.4em] border border-red-200 dark:border-red-900/50 bg-white dark:bg-[#18181d] text-text-main dark:text-zinc-100 placeholder:text-text-muted/40 dark:placeholder:text-zinc-600 focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/20 transition-all"
           />
         </div>
 
@@ -410,7 +407,7 @@ export default function MFASetup() {
             type="button"
             onClick={handleUnenroll}
             disabled={isSubmitting || totpCode.length !== 6}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-red-500 hover:bg-red-600 disabled:opacity-50 transition-colors"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 transition-colors shadow-sm"
           >
             {isSubmitting ? <Loader className="w-4 h-4 animate-spin" /> : <ShieldOff className="w-4 h-4" />}
             Desactivar 2FA
@@ -438,16 +435,19 @@ function StepIndicator({ current }) {
           <div key={step} className="flex items-center gap-1.5">
             <div
               className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black transition-colors ${
-                done ? "bg-success text-white" : active ? "text-white" : "bg-default-200 text-default-500"
+                done
+                  ? "bg-emerald-500 text-white"
+                  : active
+                  ? "bg-brand-primary dark:bg-[#f0a262] text-white dark:text-[#171310]"
+                  : "bg-surface-muted dark:bg-zinc-800 text-text-muted dark:text-zinc-400"
               }`}
-              style={active ? { backgroundColor: BRAND } : {}}
             >
               {done ? "✓" : step}
             </div>
-            <span className={`text-xs font-medium ${active ? "text-foreground" : "text-default-400"}`}>
+            <span className={`text-xs font-semibold ${active ? "text-text-main dark:text-zinc-100" : "text-text-muted dark:text-zinc-400"}`}>
               {label}
             </span>
-            {i < steps.length - 1 && <span className="text-default-200 mx-0.5">›</span>}
+            {i < steps.length - 1 && <span className="text-text-muted/40 dark:text-zinc-600 mx-0.5">›</span>}
           </div>
         );
       })}
@@ -457,8 +457,8 @@ function StepIndicator({ current }) {
 
 function ErrorBox({ message }) {
   return (
-    <div className="flex items-start gap-2 p-3 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800">
-      <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+    <div className="flex items-start gap-2.5 p-3.5 bg-red-50/80 dark:bg-red-950/20 rounded-2xl border border-red-200/80 dark:border-red-900/50">
+      <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
       <p className="text-xs text-red-700 dark:text-red-400 leading-relaxed">{message}</p>
     </div>
   );
@@ -469,7 +469,7 @@ function CancelButton({ onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-bold text-default-600 border border-border hover:bg-default-hover transition-colors"
+      className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-bold text-text-main dark:text-zinc-200 border border-border-subtle dark:border-zinc-700 hover:bg-surface-muted dark:hover:bg-zinc-800 transition-colors"
     >
       <X className="w-4 h-4" /> Cancelar
     </button>
