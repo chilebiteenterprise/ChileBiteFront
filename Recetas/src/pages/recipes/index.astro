@@ -4,11 +4,30 @@ import Footer from "@/shared/layout/Footer";
 import Navbar from "@/shared/layout/Navbar";
 import RecipeGrid from "@/features/recipes/components/RecipeGrid";
 import BaseHead from "@/shared/layout/BaseHead.astro";
+import { supabase } from "@/lib/supabaseClient";
+
+export const prerender = false;
+
+let recipesList: any[] = [];
+try {
+  const { data } = await supabase
+    .from('core_receta')
+    .select('id, nombre, descripcion')
+    .order('created_at', { ascending: false });
+  if (data) {
+    recipesList = data;
+  }
+} catch (err) {
+  console.error("Error obteniendo catálogo de recetas para SEO:", err);
+}
 ---
 
 <html lang="es">
   <head>
-    <BaseHead title="Explorar Recetas Chilenas e Internacionales - ChileBite" description="Descubre las mejores recetas chilenas e internacionales en ChileBite con información nutricional y filtros avanzados." />
+    <BaseHead 
+      title="Explorar Recetas Chilenas e Internacionales – ChileBite" 
+      description="Descubre las mejores recetas chilenas e internacionales en ChileBite con información nutricional, ingredientes auténticos y filtros avanzados." 
+    />
     <link rel="preconnect" href="https://tnzpojvhsxjzfachozid.supabase.co" crossorigin />
     <link rel="dns-prefetch" href="https://tnzpojvhsxjzfachozid.supabase.co" />
   </head>
@@ -21,6 +40,21 @@ import BaseHead from "@/shared/layout/BaseHead.astro";
     <!-- Wrapper normal debajo del navbar -->
     <main class="flex-grow pt-20 pb-5 min-h-[calc(100vh-80px)]">
       <RecipeGrid client:load />
+
+      <!-- Enlaces internos accesibles para rastreadores de motores de búsqueda (SEO Internal Linking) -->
+      {recipesList.length > 0 && (
+        <section class="sr-only" aria-label="Directorio completo de recetas chilenas">
+          <h2>Catálogo de Recetas Disponibles</h2>
+          <ul>
+            {recipesList.map((r) => (
+              <li>
+                <a href={`/recipes/${r.id}`}>{r.nombre}</a>
+                {r.descripcion && <p>{r.descripcion}</p>}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </main>
 
     <Footer client:visible />

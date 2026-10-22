@@ -28,6 +28,7 @@ try {
 // https://astro.build/config
 export default defineConfig({
   site: 'https://chilebite.cl',
+  trailingSlash: 'never',
   adapter: vercel(),
   build: {
     inlineStylesheets: 'always',

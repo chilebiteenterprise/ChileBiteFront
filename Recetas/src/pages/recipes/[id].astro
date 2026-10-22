@@ -13,27 +13,97 @@ export const prerender = false;
 
 const { id } = Astro.params;
 
-let nombre = "Detalle de Receta";
+let receta: any = null;
 try {
   const { data } = await supabase
     .from('core_receta')
-    .select('nombre')
+    .select(`
+      id,
+      nombre,
+      descripcion,
+      imagen_url,
+      tiempo_preparacion,
+      porciones,
+      dificultad,
+      calorias,
+      instrucciones,
+      created_at,
+      ingredientes_detalle:core_recetaingrediente (
+        cantidad,
+        unidad,
+        ingrediente:core_ingrediente ( nombre )
+      )
+    `)
     .eq('id', id)
     .single();
-  if (data && data.nombre) {
-    nombre = data.nombre;
+  if (data) {
+    receta = data;
   }
 } catch (err) {
-  console.error("Error obteniendo nombre de la receta en SSR:", err);
+  console.error("Error obteniendo receta en SSR:", err);
 }
+
+const nombre = receta?.nombre || "Detalle de Receta";
+const descripcion = receta?.descripcion || `Aprende a preparar ${nombre} paso a paso con la receta auténtica en ChileBite.`;
+const imagen = receta?.imagen_url || "https://chilebite.cl/images/Titulo.webp";
+
+// Generar Schema.org JSON-LD para Recipe
+const ingredientesList: string[] = (receta?.ingredientes_detalle || [])
+  .map((ing: any) => `${ing.cantidad || ''} ${ing.unidad || ''} ${ing.ingrediente?.nombre || ''}`.trim())
+  .filter(Boolean);
+
+const rawInstrucciones = receta?.instrucciones;
+const instruccionesArray: string[] = Array.isArray(rawInstrucciones)
+  ? rawInstrucciones.map((p: any) => typeof p === 'string' ? p : p?.texto || p?.descripcion || '')
+  : typeof rawInstrucciones === 'string'
+  ? rawInstrucciones.split('\n').filter((l: string) => l.trim().length > 0)
+  : [];
+
+const schemaInstructions = instruccionesArray.map((texto: string, idx: number) => ({
+  "@type": "HowToStep",
+  "name": `Paso ${idx + 1}`,
+  "text": texto
+}));
+
+const jsonLdRecipe = receta ? {
+  "@context": "https://schema.org",
+  "@type": "Recipe",
+  "name": nombre,
+  "description": descripcion,
+  "image": [imagen],
+  "datePublished": receta.created_at || "2026-01-01",
+  "totalTime": receta.tiempo_preparacion ? `PT${receta.tiempo_preparacion}M` : undefined,
+  "recipeYield": receta.porciones ? `${receta.porciones} porciones` : undefined,
+  "recipeCategory": "Comida Chilena",
+  "recipeCuisine": "Chilena",
+  "recipeIngredient": ingredientesList.length > 0 ? ingredientesList : undefined,
+  "recipeInstructions": schemaInstructions.length > 0 ? schemaInstructions : undefined,
+  "nutrition": receta.calorias ? {
+    "@type": "NutritionInformation",
+    "calories": `${receta.calorias} calorías`
+  } : undefined,
+  "publisher": {
+    "@type": "Organization",
+    "name": "ChileBite",
+    "url": "https://chilebite.cl",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://chilebite.cl/favicon.svg"
+    }
+  }
+} : null;
 ---
 
 <html lang="es">
   <head>
     <BaseHead 
-      title={`${nombre} – ChileBite`} 
-      description={`Aprende a preparar ${nombre} paso a paso con nuestra receta detallada.`}
+      title={`${nombre} – Receta en ChileBite`} 
+      description={descripcion}
+      image={imagen}
     />
+    {jsonLdRecipe && (
+      <script type="application/ld+json" set:html={JSON.stringify(jsonLdRecipe)} />
+    )}
   </head>
   <body class="font-['Inter'] transition-colors duration-300 antialiased min-h-screen flex flex-col">
     <Navbar client:only="react" />
@@ -41,6 +111,36 @@ try {
     <!-- Wrapper normal debajo del navbar -->
     <main class="mt-20 flex-1 relative z-10 w-full min-h-[85vh]">
         <RecetaDetalle idReceta={id} client:only="react" />
+
+        {receta && (
+          <article class="sr-only" aria-label={`Información detallada para motores de búsqueda de ${nombre}`}>
+            <h1>{nombre}</h1>
+            <p>{descripcion}</p>
+            {receta.tiempo_preparacion && <p>Tiempo de preparación: {receta.tiempo_preparacion} minutos</p>}
+            {receta.porciones && <p>Porciones: {receta.porciones}</p>}
+            {ingredientesList.length > 0 && (
+              <section>
+                <h2>Ingredientes</h2>
+                <ul>
+                  {ingredientesList.map((ing) => (
+                    <li>{ing}</li>
+                  ))}
+                </ul>
+              </section>
+            )}
+            {instruccionesArray.length > 0 && (
+              <section>
+                <h2>Instrucciones</h2>
+                <ol>
+                  {instruccionesArray.map((inst) => (
+                    <li>{inst}</li>
+                  ))}
+                </ol>
+              </section>
+            )}
+          </article>
+        )}
+
         <div id="productos-cocina" class="max-w-[1400px] mx-auto w-full px-4 lg:px-8">
             <AffiliateCarousel client:only="react" />
         </div>

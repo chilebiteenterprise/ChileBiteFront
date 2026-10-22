@@ -12,7 +12,11 @@ const {
   title = "ChileBite – Descubre, Aprende y Comparte",
   description = "ChileBite es la plataforma gastronómica chilena para explorar recetas paso a paso, calcular macronutrientes, descubrir restaurantes y conectar con una comunidad apasionada por la cocina.",
   image = "https://chilebite.cl/images/Titulo.webp",
-  canonicalURL = Astro.props.canonicalURL || (Astro.site ? new URL(Astro.url.pathname, Astro.site).toString() : Astro.url.href),
+  canonicalURL = Astro.props.canonicalURL || (
+    Astro.site 
+      ? new URL(Astro.url.pathname === '/' ? '/' : Astro.url.pathname.replace(/\/+$/, ''), Astro.site).toString()
+      : Astro.url.href
+  ),
   robots = "index, follow",
   preloadImage,
 } = Astro.props;
