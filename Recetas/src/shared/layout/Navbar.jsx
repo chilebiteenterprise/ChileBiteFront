@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { ChefHat, BookOpen, MapPin, User, Menu, X, Mail, Lock, Moon, Sun, ShieldCheck, Eye, EyeOff } from "lucide-react";
+import { ChefHat, BookOpen, MapPin, Store, User, Menu, X, Mail, Lock, Moon, Sun, ShieldCheck, Eye, EyeOff } from "lucide-react";
 import { supabase } from '@/lib/supabaseClient';
 import { AuthProvider, useAuth } from '@/features/auth/context/AuthContext';
 import { Toast, toast, Alert } from "@heroui/react";
@@ -111,7 +111,7 @@ function NavbarContent() {
 
   const navLinks = [
     { id: "recetas", label: "Recetas", href: "/recipes", icon: BookOpen },
-    { id: "locales", label: "Locales", href: "/locales", icon: MapPin },
+    { id: "marketplace", label: "Marketplace", href: "/marketplace", icon: Store },
   ];
 
   const handleLogin = async (e) => {

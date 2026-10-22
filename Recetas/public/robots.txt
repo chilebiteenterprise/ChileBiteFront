@@ -1,0 +1,30 @@
+# ==============================================================================
+# ChileBite - robots.txt
+# Permitir acceso completo a rastreadores de Google y motores de búsqueda
+# ==============================================================================
+
+# Rastreador oficial de Google AdSense
+User-agent: Mediapartners-Google
+Allow: /
+
+# Rastreador web de Google
+User-agent: Googlebot
+Allow: /
+
+# Rastreador de imágenes de Google
+User-agent: Googlebot-Image
+Allow: /
+
+# Rastreadores generales (Bing, Yahoo, DuckDuckGo, etc.)
+User-agent: *
+Allow: /
+
+# Rutas privadas, de autenticación y administrativas que no deben indexarse
+Disallow: /admin/
+Disallow: /api/
+Disallow: /auth/
+Disallow: /profile/
+Disallow: /settings
+
+# Mapa del sitio oficial
+Sitemap: https://chilebite.cl/sitemap-index.xml

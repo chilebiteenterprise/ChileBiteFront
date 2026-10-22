@@ -11,6 +11,7 @@ import {
   Bookmark,
   UtensilsCrossed,
 } from "lucide-react";
+import CookieConsent from "@/shared/ui/CookieConsent";
 
 export default function Footer() {
   const scrollToTop = () => {
@@ -22,7 +23,7 @@ export default function Footer() {
   const exploreLinks = [
     { label: "Recetas Tradicionales", href: "/recipes" },
     { label: "Calculadora de Macros", href: "/calculadora" },
-    { label: "Locales y Picadas", href: "/locales" },
+    { label: "Marketplace de Productos", href: "/marketplace" },
     { label: "La Ruta Gastronómica", href: "/blog" },
   ];
 
@@ -234,6 +235,9 @@ export default function Footer() {
           </div>
         </div>
       </div>
+
+      {/* Banner de consentimiento de cookies y políticas (AdSense & privacidad) */}
+      <CookieConsent />
     </footer>
   );
 }

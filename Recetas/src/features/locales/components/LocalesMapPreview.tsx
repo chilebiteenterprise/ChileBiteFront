@@ -13,10 +13,56 @@ export const LocalesMapPreview: React.FC<LocalesMapPreviewProps> = ({
   setSelectedRegion
 }) => {
   const [showFullMap, setShowFullMap] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
+  const [mapModules, setMapModules] = useState<{
+    L: any;
+    MapContainer: any;
+    TileLayer: any;
+    Marker: any;
+    Popup: any;
+  } | null>(null);
 
   useEffect(() => {
-    setIsMounted(true);
+    let isCancelled = false;
+
+    async function loadLeaflet() {
+      try {
+        const [leafletMod, reactLeafletMod] = await Promise.all([
+          import('leaflet'),
+          import('react-leaflet'),
+          import('leaflet/dist/leaflet.css')
+        ]);
+
+        const L = (leafletMod && (leafletMod as any).default) ? (leafletMod as any).default : leafletMod;
+
+        // Fix default marker icon issues
+        if (L?.Icon?.Default?.prototype) {
+          delete (L.Icon.Default.prototype as any)._getIconUrl;
+          L.Icon.Default.mergeOptions({
+            iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
+            iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
+            shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
+          });
+        }
+
+        if (!isCancelled) {
+          setMapModules({
+            L,
+            MapContainer: reactLeafletMod.MapContainer,
+            TileLayer: reactLeafletMod.TileLayer,
+            Marker: reactLeafletMod.Marker,
+            Popup: reactLeafletMod.Popup
+          });
+        }
+      } catch (err) {
+        console.error("Error al cargar Leaflet:", err);
+      }
+    }
+
+    loadLeaflet();
+
+    return () => {
+      isCancelled = true;
+    };
   }, []);
 
   const filteredLocales = locales.filter(locale => {
@@ -26,40 +72,47 @@ export const LocalesMapPreview: React.FC<LocalesMapPreviewProps> = ({
   // Center of Santiago roughly
   const center: [number, number] = [-33.4489, -70.6693];
 
-  if (!isMounted) {
-    return (
-      <section className="mx-auto max-w-7xl px-6 py-20">
-        <div className="h-[500px] bg-zinc-100 dark:bg-zinc-900 rounded-[2rem] animate-pulse flex items-center justify-center text-zinc-500">
-          Cargando Mapa...
+  // Create custom marker icons
+  const createCustomIcon = (locale: any) => {
+    const L = mapModules?.L;
+    if (!L) return undefined;
+    
+    const isPro = locale.isProSubscription;
+    const isVeggie = locale.category === "Verdulería" || locale.category === "Feria Libre";
+    
+    const pinColor = isPro 
+      ? 'bg-emerald-600 border-2 border-white shadow-emerald-500/50' 
+      : isVeggie
+        ? 'bg-green-700 border-2 border-white'
+        : 'bg-[#b08968] border-2 border-white';
+
+    const pulseEffect = isPro 
+      ? '<span class="absolute -inset-1 rounded-full bg-emerald-400 opacity-75 animate-ping"></span>' 
+      : '';
+
+    const iconEmoji = locale.category === "Verdulería" ? "🥑" 
+      : locale.category === "Pescadería" ? "🐟" 
+      : locale.category === "Tostadurías y Frutos Secos" ? "🥜"
+      : locale.category === "Quesería y Lácteos" ? "🧀"
+      : "🏪";
+
+    return L.divIcon({
+      className: 'relative flex items-center justify-center',
+      html: `
+        <div class="relative flex items-center justify-center cursor-pointer">
+          ${pulseEffect}
+          <div class="relative w-9 h-9 rounded-full ${pinColor} shadow-lg flex items-center justify-center text-sm transform hover:scale-110 transition-transform">
+            ${iconEmoji}
+          </div>
         </div>
-      </section>
-    );
-  }
-
-  // Dynamically import Leaflet modules only on the client
-  let MapContainer: any = null;
-  let TileLayer: any = null;
-  let Marker: any = null;
-  let Popup: any = null;
-  let L: any = null;
-
-  if (typeof window !== 'undefined') {
-    const reactLeaflet = require('react-leaflet');
-    MapContainer = reactLeaflet.MapContainer;
-    TileLayer = reactLeaflet.TileLayer;
-    Marker = reactLeaflet.Marker;
-    Popup = reactLeaflet.Popup;
-    L = require('leaflet');
-    require('leaflet/dist/leaflet.css');
-
-    // Fix default marker icon issues
-    delete L.Icon.Default.prototype._getIconUrl;
-    L.Icon.Default.mergeOptions({
-      iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
-      iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
-      shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
+      `,
+      iconSize: [36, 36],
+      iconAnchor: [18, 18],
+      popupAnchor: [0, -18],
     });
-  }
+  };
+
+  const { MapContainer, TileLayer, Marker, Popup } = mapModules || {};
 
   return (
     <section className="mx-auto max-w-7xl px-6 py-20">
@@ -79,28 +132,21 @@ export const LocalesMapPreview: React.FC<LocalesMapPreviewProps> = ({
             {/* Content Overlay */}
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/20 backdrop-blur-[2px]">
               <div className="flex flex-col items-center text-center p-8 bg-white/95 dark:bg-zinc-950/95 rounded-[2rem] shadow-2xl border border-white/20 max-w-md mx-4">
-                <div className="mb-4 rounded-2xl bg-[#b08968] p-4 shadow-xl shadow-[#b08968]/30">
+                <div className="mb-4 rounded-2xl bg-emerald-600 p-4 shadow-xl shadow-emerald-600/30">
                   <Map className="size-8 text-white" />
                 </div>
                 <h3 className="font-serif text-2xl font-bold text-zinc-900 dark:text-white">
-                  Navega el Territorio
+                  Mapa de Ferias y Comercios Locales
                 </h3>
-                <p className="mt-3 text-zinc-600 dark:text-zinc-400">
-                  Visualiza todos los locales en nuestro mapa interactivo y planifica tu próxima ruta culinaria.
+                <p className="mt-3 text-zinc-600 dark:text-zinc-400 text-sm">
+                  Encuentra puestos de ferias libres, verdulerías con productos frescos del día y locales destacados cerca de ti.
                 </p>
                 <div className="mt-8 flex gap-3">
                   <Button 
                     onClick={() => setShowFullMap(true)}
-                    className="bg-[#b08968] hover:bg-[#9a7657] text-white font-bold rounded-full px-8 shadow-lg shadow-[#b08968]/20 transition-all duration-300"
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-full px-8 shadow-lg shadow-emerald-600/20 transition-all duration-300"
                   >
                     Abrir Mapa Completo
-                  </Button>
-                  <Button 
-                    variant="bordered"
-                    className="rounded-full border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 font-bold"
-                  >
-                    <Navigation className="size-4 mr-2" />
-                    Cerca de mí
                   </Button>
                 </div>
               </div>
@@ -111,6 +157,7 @@ export const LocalesMapPreview: React.FC<LocalesMapPreviewProps> = ({
               <button 
                 onClick={() => setShowFullMap(true)}
                 className="rounded-xl bg-white p-3 shadow-lg dark:bg-zinc-900 dark:text-white hover:bg-zinc-50 transition-colors border border-zinc-200 dark:border-zinc-800"
+                aria-label="Maximizar mapa"
               >
                 <Maximize2 className="size-5" />
               </button>
@@ -121,7 +168,7 @@ export const LocalesMapPreview: React.FC<LocalesMapPreviewProps> = ({
             {MapContainer && (
               <MapContainer
                 center={center}
-                zoom={10}
+                zoom={11}
                 scrollWheelZoom={true}
                 className="w-full h-full z-10"
               >
@@ -130,34 +177,103 @@ export const LocalesMapPreview: React.FC<LocalesMapPreviewProps> = ({
                   url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
                 />
 
-                {filteredLocales.map((locale) => (
-                  <Marker
-                    key={locale.id}
-                    position={[locale.lat, locale.lng]}
-                  >
-                    <Popup className="custom-popup">
-                      <div className="p-3 min-w-[220px] bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 rounded-xl">
-                        <img 
-                          src={locale.image} 
-                          alt={locale.name} 
-                          className="w-full h-24 object-cover rounded-lg mb-2 shadow-sm"
-                        />
-                        <div className="flex items-center justify-between mb-1">
-                          <h4 className="font-bold text-sm text-[#b08968]">{locale.name}</h4>
-                          <span className="flex items-center gap-0.5 text-xs font-bold text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded">
-                            <Star className="size-3 fill-amber-500" />
-                            {locale.rating}
-                          </span>
+                {filteredLocales.map((locale) => {
+                  const customIcon = createCustomIcon(locale);
+                  const whatsappUrl = locale.whatsappNumber 
+                    ? `https://wa.me/${locale.whatsappNumber.replace(/\+/g, '')}?text=${encodeURIComponent(`¡Hola ${locale.name}! Los encontré en el mapa de ChileBite y quisiera consultar por sus productos.`)}`
+                    : null;
+
+                  return (
+                    <Marker
+                      key={locale.id}
+                      position={[locale.lat, locale.lng]}
+                      icon={customIcon}
+                    >
+                      <Popup className="custom-popup">
+                        <div className="p-3.5 min-w-[260px] max-w-[290px] bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 rounded-2xl shadow-xl border border-zinc-100 dark:border-zinc-800">
+                          <div className="relative">
+                            <img 
+                              src={locale.image} 
+                              alt={locale.name} 
+                              className="w-full h-28 object-cover rounded-xl mb-2 shadow-sm"
+                            />
+                            {locale.isProSubscription && (
+                              <span className="absolute top-2 left-2 bg-emerald-600 text-white text-[10px] font-black uppercase px-2 py-0.5 rounded-full shadow-md">
+                                Comercio Pro
+                              </span>
+                            )}
+                            {locale.stallNumber && (
+                              <span className="absolute top-2 right-2 bg-black/80 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                                {locale.stallNumber}
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="flex items-start justify-between gap-1 mb-1">
+                            <h4 className="font-bold text-sm text-zinc-900 dark:text-white leading-tight">
+                              {locale.name}
+                            </h4>
+                            <span className="flex items-center gap-0.5 text-xs font-bold text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded shrink-0">
+                              <Star className="size-3 fill-amber-500" />
+                              {locale.rating}
+                            </span>
+                          </div>
+
+                          {locale.commune && (
+                            <p className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 mb-1">
+                              📍 {locale.commune}
+                            </p>
+                          )}
+
+                          <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-2 line-clamp-2">
+                            {locale.description}
+                          </p>
+
+                          {/* Featured offers preview */}
+                          {locale.featuredProducts && locale.featuredProducts.length > 0 && (
+                            <div className="mb-3 p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/50">
+                              <span className="text-[10px] font-black uppercase text-emerald-800 dark:text-emerald-300 block mb-1">
+                                🏷️ Ofertas del día:
+                              </span>
+                              <div className="space-y-1">
+                                {locale.featuredProducts.slice(0, 2).map((p, i) => (
+                                  <div key={i} className="text-[11px] flex justify-between items-center text-zinc-700 dark:text-zinc-300">
+                                    <span className="truncate pr-1">{p.name}</span>
+                                    <span className="font-bold text-emerald-700 dark:text-emerald-400 shrink-0">
+                                      ${p.price.toLocaleString('es-CL')}/{p.unit}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="flex items-center gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+                            {whatsappUrl && (
+                              <a
+                                href={whatsappUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex-1 text-center py-1.5 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-colors shadow-sm"
+                              >
+                                Contactar WhatsApp
+                              </a>
+                            )}
+                            <a
+                              href={`https://www.google.com/maps/search/?api=1&query=${locale.lat},${locale.lng}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="py-1.5 px-2.5 rounded-lg bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 text-xs font-medium transition-colors"
+                              title="Cómo llegar"
+                            >
+                              📍 Ruta
+                            </a>
+                          </div>
                         </div>
-                        <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-2 line-clamp-2">{locale.description}</p>
-                        <div className="flex items-center justify-between text-[10px] font-bold text-zinc-400">
-                          <span>{locale.category}</span>
-                          <span>{locale.distance}</span>
-                        </div>
-                      </div>
-                    </Popup>
-                  </Marker>
-                ))}
+                      </Popup>
+                    </Marker>
+                  );
+                })}
               </MapContainer>
             )}
 
@@ -173,11 +289,11 @@ export const LocalesMapPreview: React.FC<LocalesMapPreviewProps> = ({
             {/* Floating Info Overlay */}
             <div className="absolute top-6 left-6 z-20 bg-white/95 dark:bg-zinc-950/95 border border-zinc-200 dark:border-zinc-800/80 p-4 rounded-2xl shadow-xl max-w-xs pointer-events-none">
               <h4 className="text-zinc-900 dark:text-white font-bold text-sm flex items-center gap-2">
-                <MapPin size={16} className="text-[#b08968]" />
+                <MapPin size={16} className="text-emerald-600" />
                 {selectedRegion === "Todas" ? "Todas las Regiones" : selectedRegion}
               </h4>
-              <p className="text-zinc-500 dark:text-zinc-400 text-[10px] mt-1">
-                Mostrando {filteredLocales.length} locales gastronómicos en el mapa.
+              <p className="text-zinc-500 dark:text-zinc-400 text-[11px] mt-1">
+                Mostrando {filteredLocales.length} puntos. Los marcadores con anillo verde son <strong>Comercios Pro</strong> con catálogo activo.
               </p>
             </div>
           </div>

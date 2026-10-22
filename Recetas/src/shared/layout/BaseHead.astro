@@ -65,27 +65,17 @@ const {
 <!-- ── Theme & PWA hints ── -->
 <meta name="theme-color" content="#b08968" />
 
-<!-- ── Google AdSense (Carga diferida inteligente para maximizar rendimiento y TBT) ── -->
+<!-- ── Verificación de Google Search Console ── -->
+<meta name="google-site-verification" content="googlefb7a0970f8b074aa" />
+
+<!-- ── Google AdSense (Tag canónico oficial requerido por el rastreador de verificación) ── -->
 <meta name="google-adsense-account" content="ca-pub-8451477510853664" />
-<script is:inline>
-  function initAdSense() {
-    if (window.__adsenseLoaded) return;
-    window.__adsenseLoaded = true;
-    const s = document.createElement("script");
-    s.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8451477510853664";
-    s.async = true;
-    s.crossOrigin = "anonymous";
-    document.head.appendChild(s);
-  }
-  if ("requestIdleCallback" in window) {
-    requestIdleCallback(() => setTimeout(initAdSense, 800));
-  } else {
-    window.addEventListener("load", () => setTimeout(initAdSense, 1000));
-  }
-  ["scroll", "pointerdown", "touchstart"].forEach((evt) =>
-    window.addEventListener(evt, initAdSense, { once: true, passive: true })
-  );
-</script>
+<script
+  is:inline
+  async
+  src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8451477510853664"
+  crossorigin="anonymous"
+></script>
 
 <!-- ── FOUC (Flash of Unstyled Content) Prevention ── -->
 <script is:inline>

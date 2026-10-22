@@ -5,25 +5,43 @@ import { locales } from '../data/locales';
 interface LocalesGridProps {
   selectedCategory: string;
   selectedRegion: string;
+  searchQuery?: string;
 }
 
 const mapCategoryFilter = (filter: string) => {
-  if (filter === "Restaurantes") return "Restaurante";
-  if (filter === "Picadas Tradicionales") return "Picada";
-  if (filter === "Cafeterías") return "Cafetería";
-  if (filter === "Viñedos") return "Viñedo";
-  if (filter === "Mercados") return "Mercado";
+  if (filter === "Verdulerías") return "Verdulería";
+  if (filter === "Pescaderías") return "Pescadería";
+  if (filter === "Tostadurías y Frutos Secos") return "Tostadurías y Frutos Secos";
+  if (filter === "Queserías y Lácteos") return "Quesería y Lácteos";
   return filter; // "Todos"
 };
 
 export const LocalesGrid: React.FC<LocalesGridProps> = ({
   selectedCategory,
-  selectedRegion
+  selectedRegion,
+  searchQuery = ""
 }) => {
+  const cleanQuery = searchQuery.trim().toLowerCase();
+
   const filteredLocales = locales.filter(locale => {
     const categoryMatch = selectedCategory === "Todos" || locale.category === mapCategoryFilter(selectedCategory);
     const regionMatch = selectedRegion === "Todas" || locale.region === selectedRegion;
-    return categoryMatch && regionMatch;
+    
+    let searchMatch = true;
+    if (cleanQuery) {
+      const matchName = locale.name.toLowerCase().includes(cleanQuery);
+      const matchDesc = locale.description.toLowerCase().includes(cleanQuery);
+      const matchCommune = locale.commune ? locale.commune.toLowerCase().includes(cleanQuery) : false;
+      const matchTags = locale.tags.some(t => t.toLowerCase().includes(cleanQuery));
+      const matchStall = locale.stallNumber ? locale.stallNumber.toLowerCase().includes(cleanQuery) : false;
+      const matchProducts = locale.featuredProducts 
+        ? locale.featuredProducts.some(p => p.name.toLowerCase().includes(cleanQuery))
+        : false;
+
+      searchMatch = matchName || matchDesc || matchCommune || matchTags || matchStall || matchProducts;
+    }
+
+    return categoryMatch && regionMatch && searchMatch;
   });
 
   return (
@@ -31,10 +49,10 @@ export const LocalesGrid: React.FC<LocalesGridProps> = ({
       <div className="mb-10 flex items-end justify-between">
         <div>
           <h2 className="font-serif text-3xl font-bold text-zinc-900 dark:text-white md:text-4xl">
-            Locales Destacados
+            Puestos y Caseros del Marketplace
           </h2>
           <p className="mt-2 text-zinc-600 dark:text-zinc-400">
-            Una selección curada de las mejores experiencias gastronómicas.
+            Productos frescos de estación, ofertas del día y contacto directo con feriantes y productores locales.
           </p>
         </div>
         <div className="hidden text-sm font-medium text-zinc-500 md:block">

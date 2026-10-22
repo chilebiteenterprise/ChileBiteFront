@@ -80,29 +80,27 @@ export const ValuePropsSection: React.FC = () => {
             </p>
           </motion.a>
 
-          {/* Card 2: Descubre Locales */}
+          {/* Card 2: Marketplace */}
           <motion.a
-            href="/locales"
+            href="/marketplace"
             variants={cardVariants}
             whileHover={{ y: -8, scale: 1.02 }}
             transition={{ type: "spring", stiffness: 260, damping: 20 }}
-            className="group p-10 rounded-[2.5rem] bg-[#191c24] border border-zinc-800/80 hover:border-[#c89a74]/50 transition-all duration-300 block relative overflow-hidden"
+            className="group p-10 rounded-[2.5rem] bg-[#191c24] border border-zinc-800/80 hover:border-emerald-500/50 transition-all duration-300 block relative overflow-hidden"
           >
-            <div className="w-16 h-16 rounded-2xl bg-[#c89a74]/15 border border-[#c89a74]/30 flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-300">
-              <Store className="w-8 h-8 text-[#c89a74]" />
+            <div className="w-16 h-16 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-300">
+              <Store className="w-8 h-8 text-emerald-400" />
             </div>
 
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-2xl md:text-3xl font-bold text-white group-hover:text-[#c89a74] transition-colors">
-                Descubre Locales
+              <h3 className="text-2xl md:text-3xl font-bold text-white group-hover:text-emerald-400 transition-colors">
+                Marketplace Barrial
               </h3>
-              <ArrowRight className="w-6 h-6 text-[#c89a74] group-hover:translate-x-2 transition-transform duration-300" />
+              <ArrowRight className="w-6 h-6 text-emerald-400 group-hover:translate-x-2 transition-transform duration-300" />
             </div>
 
             <p className="text-zinc-300 leading-relaxed text-base md:text-lg">
-              Encuentra los mejores restaurantes y picadas en tu zona. Filtra por
-              tus preferencias y sal a disfrutar de la mejor gastronomía en tu
-              ciudad.
+              Ubica puestos de feria, verdulerías y caseros con productos frescos del día. Conoce ofertas semanales y pide directo a su WhatsApp.
             </p>
           </motion.a>
         </motion.div>

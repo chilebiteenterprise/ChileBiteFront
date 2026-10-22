@@ -10,11 +10,10 @@ interface LocalesFilterProps {
 
 const categories = [
   "Todos",
-  "Restaurantes",
-  "Picadas Tradicionales",
-  "Cafeterías",
-  "Viñedos",
-  "Mercados"
+  "Verdulerías",
+  "Pescaderías",
+  "Tostadurías y Frutos Secos",
+  "Queserías y Lácteos"
 ];
 
 export const LocalesFilter: React.FC<LocalesFilterProps> = ({

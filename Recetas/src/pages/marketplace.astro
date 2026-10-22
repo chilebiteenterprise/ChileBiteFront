@@ -1,0 +1,35 @@
+---
+import "@/styles/global.css";
+import Footer from "@/shared/layout/Footer";
+import Navbar from "@/shared/layout/Navbar";
+import BaseHead from "@/shared/layout/BaseHead.astro";
+import { LocalesSection } from "@/features/locales/components/LocalesSection";
+---
+
+<html lang="es">
+  <head>
+    <BaseHead />
+    <title>Marketplace | ChileBite - Mercado de Sabores y Productos Frescos</title>
+    <meta name="description" content="Explora el Marketplace de ChileBite: ferias libres, verdulerías de barrio y productos frescos del territorio chileno directo en tu mapa." />
+  </head>
+
+  <body class="transition-colors duration-300 min-h-screen flex flex-col">
+    <Navbar client:only="react" />
+
+    <main class="flex-grow min-h-[calc(100vh-80px)]">
+      <LocalesSection client:only="react" />
+    </main>
+
+    <Footer client:visible />
+
+    <style is:global>
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+    </style>
+  </body>
+</html>
