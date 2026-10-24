@@ -3,6 +3,7 @@ import { ChefHat, BookOpen, MapPin, Store, User, Menu, X, Mail, Lock, Moon, Sun,
 import { supabase } from '@/lib/supabaseClient';
 import { AuthProvider, useAuth } from '@/features/auth/context/AuthContext';
 import { Toast, toast, Alert } from "@heroui/react";
+import BlobatarAvatar from "@/shared/ui/BlobatarAvatar";
 
 function NavbarContent() {
   const { user, profile, logout, loginWithGoogle, loginWithEmail, verifyMfaCode } = useAuth();
@@ -238,7 +239,7 @@ function NavbarContent() {
   );
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? "bg-background/95 backdrop-blur-md shadow-lg border-b border-zinc-200/60 dark:border-white/10" : "bg-background/85 backdrop-blur-md border-b border-zinc-200/40 dark:border-white/5"}`}>
+    <nav className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-300 ${isScrolled ? "bg-white/95 dark:bg-zinc-950/95 backdrop-blur-md shadow-lg border-b border-zinc-200/60 dark:border-white/10" : "bg-white/90 dark:bg-zinc-950/90 backdrop-blur-md border-b border-zinc-200/40 dark:border-white/5"}`}>
       <Toast.Provider placement="bottom end" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
@@ -277,14 +278,14 @@ function NavbarContent() {
           <div className="hidden md:flex items-center relative" ref={loginRef}>
             <button onClick={handleUserClick} aria-label="Menú de usuario" className={`p-1.5 rounded-full transition-all duration-300 hover:scale-110 flex items-center justify-center overflow-hidden border-2 ${isLoggedIn ? "border-brand-primary" : "bg-brand-primary border-transparent"}`}>
               {isLoggedIn ? (
-                <img src={currentAvatar} alt="Avatar" className="w-7 h-7 object-cover rounded-full" />
+                <BlobatarAvatar src={profile?.avatar_url || user?.user_metadata?.avatar_url} name={user?.email || "Usuario"} size={28} rounded="rounded-full" />
               ) : (
                 <User className="w-6 h-6 text-white m-0.5" />
               )}
             </button>
 
             {isLoginOpen && (
-              <div className="absolute top-14 right-0 w-80 bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl p-6 z-50 border border-zinc-200 dark:border-zinc-800 animate-in fade-in slide-in-from-top-4 duration-200">
+              <div className="absolute top-14 right-0 w-80 bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl p-6 z-[110] border border-zinc-200 dark:border-zinc-800 animate-in fade-in slide-in-from-top-4 duration-200">
                 {/* Popover Arrow / Notch */}
                 <div className="absolute -top-2 right-4 w-4 h-4 bg-white dark:bg-[#18181b] border-t border-l border-zinc-200 dark:border-[#27272a] rotate-45 rounded-tl-sm pointer-events-none z-10" />
                 {/* Opciones Generales (Dark Mode) */}
@@ -439,10 +440,10 @@ function NavbarContent() {
                     {/* Avatar + info */}
                     <div className="flex items-center space-x-3 pb-4 border-b border-zinc-100 dark:border-zinc-800">
                       <div className="w-14 h-14 rounded-full flex items-center justify-center overflow-hidden border-2 border-brand-primary p-0.5">
-                        <img src={currentAvatar} alt="Avatar" className="w-full h-full object-cover rounded-full" />
+                        <BlobatarAvatar src={profile?.avatar_url || user?.user_metadata?.avatar_url} name={user?.email || "Usuario"} size={52} rounded="rounded-full" />
                       </div>
                       <div className="overflow-hidden">
-                        <p className="font-extrabold text-zinc-900 dark:text-zinc-100 truncate text-lg">{profile?.username || user?.user_metadata?.user_name || user?.user_metadata?.full_name || "Usuario"}</p>
+                        <p className="font-extrabold text-zinc-900 dark:text-white truncate text-lg">{profile?.username || user?.user_metadata?.user_name || user?.user_metadata?.full_name || "Usuario"}</p>
                         <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 truncate w-40">{user.email}</p>
                       </div>
                     </div>
@@ -453,13 +454,13 @@ function NavbarContent() {
                         window.location.href = "/profile";
                         setIsLoginOpen(false);
                       }}
-                      className="block w-full py-3 text-center rounded-xl text-white font-bold bg-brand-primary hover:opacity-95 hover:scale-[1.02] transition-all shadow-md"
+                      className="block w-full py-3 text-center rounded-xl text-white font-bold bg-brand-primary hover:bg-brand-hover hover:scale-[1.02] transition-all shadow-md cursor-pointer"
                     >
                       Ver mi perfil
                     </button>
 
                     {/* Logout */}
-                    <button onClick={handleLogout} className="w-full py-3 text-center rounded-xl text-zinc-600 dark:text-zinc-400 font-bold hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-600 dark:hover:text-rose-400 flex items-center justify-center transition-colors">
+                    <button onClick={handleLogout} className="w-full py-3 text-center rounded-xl text-zinc-600 dark:text-zinc-400 font-bold hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-600 dark:hover:text-rose-400 flex items-center justify-center transition-colors cursor-pointer">
                       Cerrar sesión
                     </button>
                   </div>
@@ -478,7 +479,7 @@ function NavbarContent() {
           </button>
 
           {/* Mobile menu */}
-          <div className={`md:hidden absolute top-full left-0 right-0 bg-background shadow-2xl transition-all duration-300 overflow-hidden z-40 ${isMobileMenuOpen ? "max-h-[1000px] py-4 border-t border-divider" : "max-h-0"}`}>
+          <div className={`md:hidden absolute top-full left-0 right-0 bg-background shadow-2xl transition-all duration-300 overflow-hidden z-[100] ${isMobileMenuOpen ? "max-h-[1000px] py-4 border-t border-divider" : "max-h-0"}`}>
             <div className="px-4 space-y-3">
               <div className="flex justify-between items-center mb-4 px-4 pb-4 border-b border-divider">
                 <span className="text-sm font-bold text-default-500 uppercase tracking-wider">Modo Oscuro</span>
@@ -583,7 +584,7 @@ function NavbarContent() {
               ) : (
                 <div className="mt-6 pt-6 border-t border-divider space-y-4 px-2">
                   <div className="flex items-center space-x-4 p-4 bg-default rounded-2xl overflow-hidden">
-                    <img src={currentAvatar} alt="Avatar" className="w-12 h-12 object-cover rounded-full border-2 border-divider" />
+                    <BlobatarAvatar src={profile?.avatar_url || user?.user_metadata?.avatar_url} name={user?.email || "Usuario"} size={48} rounded="rounded-full" className="border-2 border-divider" />
                     <div className="overflow-hidden">
                       <p className="font-extrabold text-foreground truncate text-lg">{profile?.username || "Usuario"}</p>
                       <p className="text-sm font-medium text-default-500 truncate w-48">{user?.email}</p>

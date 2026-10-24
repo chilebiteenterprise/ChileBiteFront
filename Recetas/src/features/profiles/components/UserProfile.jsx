@@ -13,6 +13,7 @@ import {
   Plus,
 } from "lucide-react";
 import { Skeleton, toast } from "@heroui/react";
+import BlobatarAvatar from "@/shared/ui/BlobatarAvatar";
 import { updateProfile } from "@/lib/profileService";
 import { getUserCollections, createCollection } from "@/lib/collectionService";
 
@@ -226,17 +227,14 @@ function ProfileContent() {
             {/* Avatar */}
             <div className="relative shrink-0 self-start">
               <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-brand-primary dark:border-[#f0a262] bg-surface-muted dark:bg-zinc-800 flex items-center justify-center shadow-md">
-                {currentAvatar ? (
-                  <img
-                    src={currentAvatar}
-                    alt={fullName}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <span className="text-4xl font-black text-brand-primary dark:text-[#f0a262]">
-                    {(profile.nombres || "?").charAt(0).toUpperCase()}
-                  </span>
-                )}
+                <BlobatarAvatar
+                  src={currentAvatar}
+                  name={user?.email || profile?.username || fullName || "Usuario"}
+                  size={112}
+                  rounded="rounded-full"
+                  className="w-full h-full"
+                  alt={fullName}
+                />
               </div>
             </div>
 

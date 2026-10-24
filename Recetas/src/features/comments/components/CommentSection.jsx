@@ -4,6 +4,7 @@ import { useAuth, AuthProvider } from '@/features/auth/context/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 import { useRateLimit } from '@/hooks/useRateLimit';
 import { toast } from "@heroui/react";
+import BlobatarAvatar from '@/shared/ui/BlobatarAvatar';
 
 function getTimeAgo(dateString) {
     const date = new Date(dateString);
@@ -89,21 +90,14 @@ const CommentForm = ({
 
             <div className="flex gap-4">
                 <div className="flex-shrink-0">
-                    {currentUser?.avatar_url || currentUser?.imagen_perfil ? (
-                        <img 
-                            src={currentUser.avatar_url || currentUser.imagen_perfil} 
-                            alt={currentUser?.username || currentUser?.nombres || 'User'} 
-                            className="w-11 h-11 rounded-full object-cover shadow-md border-2 border-border-subtle"
-                            onError={(e) => {
-                                e.target.onerror = null;
-                                e.target.src = "https://ui-avatars.com/api/?name=" + (currentUser?.username || currentUser?.nombres || 'U').charAt(0) + "&background=random";
-                            }}
-                        />
-                    ) : (
-                        <div className="w-11 h-11 rounded-full flex items-center justify-center text-white font-semibold text-lg shadow-md bg-gradient-to-tr from-brand-primary to-brand-hover">
-                            {(currentUser?.username || currentUser?.nombres || 'U').charAt(0).toUpperCase()}
-                        </div>
-                    )}
+                    <BlobatarAvatar
+                        src={currentUser?.avatar_url || currentUser?.imagen_perfil}
+                        name={currentUser?.username || currentUser?.nombres || currentUser?.email || 'User'}
+                        size={44}
+                        rounded="rounded-full"
+                        className="shadow-md border-2 border-border-subtle"
+                        alt={currentUser?.username || currentUser?.nombres || 'User'}
+                    />
                 </div>
                 <div className="flex-1 flex flex-col sm:flex-row gap-3">
                     <textarea
@@ -168,21 +162,14 @@ function CommentItem({ comment, currentUserId, currentUserRole, onReply, onEdit,
         <div className="group transition-opacity duration-300">
             <div className="flex gap-4">
                 <div className="flex-shrink-0">
-                    {comment.usuario_avatar ? (
-                        <img 
-                            src={comment.usuario_avatar} 
-                            alt={comment.usuario_nombre || 'User'} 
-                            className={`w-11 h-11 rounded-full object-cover shadow-md border-2 ${isAdminComment ? 'border-brand-primary' : 'border-border-subtle'}`}
-                            onError={(e) => {
-                                e.target.onerror = null;
-                                e.target.src = "https://ui-avatars.com/api/?name=" + (comment.usuario_nombre || 'U').charAt(0) + "&background=random";
-                            }}
-                        />
-                    ) : (
-                        <div className={`w-11 h-11 rounded-full flex items-center justify-center text-white font-semibold text-lg shadow-md ${isAdminComment ? 'bg-gradient-to-tr from-brand-primary to-brand-hover' : 'bg-surface-muted text-text-muted border border-border-subtle'}`}>
-                            {comment.usuario_nombre?.charAt(0).toUpperCase() || 'U'}
-                        </div>
-                    )}
+                    <BlobatarAvatar
+                        src={comment.usuario_avatar}
+                        name={comment.usuario_nombre || 'User'}
+                        size={44}
+                        rounded="rounded-full"
+                        className={`shadow-md border-2 ${isAdminComment ? 'border-brand-primary' : 'border-border-subtle'}`}
+                        alt={comment.usuario_nombre || 'User'}
+                    />
                 </div>
                 
                 <div className="flex-1 min-w-0">
@@ -370,7 +357,7 @@ function CommentSectionContent({ recipeId }) {
     const { isRateLimited, executeWithLimit } = useRateLimit(3000);
     
     const topCommentInputRef = useRef(null); 
-    const { session, profile } = useAuth();
+    const { user, session, profile } = useAuth();
     const getToken = () => session?.access_token || localStorage.getItem("access_token");
     
     const handleLoadMore = () => {
@@ -378,17 +365,20 @@ function CommentSectionContent({ recipeId }) {
     };
 
     useEffect(() => {
-        if (profile) {
+        if (profile || user) {
+            const googleAvatar = user?.user_metadata?.avatar_url || user?.user_metadata?.picture;
+            const avatarUrl = profile?.avatar_url || googleAvatar || null;
             setCurrentUser({
-                ...profile,
-                id: profile.id,
-                nombres: profile.username || profile.nombres,
-                rol: (String(profile.role).toLowerCase() === 'admin' || String(profile.rol).toLowerCase() === 'admin') ? 'admin' : 'normal'
+                ...(profile || {}),
+                id: profile?.id || user?.id,
+                nombres: profile?.username || profile?.nombres || user?.user_metadata?.full_name || user?.user_metadata?.name || 'Usuario',
+                avatar_url: avatarUrl,
+                rol: (String(profile?.role || profile?.rol).toLowerCase() === 'admin') ? 'admin' : 'normal'
             });
         } else {
             setCurrentUser(null);
         }
-    }, [profile]);
+    }, [profile, user]);
 
     const localAuthToken = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
     const token = session?.access_token || localAuthToken;
@@ -429,13 +419,16 @@ function CommentSectionContent({ recipeId }) {
             }
 
             const processedData = data.map(c => {
-                const profile = profilesMap[c.user_id] || {};
+                const p = profilesMap[c.user_id] || {};
+                const isLoggedUser = user?.id && c.user_id === user.id;
+                const googleAvatar = isLoggedUser ? (user?.user_metadata?.avatar_url || user?.user_metadata?.picture) : null;
+                const authorAvatar = p.avatar_url || googleAvatar || null;
                 return {
                     ...c,
                     comentario_padre: c.comentario_padre_id, // Map standard db back to component logic
-                    usuario_nombre: profile.username || 'Usuario',
-                    usuario_avatar: profile.avatar_url || null,
-                    rol: profile.role || 'normal', 
+                    usuario_nombre: p.username || (isLoggedUser ? (profile?.username || user?.user_metadata?.full_name || 'Usuario') : 'Usuario'),
+                    usuario_avatar: authorAvatar,
+                    rol: p.role || 'normal', 
                     likes: c.contador_likes !== undefined ? c.contador_likes : 0, 
                     userLiked: userLikesMap[c.id] || false
                 };
@@ -448,7 +441,7 @@ function CommentSectionContent({ recipeId }) {
         } finally {
             setIsLoading(false);
         }
-    }, [recipeId, currentUser?.id]); 
+    }, [recipeId, currentUser?.id, user?.id, profile?.avatar_url]); 
 
     useEffect(() => {
         loadComments();

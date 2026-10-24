@@ -36,10 +36,15 @@ export const AuthProvider = ({ children }) => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchSupabaseProfile = async (userId) => {
+  const fetchSupabaseProfile = async (userId, currentUserObj) => {
     if (!userId) return;
     try {
       const data = await getSharedProfile(userId);
+      const googleAvatar = currentUserObj?.user_metadata?.avatar_url || currentUserObj?.user_metadata?.picture;
+      if (data && !data.avatar_url && googleAvatar) {
+        supabase.from('profiles').update({ avatar_url: googleAvatar }).eq('id', userId).then();
+        data.avatar_url = googleAvatar;
+      }
       setProfile(data);
     } catch (error) {
       console.error("[Auth] Error al cargar perfil desde Supabase:", error.message);
@@ -62,7 +67,7 @@ export const AuthProvider = ({ children }) => {
         }
 
         if (session?.user?.id && mounted) {
-          await fetchSupabaseProfile(session.user.id);
+          await fetchSupabaseProfile(session.user.id, session.user);
         } else if (mounted) {
           setProfile(null);
         }
@@ -105,7 +110,7 @@ export const AuthProvider = ({ children }) => {
 
       if (event === "SIGNED_IN" || event === "INITIAL_SESSION") {
         if (currentSession?.user?.id) {
-          await fetchSupabaseProfile(currentSession.user.id);
+          await fetchSupabaseProfile(currentSession.user.id, currentSession.user);
         } else {
           setProfile(null);
         }
