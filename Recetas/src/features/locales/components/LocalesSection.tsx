@@ -10,7 +10,7 @@ export const LocalesSection: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
   return (
-    <div className="bg-zinc-50 dark:bg-zinc-950 min-h-screen">
+    <div className="bg-bg-page min-h-screen w-full max-w-full overflow-x-clip transition-colors">
       <LocalesHero 
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
@@ -38,7 +38,7 @@ export const LocalesSection: React.FC = () => {
           <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
             <div className="max-w-2xl text-center lg:text-left">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-black uppercase tracking-wider mb-4 border border-emerald-500/30">
-                🌱 Para Feriantes y Comerciantes de Barrio
+                Para Feriantes y Comerciantes de Barrio
               </span>
               <h2 className="font-serif text-3xl font-bold md:text-5xl mb-4 leading-tight">
                 ¿Vendes en ferias o tienes una verdulería?
@@ -49,15 +49,15 @@ export const LocalesSection: React.FC = () => {
               
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 text-left">
                 <div className="p-4 rounded-xl bg-white/5 border border-white/10 backdrop-blur-sm">
-                  <div className="text-emerald-400 font-black text-lg mb-1">📍 Mapa Activo</div>
+                  <div className="text-emerald-400 font-bold text-base mb-1">Mapa Activo</div>
                   <div className="text-xs text-zinc-400">Ubicación fija o itinerante según el día de feria.</div>
                 </div>
                 <div className="p-4 rounded-xl bg-white/5 border border-white/10 backdrop-blur-sm">
-                  <div className="text-emerald-400 font-black text-lg mb-1">🏷️ Ofertas del Día</div>
+                  <div className="text-emerald-400 font-bold text-base mb-1">Ofertas del Día</div>
                   <div className="text-xs text-zinc-400">Pizarra de precios actualizada desde tu celular.</div>
                 </div>
                 <div className="p-4 rounded-xl bg-white/5 border border-white/10 backdrop-blur-sm">
-                  <div className="text-emerald-400 font-black text-lg mb-1">💬 Pedidos WhatsApp</div>
+                  <div className="text-emerald-400 font-bold text-base mb-1">Pedidos WhatsApp</div>
                   <div className="text-xs text-zinc-400">Tus clientes te escriben y reservan con 1 clic.</div>
                 </div>
               </div>

@@ -863,9 +863,9 @@ function IngredientesAdminContent() {
                 <Modal.Backdrop 
                     isOpen={!!ingredientToDelete} 
                     onOpenChange={(open) => !open && setIngredientToDelete(null)}
-                    className="bg-black/60 backdrop-blur-md"
+                    className="bg-black/60 backdrop-blur-md z-[200]"
                 >
-                    <Modal.Container placement="center" className="p-4">
+                    <Modal.Container placement="center" className="p-4 pt-20 md:p-6">
                         <Modal.Dialog className="w-full max-w-md bg-surface-elevated border border-border-subtle rounded-3xl shadow-2xl p-6 overflow-hidden">
                             <div className="flex flex-col items-center text-center gap-4">
                                 <div className="w-14 h-14 rounded-2xl bg-rose-500/10 text-rose-600 flex items-center justify-center shrink-0">
@@ -918,10 +918,10 @@ function IngredientesAdminContent() {
                 <Modal.Backdrop 
                     isOpen={isModalOpen} 
                     onOpenChange={setIsModalOpen}
-                    className="bg-black/60 backdrop-blur-md"
+                    className="bg-black/60 backdrop-blur-md z-[200]"
                 >
-                    <Modal.Container placement="center" className="p-4">
-                        <Modal.Dialog className="bg-surface-elevated rounded-3xl shadow-2xl w-full max-w-2xl border border-border-subtle overflow-hidden my-6 max-h-[90vh] flex flex-col">
+                    <Modal.Container placement="center" className="p-4 pt-20 sm:pt-24 md:p-6">
+                        <Modal.Dialog className="bg-surface-elevated rounded-3xl shadow-2xl w-full max-w-2xl border border-border-subtle overflow-hidden my-auto max-h-[85vh] flex flex-col">
                         {/* Modal Header */}
                         <div className="px-6 py-5 border-b border-border-subtle flex justify-between items-center bg-surface-muted/30 sticky top-0 z-10">
                             <h3 className="text-xl font-black text-text-main tracking-tight flex items-center gap-3">

@@ -15,7 +15,7 @@
    1. DIRECTIVAS & CAPAS DE FRAMEWORK
    ----------------------------------------------------------------------------- */
 @import "tailwindcss";
-@variant dark (&:where(.dark, .dark *));
+@custom-variant dark (&:where(.dark, .dark *));
 @import "@heroui/styles";
 
 @layer theme, base, components, utilities;
@@ -288,4 +288,151 @@ html.dark ::-webkit-scrollbar-thumb:hover {
   margin-bottom: 0.5rem;
   font-family: "Georgia", serif;
   line-height: 1.5;
+}
+
+/* -----------------------------------------------------------------------------
+   8. MARKETPLACE & LOCALES - ESTILOS CENTRALIZADOS DE TEMA
+   ----------------------------------------------------------------------------- */
+:root {
+  --mp-bg-filter: rgba(255, 255, 255, 0.95);
+  --mp-bg-card: #ffffff;
+  --mp-bg-elevated: #ffffff;
+  --mp-bg-input: #f4f4f5;
+  --mp-bg-hover: #f4f4f5;
+  --mp-border: #e4e4e7;
+  --mp-border-strong: #d4d4d8;
+  --mp-text-title: #09090b;
+  --mp-text-body: #18181b;
+  --mp-text-muted: #71717a;
+  --mp-text-subtle: #a1a1aa;
+}
+
+html.dark {
+  --mp-bg-filter: rgba(9, 9, 11, 0.95);
+  --mp-bg-card: #18181b;
+  --mp-bg-elevated: #18181b;
+  --mp-bg-input: #27272a;
+  --mp-bg-hover: #27272a;
+  --mp-border: #27272a;
+  --mp-border-strong: #3f3f46;
+  --mp-text-title: #ffffff;
+  --mp-text-body: #f4f4f5;
+  --mp-text-muted: #a1a1aa;
+  --mp-text-subtle: #71717a;
+}
+
+/* Clases CSS directas para Marketplace */
+.mp-filter-bar {
+  background-color: var(--mp-bg-filter);
+  border-bottom: 1px solid var(--mp-border);
+}
+
+.mp-button {
+  background-color: var(--mp-bg-card);
+  border: 1px solid var(--mp-border);
+  color: var(--mp-text-body);
+}
+.mp-button:hover {
+  border-color: var(--mp-border-strong);
+  background-color: var(--mp-bg-hover);
+}
+
+.mp-dropdown {
+  background-color: var(--mp-bg-elevated);
+  border: 1px solid var(--mp-border);
+  color: var(--mp-text-body);
+}
+
+.mp-dropdown-header {
+  background-color: var(--mp-bg-elevated);
+  border-bottom: 1px solid var(--mp-border);
+}
+
+.mp-input {
+  background-color: var(--mp-bg-input);
+  border: 1px solid var(--mp-border);
+  color: var(--mp-text-body);
+}
+.mp-input::placeholder {
+  color: var(--mp-text-subtle);
+}
+
+.mp-dropdown-item {
+  color: var(--mp-text-body);
+}
+.mp-dropdown-item:hover {
+  background-color: var(--mp-bg-hover);
+}
+
+.mp-card {
+  background-color: var(--mp-bg-card);
+  border: 1px solid var(--mp-border);
+  color: var(--mp-text-body);
+}
+.mp-card:hover {
+  border-color: var(--mp-border-strong);
+}
+
+.mp-text-title {
+  color: var(--mp-text-title);
+}
+
+.mp-text-body {
+  color: var(--mp-text-body);
+}
+
+.mp-text-muted {
+  color: var(--mp-text-muted);
+}
+
+.mp-text-subtle {
+  color: var(--mp-text-subtle);
+}
+
+.mp-border {
+  border-color: var(--mp-border);
+}
+
+.mp-chip-inactive {
+  background-color: var(--mp-bg-card);
+  border: 1px solid var(--mp-border);
+  color: var(--mp-text-body);
+}
+.mp-chip-inactive:hover {
+  background-color: var(--mp-bg-hover);
+  border-color: #059669;
+  color: #059669;
+}
+html.dark .mp-chip-inactive:hover {
+  border-color: #10b981;
+  color: #34d399;
+}
+
+/* Compatibilidad de clases semánticas universales */
+.text-text-main {
+  color: var(--text-main) !important;
+}
+.text-text-muted {
+  color: var(--text-muted) !important;
+}
+.text-text-subtle {
+  color: var(--text-subtle) !important;
+}
+.bg-bg-page {
+  background-color: var(--bg-page);
+}
+.bg-surface-card {
+  background-color: var(--surface-card);
+}
+.bg-surface-elevated {
+  background-color: var(--surface-elevated);
+}
+.bg-surface-muted {
+  background-color: var(--surface-muted);
+}
+.border-border-subtle {
+  border-color: var(--border-subtle);
+}
+.border-border-strong {
+  border-color: var(--border-strong);
 }

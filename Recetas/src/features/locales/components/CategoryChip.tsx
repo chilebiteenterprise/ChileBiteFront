@@ -1,5 +1,4 @@
 import React from 'react';
-import { Chip } from '@heroui/react';
 
 interface CategoryChipProps {
   label: string;
@@ -7,22 +6,22 @@ interface CategoryChipProps {
   onClick?: () => void;
 }
 
-export const CategoryChip: React.FC<CategoryChipProps> = ({ label, isActive, onClick }) => {
+export const CategoryChip: React.FC<CategoryChipProps> = ({ 
+  label, 
+  isActive = false, 
+  onClick
+}) => {
   return (
-    <Chip
-      as="button"
+    <button
+      type="button"
       onClick={onClick}
-      variant={isActive ? 'primary' : 'secondary'}
-      color={isActive ? 'accent' : 'default'}
-      className={`cursor-pointer transition-all duration-300 hover:scale-105 active:scale-95 ${
-        isActive 
-          ? 'bg-copper-500 text-white shadow-lg shadow-copper-500/20' 
-          : 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800'
+      className={`group relative inline-flex items-center justify-center rounded-full px-5 py-2.5 text-xs md:text-sm font-medium tracking-normal transition-all duration-200 cursor-pointer select-none whitespace-nowrap active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 ${
+        isActive
+          ? 'bg-emerald-600 hover:bg-emerald-500 text-white font-semibold shadow-md shadow-emerald-600/30 ring-1 ring-emerald-500'
+          : 'mp-chip-inactive'
       }`}
     >
-      <Chip.Label className="px-2 py-1 text-sm font-medium">
-        {label}
-      </Chip.Label>
-    </Chip>
+      <span>{label}</span>
+    </button>
   );
 };

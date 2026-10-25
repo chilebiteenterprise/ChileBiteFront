@@ -66,7 +66,13 @@ export const LocalesMapPreview: React.FC<LocalesMapPreviewProps> = ({
   }, []);
 
   const filteredLocales = locales.filter(locale => {
-    return selectedRegion === "Todas" || locale.region === selectedRegion;
+    if (selectedRegion === "Todas") return true;
+    const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    return (
+      locale.region === selectedRegion ||
+      norm(locale.region).includes(norm(selectedRegion)) ||
+      norm(selectedRegion).includes(norm(locale.region))
+    );
   });
 
   // Center of Santiago roughly
@@ -90,25 +96,21 @@ export const LocalesMapPreview: React.FC<LocalesMapPreviewProps> = ({
       ? '<span class="absolute -inset-1 rounded-full bg-emerald-400 opacity-75 animate-ping"></span>' 
       : '';
 
-    const iconEmoji = locale.category === "Verdulería" ? "🥑" 
-      : locale.category === "Pescadería" ? "🐟" 
-      : locale.category === "Tostadurías y Frutos Secos" ? "🥜"
-      : locale.category === "Quesería y Lácteos" ? "🧀"
-      : "🏪";
-
     return L.divIcon({
       className: 'relative flex items-center justify-center',
       html: `
         <div class="relative flex items-center justify-center cursor-pointer">
           ${pulseEffect}
-          <div class="relative w-9 h-9 rounded-full ${pinColor} shadow-lg flex items-center justify-center text-sm transform hover:scale-110 transition-transform">
-            ${iconEmoji}
+          <div class="relative w-8 h-8 rounded-full ${pinColor} shadow-lg flex items-center justify-center transform hover:scale-110 transition-transform">
+            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
           </div>
         </div>
       `,
-      iconSize: [36, 36],
-      iconAnchor: [18, 18],
-      popupAnchor: [0, -18],
+      iconSize: [32, 32],
+      iconAnchor: [16, 16],
+      popupAnchor: [0, -16],
     });
   };
 
@@ -221,7 +223,7 @@ export const LocalesMapPreview: React.FC<LocalesMapPreviewProps> = ({
 
                           {locale.commune && (
                             <p className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 mb-1">
-                              📍 {locale.commune}
+                              {locale.commune}
                             </p>
                           )}
 
@@ -229,11 +231,11 @@ export const LocalesMapPreview: React.FC<LocalesMapPreviewProps> = ({
                             {locale.description}
                           </p>
 
-                          {/* Featured offers preview */}
+                          {/* Featured products preview */}
                           {locale.featuredProducts && locale.featuredProducts.length > 0 && (
                             <div className="mb-3 p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/50">
                               <span className="text-[10px] font-black uppercase text-emerald-800 dark:text-emerald-300 block mb-1">
-                                🏷️ Ofertas del día:
+                                Productos destacados:
                               </span>
                               <div className="space-y-1">
                                 {locale.featuredProducts.slice(0, 2).map((p, i) => (

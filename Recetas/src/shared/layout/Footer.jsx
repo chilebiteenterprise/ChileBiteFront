@@ -56,12 +56,12 @@ export default function Footer() {
               <div className="w-11 h-11 rounded-2xl bg-brand-primary/10 dark:bg-[#f0a262]/15 flex items-center justify-center text-brand-primary dark:text-[#f0a262] transition-transform duration-300 group-hover:scale-105 group-hover:rotate-6 shadow-sm">
                 <ChefHat className="w-6 h-6" />
               </div>
-              <span className="text-2xl font-black tracking-tight text-text-main dark:text-zinc-100">
+              <span className="text-2xl font-black tracking-tight text-text-main">
                 Chile<span className="text-brand-primary dark:text-[#f0a262]">Bite</span>
               </span>
             </a>
 
-            <p className="text-sm text-text-muted dark:text-zinc-400 leading-relaxed max-w-md pt-1">
+            <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed max-w-md pt-1">
               La plataforma culinaria que reúne la tradición, picadas históricas y nuevas recetas de Chile. Diseñada para apasionados de nuestra cocina y amantes del buen sabor.
             </p>
 
@@ -118,7 +118,7 @@ export default function Footer() {
 
           {/* Explorar (Cols 6-7) */}
           <div className="lg:col-span-2">
-            <h3 className="text-sm font-black uppercase tracking-wider text-text-main dark:text-zinc-100 flex items-center gap-2 mb-4">
+            <h3 className="text-sm font-black uppercase tracking-wider text-text-main flex items-center gap-2 mb-4">
               <Compass className="w-4 h-4 text-brand-primary dark:text-[#f0a262]" />
               Explorar
             </h3>
@@ -127,7 +127,7 @@ export default function Footer() {
                 <li key={link.label}>
                   <a
                     href={link.href}
-                    className="text-sm text-text-muted dark:text-zinc-400 hover:text-brand-primary dark:hover:text-[#f0a262] transition-all duration-200 inline-flex items-center gap-1.5 group font-medium"
+                    className="text-sm text-zinc-600 dark:text-zinc-400 hover:text-brand-primary dark:hover:text-[#f0a262] transition-all duration-200 inline-flex items-center gap-1.5 group font-medium"
                   >
                     <span className="w-1.5 h-1.5 rounded-full bg-border-strong dark:bg-zinc-700 transition-colors group-hover:bg-brand-primary dark:group-hover:bg-[#f0a262]" />
                     {link.label}
@@ -139,7 +139,7 @@ export default function Footer() {
 
           {/* Comunidad (Cols 8-9) */}
           <div className="lg:col-span-2">
-            <h3 className="text-sm font-black uppercase tracking-wider text-text-main dark:text-zinc-100 flex items-center gap-2 mb-4">
+            <h3 className="text-sm font-black uppercase tracking-wider text-text-main flex items-center gap-2 mb-4">
               <Bookmark className="w-4 h-4 text-brand-primary dark:text-[#f0a262]" />
               Comunidad
             </h3>
@@ -148,7 +148,7 @@ export default function Footer() {
                 <li key={link.label}>
                   <a
                     href={link.href}
-                    className="text-sm text-text-muted dark:text-zinc-400 hover:text-brand-primary dark:hover:text-[#f0a262] transition-all duration-200 inline-flex items-center gap-1.5 group font-medium"
+                    className="text-sm text-zinc-600 dark:text-zinc-400 hover:text-brand-primary dark:hover:text-[#f0a262] transition-all duration-200 inline-flex items-center gap-1.5 group font-medium"
                   >
                     <span className="w-1.5 h-1.5 rounded-full bg-border-strong dark:bg-zinc-700 transition-colors group-hover:bg-brand-primary dark:group-hover:bg-[#f0a262]" />
                     {link.label}
@@ -160,7 +160,7 @@ export default function Footer() {
 
           {/* Contacto & Ubicación (Cols 10-12) */}
           <div className="lg:col-span-3 space-y-3">
-            <h3 className="text-sm font-black uppercase tracking-wider text-text-main dark:text-zinc-100 flex items-center gap-2 mb-4">
+            <h3 className="text-sm font-black uppercase tracking-wider text-text-main flex items-center gap-2 mb-4">
               <UtensilsCrossed className="w-4 h-4 text-brand-primary dark:text-[#f0a262]" />
               Contacto
             </h3>
@@ -174,10 +174,10 @@ export default function Footer() {
                 <Mail className="w-4 h-4" />
               </div>
               <div className="min-w-0">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-text-muted/70 dark:text-zinc-500">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                   Escríbenos
                 </p>
-                <p className="text-xs font-bold text-text-main dark:text-zinc-200 truncate group-hover:text-brand-primary dark:group-hover:text-[#f0a262]">
+                <p className="text-xs font-bold text-zinc-900 dark:text-zinc-200 truncate group-hover:text-brand-primary dark:group-hover:text-[#f0a262]">
                   contacto@chilebite.cl
                 </p>
               </div>
@@ -189,10 +189,10 @@ export default function Footer() {
                 <MapPin className="w-4 h-4" />
               </div>
               <div className="min-w-0">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-text-muted/70 dark:text-zinc-500">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                   Ubicación
                 </p>
-                <p className="text-xs font-bold text-text-main dark:text-zinc-200">
+                <p className="text-xs font-bold text-zinc-900 dark:text-zinc-200">
                   Las Cabras, Valle de Cachapoal 🇨🇱
                 </p>
               </div>
@@ -202,7 +202,7 @@ export default function Footer() {
 
         {/* ─── Bottom Bar ─── */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
-          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-6 text-xs text-text-muted dark:text-zinc-400 font-medium">
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-6 text-xs text-zinc-600 dark:text-zinc-400 font-medium">
             <span>© {new Date().getFullYear()} ChileBite. Todos los derechos reservados.</span>
             <div className="flex items-center gap-4">
               {legalLinks.map((link) => (
@@ -218,7 +218,7 @@ export default function Footer() {
           </div>
 
           <div className="flex items-center gap-4">
-            <span className="text-xs text-text-muted dark:text-zinc-400 font-medium flex items-center gap-1.5">
+            <span className="text-xs text-zinc-600 dark:text-zinc-400 font-medium flex items-center gap-1.5">
               Hecho con <Heart className="w-3.5 h-3.5 text-red-500 fill-red-500 animate-pulse" /> para los amantes del sabor chileno
             </span>
 
@@ -228,7 +228,7 @@ export default function Footer() {
               onClick={scrollToTop}
               title="Volver arriba"
               aria-label="Volver arriba"
-              className="w-8 h-8 rounded-xl bg-surface-muted dark:bg-[#202026] border border-border-subtle dark:border-zinc-700/80 text-text-muted dark:text-zinc-400 hover:text-brand-primary dark:hover:text-[#f0a262] hover:border-brand-primary/50 dark:hover:border-[#f0a262]/50 flex items-center justify-center transition-all hover:scale-110 active:scale-95 shadow-2xs"
+              className="w-8 h-8 rounded-xl bg-surface-muted dark:bg-[#202026] border border-border-subtle dark:border-zinc-700/80 text-zinc-600 dark:text-zinc-400 hover:text-brand-primary dark:hover:text-[#f0a262] hover:border-brand-primary/50 dark:hover:border-[#f0a262]/50 flex items-center justify-center transition-all hover:scale-110 active:scale-95 shadow-2xs"
             >
               <ArrowUp className="w-4 h-4" />
             </button>

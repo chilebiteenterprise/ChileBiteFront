@@ -444,10 +444,10 @@ const RecetarioContent = ({ collectionId, collectionTitle }) => {
                         <button
                             onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                             disabled={currentPage === 1}
-                            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold text-text-muted hover:text-brand-primary hover:bg-brand-subtle/50 transition-all disabled:opacity-30 disabled:pointer-events-none group"
+                            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold text-zinc-700 dark:text-zinc-300 hover:text-brand-primary dark:hover:text-[#f0a262] hover:bg-brand-primary/15 dark:hover:bg-brand-primary/20 transition-all disabled:opacity-30 disabled:pointer-events-none group cursor-pointer"
                             aria-label="Página anterior"
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="size-4 transition-transform group-hover:-translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="size-4 transition-transform group-hover:-translate-x-0.5 text-brand-primary dark:text-[#f0a262]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                             </svg>
                             <span className="hidden sm:inline">Anterior</span>
@@ -459,11 +459,11 @@ const RecetarioContent = ({ collectionId, collectionTitle }) => {
                                 <button 
                                     onClick={() => setCurrentPage(1)} 
                                     aria-label="Ir a la página 1"
-                                    className="size-9 sm:size-10 flex items-center justify-center rounded-full text-text-muted hover:text-text-main hover:bg-surface-muted/60 font-medium text-sm transition-colors"
+                                    className="size-9 sm:size-10 flex items-center justify-center rounded-full text-zinc-700 dark:text-zinc-300 hover:text-brand-primary dark:hover:text-[#f0a262] hover:bg-brand-primary/15 dark:hover:bg-brand-primary/20 hover:scale-110 active:scale-95 font-semibold text-sm transition-all duration-200 cursor-pointer"
                                 >
                                     1
                                 </button>
-                                {getPaginationGroup()[0] > 2 && <span className="text-text-subtle font-medium px-1">…</span>}
+                                {getPaginationGroup()[0] > 2 && <span className="text-zinc-400 dark:text-zinc-500 font-medium px-1">…</span>}
                             </>
                         )}
 
@@ -475,10 +475,10 @@ const RecetarioContent = ({ collectionId, collectionTitle }) => {
                                     key={num}
                                     onClick={() => setCurrentPage(num)}
                                     aria-label={`Ir a la página ${num}`}
-                                    className={`size-9 sm:size-10 flex items-center justify-center rounded-full text-sm transition-all ${
+                                    className={`size-9 sm:size-10 flex items-center justify-center rounded-full text-sm transition-all duration-200 cursor-pointer ${
                                         isCurrent 
-                                            ? 'bg-brand-primary text-white font-bold shadow-sm shadow-brand-primary/30' 
-                                            : 'text-text-muted hover:text-text-main hover:bg-surface-muted/60 font-medium'
+                                            ? 'bg-brand-primary text-white font-bold shadow-md shadow-brand-primary/30 ring-2 ring-brand-primary/40 scale-105' 
+                                            : 'text-zinc-700 dark:text-zinc-300 hover:text-brand-primary dark:hover:text-[#f0a262] hover:bg-brand-primary/15 dark:hover:bg-brand-primary/20 hover:scale-110 active:scale-95 font-semibold'
                                     }`}
                                     aria-current={isCurrent ? "page" : undefined}
                                 >
@@ -490,11 +490,11 @@ const RecetarioContent = ({ collectionId, collectionTitle }) => {
                         {/* Last Page + Ellipsis */}
                         {getPaginationGroup()[getPaginationGroup().length - 1] < totalPages && (
                             <>
-                                {getPaginationGroup()[getPaginationGroup().length - 1] < totalPages - 1 && <span className="text-text-subtle font-medium px-1">…</span>}
+                                {getPaginationGroup()[getPaginationGroup().length - 1] < totalPages - 1 && <span className="text-zinc-400 dark:text-zinc-500 font-medium px-1">…</span>}
                                 <button 
                                     onClick={() => setCurrentPage(totalPages)} 
                                     aria-label={`Ir a la página ${totalPages}`}
-                                    className="size-9 sm:size-10 flex items-center justify-center rounded-full text-text-muted hover:text-text-main hover:bg-surface-muted/60 font-medium text-sm transition-colors"
+                                    className="size-9 sm:size-10 flex items-center justify-center rounded-full text-zinc-700 dark:text-zinc-300 hover:text-brand-primary dark:hover:text-[#f0a262] hover:bg-brand-primary/15 dark:hover:bg-brand-primary/20 hover:scale-110 active:scale-95 font-semibold text-sm transition-all duration-200 cursor-pointer"
                                 >
                                     {totalPages}
                                 </button>
@@ -505,11 +505,11 @@ const RecetarioContent = ({ collectionId, collectionTitle }) => {
                         <button
                             onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                             disabled={currentPage === totalPages}
-                            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold text-text-muted hover:text-brand-primary hover:bg-brand-subtle/50 transition-all disabled:opacity-30 disabled:pointer-events-none group"
+                            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold text-zinc-700 dark:text-zinc-300 hover:text-brand-primary dark:hover:text-[#f0a262] hover:bg-brand-primary/15 dark:hover:bg-brand-primary/20 transition-all disabled:opacity-30 disabled:pointer-events-none group cursor-pointer"
                             aria-label="Página siguiente"
                         >
                             <span className="hidden sm:inline">Siguiente</span>
-                            <svg xmlns="http://www.w3.org/2000/svg" className="size-4 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="size-4 transition-transform group-hover:translate-x-0.5 text-brand-primary dark:text-[#f0a262]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                             </svg>
                         </button>

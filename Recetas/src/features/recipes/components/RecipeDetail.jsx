@@ -539,33 +539,6 @@ function RecetaDetalleContent({ idReceta, receta: recetaProp, modoLocal = false,
               </div>
             )}
 
-            {!isPreview && (
-              <div className="mt-8 flex flex-col sm:flex-row gap-4">
-                <button
-                  type="button"
-                  onClick={() => document.getElementById('productos-cocina')?.scrollIntoView({ behavior: 'smooth' })}
-                  className="flex-1 p-4 rounded-2xl border border-border-subtle bg-surface-card hover:bg-surface-muted/60 transition-all text-left flex items-center justify-between group shadow-sm"
-                >
-                  <div>
-                    <p className="text-xs font-bold text-text-subtle uppercase tracking-wider">¿Te falta algún utensilio?</p>
-                    <p className="font-extrabold text-brand-primary text-base group-hover:underline">Equipa tu cocina con nuestros productos ↓</p>
-                  </div>
-                  <span className="text-xl">🍳</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => document.getElementById('comentarios')?.scrollIntoView({ behavior: 'smooth' })}
-                  className="flex-1 p-4 rounded-2xl border border-border-subtle bg-surface-card hover:bg-surface-muted/60 transition-all text-left flex items-center justify-between group shadow-sm"
-                >
-                  <div>
-                    <p className="text-xs font-bold text-text-subtle uppercase tracking-wider">Comunidad</p>
-                    <p className="font-extrabold text-brand-primary text-base group-hover:underline">Ver opiniones y comentarios ↓</p>
-                  </div>
-                  <MessageCircle className="w-5 h-5 text-brand-primary" />
-                </button>
-              </div>
-            )}
-
           </div>
         );
       default:

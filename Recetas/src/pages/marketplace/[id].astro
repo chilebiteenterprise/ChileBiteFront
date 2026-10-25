@@ -1,0 +1,47 @@
+---
+import "@/styles/global.css";
+import Footer from "@/shared/layout/Footer";
+import Navbar from "@/shared/layout/Navbar";
+import BaseHead from "@/shared/layout/BaseHead.astro";
+import { SellerCatalogView } from "@/features/locales/components/SellerCatalogView";
+import { locales } from "@/features/locales/data/locales";
+
+export async function getStaticPaths() {
+  return locales.map((locale) => ({
+    params: { id: locale.id },
+    props: { locale },
+  }));
+}
+
+const { id } = Astro.params;
+const { locale: initialLocale } = Astro.props;
+const locale = initialLocale || locales.find((l) => l.id === id);
+
+if (!locale) {
+  return Astro.redirect("/marketplace");
+}
+
+const title = `${locale.name} | Catálogo en ChileBite`;
+const description = `Consulta el catálogo completo de productos frescos, precios y ubicación de ${locale.name} (${locale.address || locale.commune}). Contacta directo por WhatsApp.`;
+---
+
+<html lang="es">
+  <head>
+    <BaseHead />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={locale.image} />
+  </head>
+
+  <body class="transition-colors duration-300 min-h-screen flex flex-col bg-bg-page text-text-main w-full max-w-full overflow-x-clip">
+    <Navbar client:only="react" />
+
+    <main class="flex-grow min-h-[calc(100vh-80px)] pt-20 pb-16 w-full max-w-full overflow-x-clip">
+      <SellerCatalogView locale={locale} client:only="react" />
+    </main>
+
+    <Footer client:visible />
+  </body>
+</html>

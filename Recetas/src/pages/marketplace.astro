@@ -9,20 +9,29 @@ import { LocalesSection } from "@/features/locales/components/LocalesSection";
 <html lang="es">
   <head>
     <BaseHead />
-    <title>Marketplace | ChileBite - Mercado de Sabores y Productos Frescos</title>
-    <meta name="description" content="Explora el Marketplace de ChileBite: ferias libres, verdulerías de barrio y productos frescos del territorio chileno directo en tu mapa." />
+    <title>
+      Marketplace | ChileBite - Mercado de Sabores y Productos Frescos
+    </title>
+    <meta
+      name="description"
+      content="Explora el Marketplace de ChileBite: ferias libres, verdulerías de barrio y productos frescos del territorio chileno directo en tu mapa."
+    />
   </head>
 
-  <body class="transition-colors duration-300 min-h-screen flex flex-col">
+  <body class="transition-colors duration-300 min-h-screen flex flex-col bg-bg-page text-text-main w-full max-w-full overflow-x-clip">
     <Navbar client:only="react" />
 
-    <main class="flex-grow min-h-[calc(100vh-80px)]">
+    <main class="flex-grow min-h-[calc(100vh-80px)] pt-20 w-full max-w-full overflow-x-clip">
       <LocalesSection client:only="react" />
     </main>
 
     <Footer client:visible />
 
     <style is:global>
+      html, body {
+        max-width: 100vw;
+        overflow-x: clip;
+      }
       .no-scrollbar::-webkit-scrollbar {
         display: none;
       }
