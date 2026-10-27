@@ -207,7 +207,8 @@ function NavbarContent() {
     }
   };
 
-  const currentAvatar = profile?.avatar_url || user?.user_metadata?.avatar_url || "/default-avatar.png";
+  const userAvatarUrl = profile?.avatar_url || user?.user_metadata?.avatar_url || user?.user_metadata?.picture;
+  const userDisplayName = profile?.username || user?.user_metadata?.user_name || user?.user_metadata?.full_name || user?.email || "Usuario";
   const mfaSubmitLabel = isVerifyingMfa ? "Verificando..." : "Verificar código";
 
   const renderMfaChallengeForm = () => (
@@ -276,9 +277,9 @@ function NavbarContent() {
 
           {/* User actions desktop */}
           <div className="hidden md:flex items-center relative" ref={loginRef}>
-            <button onClick={handleUserClick} aria-label="Menú de usuario" className={`p-1.5 rounded-full transition-all duration-300 hover:scale-110 flex items-center justify-center overflow-hidden border-2 ${isLoggedIn ? "border-brand-primary" : "bg-brand-primary border-transparent"}`}>
+            <button onClick={handleUserClick} aria-label="Menú de usuario" className={`p-0.5 rounded-full transition-all duration-300 hover:scale-105 flex items-center justify-center overflow-hidden border-2 ${isLoggedIn ? "border-brand-primary" : "bg-brand-primary border-transparent"}`}>
               {isLoggedIn ? (
-                <BlobatarAvatar src={profile?.avatar_url || user?.user_metadata?.avatar_url} name={user?.email || "Usuario"} size={28} rounded="rounded-full" />
+                <BlobatarAvatar src={userAvatarUrl} name={userDisplayName} size={32} rounded="rounded-full" />
               ) : (
                 <User className="w-6 h-6 text-white m-0.5" />
               )}
@@ -440,7 +441,7 @@ function NavbarContent() {
                     {/* Avatar + info */}
                     <div className="flex items-center space-x-3 pb-4 border-b border-zinc-100 dark:border-zinc-800">
                       <div className="w-14 h-14 rounded-full flex items-center justify-center overflow-hidden border-2 border-brand-primary p-0.5">
-                        <BlobatarAvatar src={profile?.avatar_url || user?.user_metadata?.avatar_url} name={user?.email || "Usuario"} size={52} rounded="rounded-full" />
+                        <BlobatarAvatar src={userAvatarUrl} name={userDisplayName} size={52} rounded="rounded-full" />
                       </div>
                       <div className="overflow-hidden">
                         <p className="font-extrabold text-zinc-900 dark:text-white truncate text-lg">{profile?.username || user?.user_metadata?.user_name || user?.user_metadata?.full_name || "Usuario"}</p>
@@ -584,7 +585,7 @@ function NavbarContent() {
               ) : (
                 <div className="mt-6 pt-6 border-t border-divider space-y-4 px-2">
                   <div className="flex items-center space-x-4 p-4 bg-default rounded-2xl overflow-hidden">
-                    <BlobatarAvatar src={profile?.avatar_url || user?.user_metadata?.avatar_url} name={user?.email || "Usuario"} size={48} rounded="rounded-full" className="border-2 border-divider" />
+                    <BlobatarAvatar src={userAvatarUrl} name={userDisplayName} size={48} rounded="rounded-full" className="border-2 border-divider" />
                     <div className="overflow-hidden">
                       <p className="font-extrabold text-foreground truncate text-lg">{profile?.username || "Usuario"}</p>
                       <p className="text-sm font-medium text-default-500 truncate w-48">{user?.email}</p>

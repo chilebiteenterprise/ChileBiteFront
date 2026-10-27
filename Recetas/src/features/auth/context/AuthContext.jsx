@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { supabase } from '@/lib/supabaseClient';
 import { getProfile } from '@/lib/profileService';
+import { isPlaceholderAvatar } from '@/shared/ui/BlobatarAvatar';
 
 const AuthContext = createContext();
 
@@ -41,9 +42,22 @@ export const AuthProvider = ({ children }) => {
     try {
       const data = await getSharedProfile(userId);
       const googleAvatar = currentUserObj?.user_metadata?.avatar_url || currentUserObj?.user_metadata?.picture;
-      if (data && !data.avatar_url && googleAvatar) {
-        supabase.from('profiles').update({ avatar_url: googleAvatar }).eq('id', userId).then();
-        data.avatar_url = googleAvatar;
+      
+      if (data) {
+        const hasCustomDbAvatar = data.avatar_url && !isPlaceholderAvatar(data.avatar_url);
+        const hasValidGoogleAvatar = googleAvatar && !isPlaceholderAvatar(googleAvatar);
+
+        if (!hasCustomDbAvatar && hasValidGoogleAvatar) {
+          // Si el usuario tiene una foto real en Google pero no en Supabase, sincronizarla
+          supabase.from('profiles').update({ avatar_url: googleAvatar }).eq('id', userId).then();
+          data.avatar_url = googleAvatar;
+        } else if (!hasCustomDbAvatar) {
+          // Si el valor en DB es un placeholder legado (ui-avatars, default-user), limpiarlo en Supabase y normalizar a null
+          if (data.avatar_url) {
+            supabase.from('profiles').update({ avatar_url: null }).eq('id', userId).then();
+          }
+          data.avatar_url = null;
+        }
       }
       setProfile(data);
     } catch (error) {

@@ -4,7 +4,7 @@ import { useAuth, AuthProvider } from '@/features/auth/context/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 import { useRateLimit } from '@/hooks/useRateLimit';
 import { toast } from "@heroui/react";
-import BlobatarAvatar from '@/shared/ui/BlobatarAvatar';
+import BlobatarAvatar, { isPlaceholderAvatar } from '@/shared/ui/BlobatarAvatar';
 
 function getTimeAgo(dateString) {
     const date = new Date(dateString);
@@ -92,11 +92,11 @@ const CommentForm = ({
                 <div className="flex-shrink-0">
                     <BlobatarAvatar
                         src={currentUser?.avatar_url || currentUser?.imagen_perfil}
-                        name={currentUser?.username || currentUser?.nombres || currentUser?.email || 'User'}
+                        name={currentUser?.username || currentUser?.nombres || currentUser?.email || 'Usuario'}
                         size={44}
                         rounded="rounded-full"
                         className="shadow-md border-2 border-border-subtle"
-                        alt={currentUser?.username || currentUser?.nombres || 'User'}
+                        alt={currentUser?.username || currentUser?.nombres || 'Usuario'}
                     />
                 </div>
                 <div className="flex-1 flex flex-col sm:flex-row gap-3">
@@ -164,11 +164,11 @@ function CommentItem({ comment, currentUserId, currentUserRole, onReply, onEdit,
                 <div className="flex-shrink-0">
                     <BlobatarAvatar
                         src={comment.usuario_avatar}
-                        name={comment.usuario_nombre || 'User'}
+                        name={comment.usuario_nombre || 'Usuario'}
                         size={44}
                         rounded="rounded-full"
                         className={`shadow-md border-2 ${isAdminComment ? 'border-brand-primary' : 'border-border-subtle'}`}
-                        alt={comment.usuario_nombre || 'User'}
+                        alt={comment.usuario_nombre || 'Usuario'}
                     />
                 </div>
                 
@@ -367,11 +367,14 @@ function CommentSectionContent({ recipeId }) {
     useEffect(() => {
         if (profile || user) {
             const googleAvatar = user?.user_metadata?.avatar_url || user?.user_metadata?.picture;
-            const avatarUrl = profile?.avatar_url || googleAvatar || null;
+            const rawAvatar = profile?.avatar_url || googleAvatar || null;
+            const avatarUrl = isPlaceholderAvatar(rawAvatar) ? null : rawAvatar;
+            const displayName = profile?.username || profile?.nombres || user?.user_metadata?.user_name || user?.user_metadata?.full_name || 'Usuario';
             setCurrentUser({
                 ...(profile || {}),
                 id: profile?.id || user?.id,
-                nombres: profile?.username || profile?.nombres || user?.user_metadata?.full_name || user?.user_metadata?.name || 'Usuario',
+                username: profile?.username || user?.user_metadata?.user_name || displayName,
+                nombres: displayName,
                 avatar_url: avatarUrl,
                 rol: (String(profile?.role || profile?.rol).toLowerCase() === 'admin') ? 'admin' : 'normal'
             });
@@ -422,11 +425,13 @@ function CommentSectionContent({ recipeId }) {
                 const p = profilesMap[c.user_id] || {};
                 const isLoggedUser = user?.id && c.user_id === user.id;
                 const googleAvatar = isLoggedUser ? (user?.user_metadata?.avatar_url || user?.user_metadata?.picture) : null;
-                const authorAvatar = p.avatar_url || googleAvatar || null;
+                const rawAvatar = p.avatar_url || googleAvatar || null;
+                const authorAvatar = isPlaceholderAvatar(rawAvatar) ? null : rawAvatar;
+                const authorName = p.username || (isLoggedUser ? (profile?.username || user?.user_metadata?.full_name || 'Usuario') : 'Usuario');
                 return {
                     ...c,
                     comentario_padre: c.comentario_padre_id, // Map standard db back to component logic
-                    usuario_nombre: p.username || (isLoggedUser ? (profile?.username || user?.user_metadata?.full_name || 'Usuario') : 'Usuario'),
+                    usuario_nombre: authorName,
                     usuario_avatar: authorAvatar,
                     rol: p.role || 'normal', 
                     likes: c.contador_likes !== undefined ? c.contador_likes : 0, 
@@ -473,7 +478,11 @@ function CommentSectionContent({ recipeId }) {
 
         try {
             if (isLiking) {
-                const { error } = await supabase.from('core_comentariolike').insert([{ user_id: currentUser.id, comentario_id: commentId }]);
+                const { error } = await supabase.from('core_comentariolike').insert([{ 
+                    user_id: currentUser.id, 
+                    comentario_id: commentId,
+                    fecha_creacion: new Date().toISOString()
+                }]);
                 if (error) throw new Error(error.message);
             } else {
                 const { error } = await supabase.from('core_comentariolike').delete().eq('user_id', currentUser.id).eq('comentario_id', commentId);

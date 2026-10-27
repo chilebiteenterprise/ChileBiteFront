@@ -111,7 +111,7 @@ function LoginContent() {
               nombres: formData.nombres,
               apellido_paterno: formData.apellido_paterno,
               apellido_materno: formData.apellido_materno,
-              avatar_url: `https://ui-avatars.com/api/?name=${formData.nombres}+${formData.apellido_paterno}&background=b08968&color=fff`,
+              avatar_url: null,
             }
           }
         });

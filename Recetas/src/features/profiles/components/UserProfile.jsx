@@ -229,7 +229,7 @@ function ProfileContent() {
               <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-brand-primary dark:border-[#f0a262] bg-surface-muted dark:bg-zinc-800 flex items-center justify-center shadow-md">
                 <BlobatarAvatar
                   src={currentAvatar}
-                  name={user?.email || profile?.username || fullName || "Usuario"}
+                  name={profile?.username || user?.user_metadata?.user_name || user?.user_metadata?.full_name || user?.email || fullName || "Usuario"}
                   size={112}
                   rounded="rounded-full"
                   className="w-full h-full"
